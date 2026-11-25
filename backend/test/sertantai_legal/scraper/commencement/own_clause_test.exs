@@ -916,6 +916,73 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClauseTest do
       assert %{full_from: ~D[2004-07-01], partial_from: nil} = at.("UK_x:reg.1")
     end
 
+    # alternative days: the later (or earlier) of the items' days, one day
+    # (RULES `feed-differences-are-patterns-by-feed-coverage`, Decision 2;
+    # NISI 1999/662 reg.1(3), where the feed is silent)
+    test "\"come into force— (a) …; or (b) …, whichever is later\": the later day (SI 2020/1265 art.2(2))" do
+      {rules, rs} =
+        read(
+          [
+            {"reg.2(1)",
+             "Except as provided by paragraph (2), this Order comes into force on the day after the day on which it is made."},
+            {"reg.2(2)",
+             "Article 25, Schedule 5 and paragraph 4 of Schedule 8 come into force— … whichever is later."},
+            {"reg.2(2)(a)", "on the day after the day on which this Order is made; or"},
+            {"reg.2(2)(b)", "immediately after IP completion day,"},
+            "reg.3",
+            "reg.25"
+          ],
+          made: ~D[2020-11-11]
+        )
+
+      assert date_of(rules, rs, "UK_x:reg.25") == ~D[2020-12-31]
+      assert date_of(rules, rs, "UK_x:reg.3") == ~D[2020-11-12]
+    end
+
+    test "\"whichever is the earlier\" with a day no source dates: unread, never the dated item's (NISI 1999/662 reg.1(3))" do
+      {rules, rs} =
+        read(
+          [
+            {"reg.1(2)",
+             "Subject to paragraphs (3) and (4), this Order shall come into operation on such day or days as the Department of the Environment may by order appoint."},
+            {"reg.1(3)",
+             "The provisions of this Order set out in paragraph (4) shall come into operation on— … whichever is the earlier."},
+            {"reg.1(3)(a)",
+             "the expiration of one month from the day on which this Order is made; or"},
+            {"reg.1(3)(b)",
+             "the day before the day appointed by an Order in Council under section 3 of the Northern Ireland Act 1998 for the commencement of Parts II and III of that Act,"},
+            {"reg.1(4)", "The provisions referred to in paragraph (3) are—"},
+            {"reg.1(4)(a)", "Articles 59 to 62;"},
+            "reg.59"
+          ],
+          made: ~D[1999-03-24],
+          type: "nisi"
+        )
+
+      assert date_of(rules, rs, "UK_x:reg.59") == nil
+    end
+
+    # the other law's day (`LawStart.Input`'s `tied_dates`, by row) dates
+    # the tied provision; unresolved, it stays an event day, undated
+    test "a provision tied to another law's provision, dated by that law's day (SI 2006/641 reg.1(2))" do
+      rs =
+        rows([
+          {"reg.1(2)",
+           "Regulation 15 shall come into force on the date on which section 7(3) of the Water Act 2003 comes into force, and all other provisions of these Regulations shall come into force on 1st April 2006."},
+          "reg.2",
+          "reg.15"
+        ])
+
+      input = %{type_code: "uksi", rows: rs, made: nil, clml_head: nil, lrt_date: ~D[2006-04-01]}
+
+      tied =
+        OwnClause.rules("UK_x", Map.put(input, :tied_dates, %{"UK_x:reg.1(2)" => ~D[2009-04-01]}))
+
+      assert date_of(tied, rs, "UK_x:reg.15") == ~D[2009-04-01]
+      assert date_of(tied, rs, "UK_x:reg.2") == ~D[2006-04-01]
+      assert date_of(OwnClause.rules("UK_x", input), rs, "UK_x:reg.15") == nil
+    end
+
     test "an exception tied to another law's commencement: subtracted, its words kept unread (SI 2012/2267 reg.1(2))" do
       {rules, rs} =
         read(

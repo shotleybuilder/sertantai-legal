@@ -83,7 +83,12 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
     read_from = clause || law
 
     table = Provisions.table_groups(rows, read_from, Map.get(input, :schedule_tables))
-    groups = Provisions.groups(rows, OwnDays.of(input), read_from) ++ table
+
+    groups =
+      rows
+      |> Provisions.groups(OwnDays.of(input), read_from)
+      |> Enum.map(&tied_dated(&1, Map.get(input, :tied_dates, %{})))
+      |> Kernel.++(table)
 
     table_refs = table |> Enum.flat_map(& &1.refs) |> Enum.map(&bare/1)
 
@@ -124,6 +129,19 @@ defmodule SertantaiLegal.Scraper.Commencement.OwnClause do
       not_stated: MadeCondition.failing(rows, OwnDays.of(input))
     }
   end
+
+  # a provision tied to another law, dated by that law's day where it is
+  # held (`LawStart.Input`'s `tied_dates`, by the row stating it: RULES
+  # `feed-differences-are-patterns-by-feed-coverage`, Decision 2; SI
+  # 2020/1540 reg.1(4)); else an event day, undated
+  defp tied_dated(%{tied: true, evidence: row} = g, dates) do
+    case Map.get(dates, row) do
+      %Date{} = d -> %{g | date: d, treatment: :provision_dated, tied: false, appointed: false}
+      nil -> g
+    end
+  end
+
+  defp tied_dated(g, _dates), do: g
 
   # the clause or start the law's general rule is read from
   defp by_clause(law, clause, rows, groups) do

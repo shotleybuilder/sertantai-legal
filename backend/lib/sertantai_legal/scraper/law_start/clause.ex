@@ -389,6 +389,10 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause do
   @spec tied_ref(String.t() | nil, [map()]) :: {String.t(), String.t()} | nil
   defdelegate tied_ref(sentence, rows), to: Staged
 
+  @doc "The other law a provision is tied to, and its provisions (`[]`: the whole law); nil when none."
+  @spec tied_refs(String.t() | nil, [map()]) :: {String.t(), [String.t()]} | nil
+  defdelegate tied_refs(sentence, rows), to: Staged
+
   @doc """
   A staged clause's list item as `{subject, tail, date}` (V1-02): the
   provisions it names and the date it gives them — "Parts 1, 2 … on 16th

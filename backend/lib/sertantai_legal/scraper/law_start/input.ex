@@ -48,6 +48,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Input do
       # Schedules), read only when the text cites one
       schedule_tables: schedule_tables(schedules, rows),
       tied_date: tied_date(rows, made),
+      tied_dates: tied_dates(rows),
       rows:
         Enum.map(
           rows,
@@ -122,6 +123,75 @@ defmodule SertantaiLegal.Scraper.LawStart.Input do
 
       result.full_from ||
         result |> Evaluator.in_force() |> Enum.map(& &1.date) |> Enum.min(Date, fn -> nil end)
+    else
+      _ -> nil
+    end
+  end
+
+  # a provision tied to another law ("Regulation 15 shall come into force on
+  # the date on which section 7(3) of the Water Act 2003 comes into force":
+  # SI 2006/641 reg.1(2)), dated by the row stating it: the other law's day
+  # for those provisions — its commencement as read (its stored rules), else
+  # its own feed (the store; one hop) — or, the whole law named, its start
+  # in the register (RULES `feed-differences-are-patterns-by-feed-coverage`,
+  # Decision 2: the Reader is the source where the feed is silent)
+  defp tied_dates(rows) do
+    rows = Enum.map(rows, &%{section_id: &1.section_id, text: Map.get(&1, :text)})
+
+    for r <- rows,
+        is_binary(r.text),
+        r.text =~ ~r/\binto\s+(?:force|operation)\b/i,
+        {title, refs} <- [SertantaiLegal.Scraper.LawStart.Clause.tied_refs(r.text, rows)],
+        other when is_binary(other) <- [law_by_title(title)],
+        %Date{} = d <- [other_date(other, refs)],
+        into: %{},
+        do: {r.section_id, d}
+  end
+
+  # the whole law: its own clause as read (its stored rule for all its
+  # provisions: "come into force immediately before exit day", SI 2019/1078
+  # reg.1), else its start in the register
+  defp other_date(other, []) do
+    whole =
+      Enum.find_value(SertantaiLegal.Scraper.Commencement.Store.for_law(other), fn
+        %{scope: :all, except: [], when: {:date, %Date{} = d}} -> d
+        _ -> nil
+      end)
+
+    whole || register_date(other)
+  end
+
+  # every provision named in (the latest of their days); nil if one isn't dated
+  defp other_date(other, refs) do
+    rules = SertantaiLegal.Scraper.Commencement.Store.for_law(other)
+    dates = Enum.map(refs, &(ref_date(rules, &1) || feed_date(other, &1)))
+    if Enum.all?(dates, &match?(%Date{}, &1)), do: Enum.max(dates, Date)
+  end
+
+  defp register_date(other) do
+    case Repo.query!("SELECT md_coming_into_force_date FROM uk_lrt WHERE name = $1 LIMIT 1", [
+           other
+         ]) do
+      %{rows: [[d]]} -> date(d)
+      _ -> nil
+    end
+  end
+
+  defp ref_date([], _ref), do: nil
+
+  defp ref_date(rules, ref) do
+    alias SertantaiLegal.Scraper.Commencement.Evaluator
+    result = Evaluator.evaluate(rules, ref)
+    result.full_from
+  end
+
+  defp feed_date(other, ref) do
+    alias SertantaiLegal.Scraper.Commencement.{Effects, Evaluator}
+    alias SertantaiLegal.Scraper.LegislationGovUk.ChangesFeed
+
+    with [_, t, y, n] <- String.split(other, "_", parts: 4),
+         {:ok, effects} <- ChangesFeed.fetch(t, y, n, store: :only) do
+      Evaluator.evaluate(Effects.rules(other, effects), ref).full_from
     else
       _ -> nil
     end

@@ -138,6 +138,63 @@ defmodule SertantaiLegal.Scraper.LawStart.Clause.Staged do
     end
   end
 
+  # a provision tied to another law: "on the date on which section 7(3) of
+  # the Water Act 2003 comes into force" (SI 2006/641 reg.1(2)); "immediately
+  # after the coming into force of regulations 4 and 17 of the Aviation
+  # Safety (Amendment) Regulations 2024" (SI 2025/878 reg.1(3)); "immediately
+  # before the coming into force of the Environment and Rural Affairs
+  # (Amendment) (EU Exit) Regulations 2019" (the whole law: SI 2020/1540
+  # reg.1(4))
+  @number "\\d+[A-Z]*(?:\\([0-9A-Za-z]+\\))*"
+  @tied_refs Regex.compile!(
+               "\\b(?:at\\s+the\\s+same\\s+time\\s+as|immediately\\s+(?:after|before)|on\\s+the\\s+(?:same\\s+)?(?:day|date)\\s+(?:on\\s+which|that))\\s+" <>
+                 "(?:the\\s+coming\\s+into\\s+(?:force|operation)\\s+of\\s+)?" <>
+                 "(?:(sections?|regulations?|articles?|rules?)\\s+(#{@number}(?:\\s*(?:,|and)\\s*#{@number})*)\\s+of\\s+)?" <>
+                 "(?:the\\s+)?((?:[A-Z(][\\w()',’-]*\\s+(?:(?:and|of|for|the|in|on|to|with)\\s+)*){1,14}(?:Act|Measure|Regulations|Order|Rules)(?:\\s+\\(Northern\\s+Ireland\\))?\\s+\\d{4}|\\d{4}\\s+(?:Act|Regulations|Order))\\b"
+             )
+
+  @doc """
+  The other law a provision is tied to, and its provisions (`[]` for the
+  whole law): `{title with year, refs}`, a defined term ("the 2022 Act")
+  through its definition in `rows`. nil when the sentence ties to no other
+  law (its own provision, a day, an agreement).
+  """
+  @spec tied_refs(String.t() | nil, [map()]) :: {String.t(), [String.t()]} | nil
+  def tied_refs(nil, _rows), do: nil
+
+  def tied_refs(sentence, rows) do
+    with [_ | groups] <- Regex.run(@tied_refs, sentence),
+         [kind, numbers, law] <- pad(groups),
+         title when is_binary(title) <- other_title(law, rows) do
+      {title, refs(kind, numbers)}
+    else
+      _ -> nil
+    end
+  end
+
+  defp pad([law]), do: ["", "", law]
+  defp pad(groups), do: groups
+
+  defp refs("", _numbers), do: []
+
+  defp refs(kind, numbers) do
+    prefix = Map.fetch!(@prefixes, kind |> String.downcase() |> String.trim_trailing("s"))
+    for [n] <- Regex.scan(~r/#{@number}/, numbers), do: "#{prefix}.#{n}"
+  end
+
+  # a full title, or a defined term's meaning ("“the 2022 Act” means the
+  # Building Safety Act 2022")
+  defp other_title(law, rows) do
+    if law =~ ~r/^\d{4}\s+/ do
+      defined =
+        ~r/[“"]#{Regex.escape("the " <> law)}[”"]\s+means\s+the\s+(.+?\b(?:Act|Measure|Regulations|Order)\s+\d{4})/iu
+
+      Enum.find_value(rows, &defined_title(&1, defined))
+    else
+      law
+    end
+  end
+
   defp defined_title(row, defined) do
     case Regex.run(defined, Map.get(row, :text) || "") do
       [_, title] -> title

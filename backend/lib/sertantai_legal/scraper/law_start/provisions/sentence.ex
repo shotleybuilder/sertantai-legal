@@ -40,7 +40,16 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions.Sentence do
     {tail, inline} = tail_and_list(tail)
     {treatment, date} = Treatment.tail_treatment(tail, made)
 
+    days =
+      tail
+      |> Kernel.<>(" " <> inline)
+      |> whichever()
+      |> alternative_days(subject, row, rows, made, base)
+
     cond do
+      days != nil ->
+        days
+
       list_head?(subject, tail, inline, row, rows) ->
         list_head(subject, row, rows, made, base)
 
@@ -102,15 +111,58 @@ defmodule SertantaiLegal.Scraper.LawStart.Provisions.Sentence do
   # making regulations; (b) on 1 April 2022 for all other purposes": each
   # item dates the head's provisions (UK_ukpga_2021_24 s.4(2), CV-S04)
   defp list_head(subject, row, rows, made, base) do
-    groups =
-      for item <- Refs.children(row, rows),
-          text = String.replace(item.text || "", ~r/^\(?[a-z0-9]+\)\s*/i, ""),
-          text != "",
-          not Regex.match?(@cif, text),
-          g <- of_sentence("#{subject} come into force #{text}", item, rows, made, base),
-          do: g
+    subject |> item_groups(row, rows, made, base) |> List.flatten() |> last_purpose_completes()
+  end
 
-    last_purpose_completes(groups)
+  # each item below the head read as the head's provisions coming into
+  # force on it: its groups, an item's to a list
+  defp item_groups(subject, row, rows, made, base) do
+    for item <- Refs.children(row, rows),
+        text = String.replace(item.text || "", ~r/^\(?[a-z0-9]+\)\s*/i, ""),
+        text != "",
+        not Regex.match?(@cif, text),
+        do: of_sentence("#{subject} come into force #{text}", item, rows, made, base)
+  end
+
+  # "Article 25, Schedule 5 and paragraph 4 of Schedule 8 come into force—
+  # (a) on the day after the day on which this Order is made; or (b)
+  # immediately after IP completion day, whichever is later" (SI 2020/1265
+  # art.2(2)): the items are alternative days, and the provisions come in on
+  # one of them, the later (or earlier); nil, the sentence read as before,
+  # where an item's day is not known ("the day before the day appointed by
+  # an Order in Council …": NISI 1999/662 reg.1(3); RULES
+  # `feed-differences-are-patterns-by-feed-coverage`, Decision 2)
+  @whichever ~r/\bwhichever\s+(?:is|occurs|comes|falls)\s+(?:the\s+)?(later|earlier|last|first|latest|earliest)\b/i
+
+  defp whichever(text) do
+    case Regex.run(@whichever, text) do
+      [_, which] ->
+        if String.downcase(which) in ["later", "last", "latest"], do: :later, else: :earlier
+
+      nil ->
+        nil
+    end
+  end
+
+  defp alternative_days(nil, _subject, _row, _rows, _made, _base), do: nil
+
+  defp alternative_days(which, subject, row, rows, made, base) do
+    items = item_groups(subject, row, rows, made, base)
+    dates = items |> List.flatten() |> Enum.map(& &1.date)
+
+    if length(items) >= 2 and Enum.all?(items, &(&1 != [])) and
+         Enum.all?(dates, &match?(%Date{}, &1)) do
+      day = if which == :later, do: Enum.max(dates, Date), else: Enum.min(dates, Date)
+
+      for g <- hd(items),
+          do: %{
+            g
+            | date: day,
+              treatment: :provision_dated,
+              evidence: row.section_id,
+              text: row.text
+          }
+    end
   end
 
   # items each bringing the head's provisions in for a purpose of their own,

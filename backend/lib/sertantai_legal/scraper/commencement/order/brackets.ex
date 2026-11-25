@@ -23,17 +23,16 @@ defmodule SertantaiLegal.Scraper.Commencement.Order.Brackets do
 
   # (after "both paragraphs", "each Article": "Article 3(3)(a) and 3(6)
   # (both paragraphs for the purposes of Article 40(5))", NISR 1999/325 Sch.1)
-  @bracket_qualifier ~r/\(\s*(?:(?:both|each|all)\s+(?:(?:sub-?)?paragraphs?|articles?|(?:sub-?)?sections?|regulations?|provisions?)\s+)?(?:(?:in\s*)?so\s*far|insofar|to\s+the\s+extent|for\s+the\s+purposes?\s+of)\b/i
+  # … or opening with its own exception: "83(1) (except in so far as it
+  # relates to section 24 of the Act), (3) (except as already in operation),
+  # (6) and (7)" (SI 1964/191 Sch.1 Pt III: s.83(1) partly, the rest fully)
+  @bracket_qualifier ~r/\(\s*(?:(?:both|each|all)\s+(?:(?:sub-?)?paragraphs?|articles?|(?:sub-?)?sections?|regulations?|provisions?)\s+)?(?:except\s+)?(?:(?:in\s*)?so\s*far|insofar|to\s+the\s+extent|for\s+the\s+purposes?\s+of|as\s+already\s+in\s+(?:operation|force))\b/i
 
   @doc "A line's items each with its own bracketed qualifier, as items; nil when the line has none."
   @spec bracket_items(String.t()) :: [tuple()] | nil
   def bracket_items(line) do
     with true <- Regex.match?(@bracket_qualifier, line),
-         [_, list | tail] <-
-           Regex.run(
-             ~r/^\W*(?:the\s+)?sections?\s+(\d.*?)(?:,?\s+of\s+the\s+(?:Act|[A-Z](?:[^()]|\([^()]*\))*?\s+Act\s+\d{4})\b(.*))?$/is,
-             line
-           ),
+         [_, list | tail] <- list_and_tail(line),
          false <-
            String.replace(list, ~r/\((?:[^()]|\([^()]*\))*\)/u, "") =~
              ~r/\b(?:Schedule|paragraph|Part)s?\b/,
@@ -62,6 +61,28 @@ defmodule SertantaiLegal.Scraper.Commencement.Order.Brackets do
       _ -> nil
     end
   end
+
+  @list ~r/^\W*(?:the\s+)?sections?\s+(\d.*?)(?:,?\s+of\s+the\s+(?:Act|[A-Z](?:[^()]|\([^()]*\))*?\s+Act\s+\d{4})\b(.*))?$/is
+  @worded ~r/\((?=[^()]*\s)(?:[^()]|\([^()]*\))*\)/u
+
+  # the list and what follows its Act, matched with the worded brackets
+  # masked: "of the Act" inside an item's own exception is no end of the
+  # list ("83(1) (except in so far as it relates to section 24 of the Act),
+  # (3) …": SI 1964/191)
+  defp list_and_tail(line) do
+    masked =
+      Regex.replace(@worded, line, fn m ->
+        "(" <> String.duplicate("x", byte_size(m) - 2) <> ")"
+      end)
+
+    case Regex.run(@list, masked, return: :index) do
+      nil -> nil
+      [whole | parts] -> [slice(line, whole) | Enum.map(parts, &slice(line, &1))]
+    end
+  end
+
+  defp slice(_line, {-1, _}), do: ""
+  defp slice(line, {at, len}), do: binary_part(line, at, len)
 
   # "162(2) (in so far as it relates to Part V of Schedule 16)": the
   # section partly, the Schedule's provisions it relates to fully

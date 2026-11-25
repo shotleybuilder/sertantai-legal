@@ -869,6 +869,28 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
       refute full.("s.162(2)")
     end
 
+    # an exception in a list's middle bounds its own item only (RULES
+    # `feed-differences-are-patterns-by-feed-coverage`, Decision 2: 1963
+    # c.41, whose feed is silent; SI 1964/191 Sch.1 Pt III)
+    test "an item's own exception: that item partly, the items after it fully (SI 1964/191)" do
+      rules =
+        Order.rules(
+          Doc.new("UK_uksi_1964_191", [
+            ~s|<Legislation><Secondary><Body><P1 id="article-2"><P1para><Text>Section 83(1) (except in so far as it relates to section 24 of the Act), (3) (except as already in operation), (6) and (7) of the Offices, Shops and Railway Premises Act 1963 shall come into force on 1st August 1964.</Text></P1para></P1></Body></Secondary></Legislation>|
+          ]),
+          %{
+            law: "UK_ukpga_1963_41",
+            title: "Offices, Shops and Railway Premises Act",
+            year: "1963"
+          }
+        )
+
+      full = &Enum.any?(rules, fn r -> &1 in List.wrap(r.scope) and Rule.full?(r) end)
+      partly = &Enum.any?(rules, fn r -> &1 in List.wrap(r.scope) and not Rule.full?(r) end)
+      assert partly.("s.83(1)") and not full.("s.83(1)")
+      assert full.("s.83(3)") and full.("s.83(6)") and full.("s.83(7)")
+    end
+
     test "N1: a qualifier after the date; N2: quoted words and another Act's provisions are not refs" do
       rules =
         epa_order(
