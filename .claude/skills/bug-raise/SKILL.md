@@ -69,7 +69,7 @@ Outside the pipeline, use the area as the step: "LAT parser", "Definitions", "Re
      status: open
    ```
    If the session has a `## Parking list`, add one line there too: `<step>: <class slug> — <one line>`.
-5. **GitHub, only when** the bug must outlive the workflow, needs someone outside it, or Jason asks:
+5. **GitHub, for every bug parked against another step** (Jason 2026-11-25: a bug only in the session index was missed when its step came round), and for one that must outlive the workflow, needs someone outside it, or Jason asks. A bug that needs that step to design something carries a design brief: the rule, the gap with one example, the reach measured, the options (not decided):
    ```bash
    gh issue create --title "<step>: <one-line pattern>" --label bug --label "step:<label>" --body "<pattern, example, affected, fix; session path>"
    ```
@@ -81,10 +81,11 @@ Outside the pipeline, use the area as the step: "LAT parser", "Definitions", "Re
 
 ## When the owning step reopens
 
-The step session's plan starts from its parked bugs:
+The step session's plan starts from its parked bugs, on GitHub and in the index:
 
 ```bash
+gh issue list --label "step:<label>" --state open
 sqlite3 .claude/sessions/sessions.db "SELECT pattern, affected, session_id FROM open_bugs WHERE step='<step>';"
 ```
 
-It fixes each bug or names it a known limit. The original entry is then marked `fixed`, or `moved` with a pointer.
+It fixes each bug or names it a known limit. The original entry is then marked `fixed`, or `moved` with a pointer, and its issue closed with the commit.

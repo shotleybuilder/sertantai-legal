@@ -78,7 +78,13 @@ When fixing a bug from a previous session, add a `bugs` entry with `status: fixe
 
 A session that runs one step of the LAT Change Pipeline for one family (steps and checks: `docs/lat-change-pipeline/WORKFLOW.md`). These rules come from the 2026-11-03 retrospective: two weeks on one family, sessions of 1,000+ lines, scope that grew mid-step, and pass rules that moved.
 
-1. **Plan mode first.** Enter plan mode before any work. The plan states:
+1. **Plan mode first.** Enter plan mode before any work. Before the plan is written, list what other steps parked for this one. Every item listed goes into the plan, as a todo, or as out of scope with a reason:
+   ```bash
+   gh issue list --label "step:<label>" --state open
+   sqlite3 .claude/sessions/sessions.db "SELECT pattern, affected, session_id FROM open_bugs WHERE step='<Step name>';"
+   ```
+   (Jason 2026-11-25: the Sources step missed a parked bug that was only in the session index.) The plan states:
+   - **Parked for this step:** each item above, with what the plan does with it.
    - **Aim:** one sentence, tied to `docs/lat-change-pipeline/AIMS.md`.
    - **Inputs and outputs:** tables and files read and written.
    - **Pass rule:** fixed now, and checked in code first (table rules, checked-row fixtures, catalogues, golden from inputs).

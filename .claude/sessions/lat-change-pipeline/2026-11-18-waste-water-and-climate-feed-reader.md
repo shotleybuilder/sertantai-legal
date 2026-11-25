@@ -159,6 +159,7 @@ bugs:
     fix: "Jason 2026-11-19: the monthly register pull is the trigger. For laws in the register, stamp each stored copy with the register's md_dct_valid_date at fetch and call it stale only when a pull moves that date past the stamp (no clock; unrevised laws like SI 1990/2226 have no dct:valid of their own, and an unrelated uk_lrt write on 2026-11-08 defeated the update-time test). Feeds are already checked by the register's change counts. Keep an age rule only for documents the register does not hold (most amending laws, orders), or refresh them in the monthly cycle. Sources.stale?/4, ClmlStore meta"
     step: Sources
     status: open
+    issue: 201
 artifacts:
   - backend/lib/sertantai_legal/scraper/change_vocabulary/readers/feed.ex
   - backend/lib/sertantai_legal/scraper/change_vocabulary/readers/feed_affecting.ex

@@ -2,6 +2,15 @@
 session: 'Commencement reader: feed differences as patterns'
 status: active
 opened: 2026-11-23
+bugs:
+  - pattern: "On a feed-covered law, the Reader's differing commencement and the feed's record stay separate changes, so the label takes the Reader's date against the feed rule (NISR 2011/127 reg.28: label 2011-04-08, feed 2014-01-01)"
+    category: feed-rule-not-built
+    module: "ChangeVocabulary.Merge (and Evidence §7 for amendment dates)"
+    affected: "about 200 rows in the 5 known-limit laws; up to 6,244 differing rows and 880 amendment dates on covered laws"
+    fix: "Design brief in the issue: options (a) feed first on covered laws, (b) on known-limit rows only, (c) no change with RULES reconciled"
+    step: Merge
+    status: open
+    issue: 200
 ---
 
 # Session: Commencement reader: feed differences as patterns (ACTIVE)
@@ -25,8 +34,8 @@ Today the 28 statuses in `feed_differences.json` are judged law by law ("one-law
 - ✅ Find: the coverage cut in code (`Commencement.FeedCoverage`, in `review/` so no build stamp moves), `lat.commencement_check --coverage`: 559 of 1,644 laws covered (21bb56d5; Decision 1 (a))
 - ✅ Find: the 8 wordings as named patterns (`Review.DifferencePatterns`, db2e4492), `mix lat.difference_patterns` over every law with LAT and 1,181 orders (7 s): 3 for the Reader, 4 known, 1 yardstick
 - ✅ Settle: re-judge each entry by its pattern's reach: 12 entries restatused (6 `fix:`, 6 `known:`), written on Jason's go (Decision 2 (a))
-- ⬜ Fix: each `fix:` wording in the Reader, TDD, previews and regression (over 3: a named follow-on session)
-- ⬜ Settle: the build follows the rule — Decision (a) feed first on covered laws / (b) on known patterns only / (c) no build change; reach measured first; cycle on go
+- ⬜ Fix: each `fix:` wording in the Reader, TDD (3 fixed, c61cc16a); pre-flight previews; then the `fix:` entries flipped
+- ✅ Settle: the build follows the rule — Decision 3 (c): no build change here; design brief to Merge (#200)
 - ⬜ Check: the feed gate and `Measures.FeedYardstick` print the coverage split
 - ⬜ Check and close: commencement checks (round + 4 switched), label gates, golden 27/27, RULES completed, step report
 
@@ -106,3 +115,38 @@ The 4 Sources entries and the 12 group-level entries don't change. Whether the b
 - **Options:** (a) write them as proposed; (b) change a verdict first.
 - **Recommendation:** (a). Each verdict rests on the pattern's measured reach, and the 3 fixes are within this session's limit.
 - **Decided: (a)**, Jason 2026-11-25. Written with `--rejudge --write`; the fixture is byte-identical to the dry run.
+
+## The fixes (todo 5)
+
+Three wordings are the Reader's; all three are fixed in one commit (c61cc16a), TDD, with the law_start, commencement, change vocabulary and architecture tests green (6,842) and the Credo diff clean.
+
+- **Provision tied to another law** (`LawStart.Input` `tied_dates`, `Clause.Staged.tied_refs/2`; `OwnClause` dates a tied group from it). The other law's provisions are dated by its own stored rules, else its feed; the latest of them; none if any is undated. SI 2006/641 reg.15 → 2018-01-01; SI 2020/1540 → 2020-12-31; SI 2025/878 → 2025-10-30.
+- **An item's own exception mid-list** (`Order.Brackets`: "(except …" is a bracket qualifier, the list's end found with worded brackets masked; `Words.full` takes "except as already in operation"). SI 1964/191 Sch.1 Pt III: s.83(1) partly, s.83(3), (6), (7) now read (they were lost). The Part's own "Except in relation to the premises …" (art.1) still bounds every item of the Schedule, so they stay "in relation to": that is the order's words.
+- **Alternative days, whichever** (`Provisions.Sentence`): the later or earlier of the items' days where every item is dated. SI 2020/1265 art.25 → 2020-12-31. NISI 1999/662 reg.1(3) has one day no source dates (an Order in Council's): it stays unread.
+
+Pre-flight (read-only): both catalogues, the own, orders and amending previews over the clause split's laws, and the patterns report → `backend/data/reports/commencement-reader/feed-differences/preflight/`.
+
+Pre-flight result: the own preview changes only SI 2006/641, SI 2020/1540 and SI 2020/1265; the orders preview only SI 1964/191 (+1 rule); the amending preview only SI 2020/1460 (reg.1(5), tied to SI 2019/1246 reg.10, dated by that law's Part 3 rule). The order catalogue is identical. The commencement catalogue moves only by the tied fix: 4 examples read differently alone than in their law (the other law's rules are not in the example), provision_dated 636 → 641, unread 125 → 124. SI 2025/878 holds LAT in no built family: read when its family is.
+
+The pre-flight caught one wrong reach: WSI 2016/413 reg.2(3), tied to the Education Act 1996 s.562J, took the 1996 Act's own start (1996-11-01), though s.562J was inserted later. A tied provision is now dated only by a rule naming it, never the other law's whole-law start (`Input.named_date/2`, f2a0edb2); it stays by order.
+
+The table pattern held two forms: an item's own bracketed exception mid-list (SI 1964/191, the feed silent: the Reader's, fixed) and NISR 2007/194's limit opening its own list (only where the feed speaks: known). Split into `table-row-exception-mid-list` and `table-row-long-exception` (24d72f73). Re-judge dry run: NISI 2006/3336's 4 entries `fix:` → `known:`; SI 2020/1265 and SI 2006/641 stay `fix:` until the cycle shows their differences gone. NISI 1999/662 reg.1(3) stays unread: one alternative day (an Order in Council's) is dated by no source.
+
+## Decision 3: does the build follow the rule? (todo 6)
+
+**Question.** RULES `feed-differences-are-patterns-by-feed-coverage` says that where the feed holds a law's commencement, the feed is the date unless the law's words prove it wrong. Should the build label those provisions from the feed?
+
+**Aim.** `binds-on-date`: the label answers "does it bind me on the date I pick".
+
+**What the build does today (measured from the stored claims).**
+- A law's own commencement: the Reader's change and the feed's change merge when they agree, on 11,193 changes, all with the same date. Where they differ, they are separate changes, so no date is chosen between them. The commencement check counts those rows by family: Environmental Protection 2,201; Fire 1,839; OH&S 181; Maritime Safety 11; Waste, Water and Climate 2,012. Most are inserted provisions, already judged by `inserted-differences-known-where-the-feed-dates`.
+- An amendment's date: 880 changes in about 60 laws have a commencement date and a feed date that differ (inserted 596, substituted 182, repealed 102). Evidence picks the commencement date (RULES §7 `primary-first-derived-fills`).
+
+**Options.**
+- (a) The feed first on every covered law. This is a new Merge rule (drop the Reader's differing commencement where the feed dates the row), plus an Evidence exception for the 880. It reaches thousands of rows, in the Merge and Evidence steps' code, and needs a cycle.
+- (b) The feed first only on the rows of the 5 `known:` patterns. These are NISR 2011/127, SI and WSI 2016/359, NISI 2006/3336, and 2003 c.37 and c.33: about 200 rows. This is also a Merge rule (the Merge step's code), keyed by named laws.
+- (c) No build change now. The rule decides what the Reader fixes, and the `known:` rows keep the Reader's label, each named in `feed_differences.json`. The rule's text is reconciled to say so. The labels of the 5 laws go to a named follow-on in the Merge step.
+
+**Decided (Jason 2026-11-25): (c) here.** Merge and build code is left to those steps, which take the design brief: issue #200 (labels `step:merge`, `step:evidence`). The step starts now list their step's open issues before planning (`session-start`, `bug-raise`), because a Sources bug parked only in the session index was missed (now issue #201).
+
+**Recommendation was: (c).** A differing commencement is a separate change, not a choice between two claims on one change. So neither (a) nor (b) is a change to this step: both are new Merge rules. (a) would also overturn §7 for 880 amendment dates that the inserted rule already judged. (b) is the narrow version, and it belongs in a Merge session, with its reach previewed there.
