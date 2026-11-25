@@ -54,8 +54,12 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Primary do
     # 4, Environmental Protection: Evidence)
     made = made(Enum.map(effects, & &1.affecting))
 
-    # each affecting law's own extent clause (Act or SI): read into `extent_rules`,
-    # else from its CLML held (named: `mix lat.amending --extents`)
+    # each affecting law's own extent clause (Act or SI), as read into
+    # `extent_rules` (`mix lat.amending --extents`). A law not read gives no
+    # extent here and makes the build stale (`Store.Inputs`, `:extent_reader`
+    # "not read"), never a reading from its text: that fallback put the whole
+    # extent reader in the build's stamp and its readings in no stamp (the
+    # Extent reader stamps session).
     acts =
       effects
       |> Enum.map(& &1.affecting)
@@ -65,24 +69,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Primary do
       |> Enum.uniq()
       |> Enum.filter(&ExtentStore.reads?/1)
 
-    stored = ExtentStore.for_laws(acts)
+    extents = ExtentStore.for_laws(acts)
+    unread = ExtentStore.unread(acts, extents)
 
-    # (the reading kept between runs: `Extent.ReadCache`, run time 2026-10-25)
-    unread =
-      for law <- acts,
-          not Map.has_key?(stored, law),
-          reading = SertantaiLegal.Scraper.AmendingLaw.Extent.ReadCache.law(law),
-          reading != nil,
-          into: %{},
-          do: {law, reading.read}
-
-    if unread != %{},
+    if unread != [],
       do:
         Logger.info(
-          "  #{map_size(unread)} Acts' extent clauses not in extent_rules (read from CLML): mix lat.amending --extents --law #{law}"
+          "  #{length(unread)} laws' extent not read (no extent_rules; their text is held): mix lat.amending --extents --amending #{Enum.join(unread, ",")}"
         )
-
-    extents = Map.merge(stored, unread)
 
     own = SertantaiLegal.Scraper.Commencement.Store.for_law(law)
 
@@ -133,7 +127,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Primary do
       rules: rules,
       commencement: commencement,
       extents: extents,
-      extents_unread: unread |> Map.keys() |> Enum.sort(),
+      extents_unread: unread,
       passed: passed,
       act_title: title && String.replace(title, ~r/\s*\(repealed[^)]*\)\s*$/i, ""),
       effect_uris: SertantaiLegal.Scraper.ChangeVocabulary.FeedUris.from_pages(pages),

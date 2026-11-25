@@ -10,7 +10,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.PartialReadsTest do
   alias SertantaiLegal.Scraper.AmendingLaw.Extent
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.Units
 
-  defp read(law, body), do: Extent.read(ExtentDoc.doc(law, body))
+  defp read(law, body), do: Extent.Reader.read(ExtentDoc.doc(law, body))
   defp p1(id, text), do: ExtentDoc.p1(id, text)
   defp sections(ns), do: Enum.map_join(ns, &p1("section-#{&1}", "Words."))
 

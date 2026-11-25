@@ -11,7 +11,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ExceptionsTest do
   alias SertantaiLegal.Scraper.AmendingLaw.Extent
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{ExceptionList, Excepting, Units}
 
-  defp read(law, body), do: Extent.read(ExtentDoc.doc(law, body))
+  defp read(law, body), do: Extent.Reader.read(ExtentDoc.doc(law, body))
   defp p1(id, text), do: ExtentDoc.p1(id, text)
   defp words(ns, kind \\ "section"), do: Enum.map_join(ns, &p1("#{kind}-#{&1}", "Words."))
   defp part(n, ids, kind \\ "section"), do: ~s(<Part id="part-#{n}">#{words(ids, kind)}</Part>)

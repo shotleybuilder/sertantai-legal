@@ -1,16 +1,16 @@
 defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadCache do
   @moduledoc """
   A law's extent reading, kept between runs (run time, 2026-10-25): its
-  `Extent.read/1`, its catalogue classes (`Patterns.classes/2`), the
-  catalogue's example with the classes it reads alone (`Patterns.example/1`,
-  `Patterns.read/2`), and the extent-ish sentences the catalogue misses
+  `Extent.Reader.withheld/1` (the statements and the catalogue classes,
+  `Patterns.classes/2`), the catalogue's example with the classes it reads
+  alone (`Patterns.Example.example/1`, `read/2`), and the extent-ish sentences the catalogue misses
   (`Sweep.uncaught/2`) — the work the extent catalogue, the check and the
   re-read share, done once per law and re-used until something it rests on
   changes.
 
-  Keyed by the code version (`Extent.ReadVersion`: the modules the reading
-  reaches, held by `VersionCoverageTest` — a change to any of them re-reads
-  every law, never a stale reading) and the law's stored text files (path
+  Keyed by the code version (`version/0`: the document reading's and the
+  catalogue's own stamps, held by `ExtentReadStampsTest` — a change to any
+  of their files re-reads every law, never a stale reading) and the law's stored text files (path
   and a digest of their bytes: a changed text is read again).
   Stored as one file per law under `data/cache/extent_reads/`; a law with
   no text held is not cached. Pure in what it returns: the reading is the
@@ -20,7 +20,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadCache do
   require Logger
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Extent}
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Patterns, ReadVersion, Store, Sweep, Unread}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Reader, Store, Sweep}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.ReadVersion.{Catalogue, Document}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns.Example
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
 
   @dir Path.join(["data", "cache", "extent_reads"])
@@ -74,13 +76,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadCache do
   def compute(law, files, doc \\ nil) do
     doc = doc || Doc.new(law, Enum.map(files, &(&1 |> File.read!() |> :zlib.gunzip())))
     {read, classes} = read_classes(doc)
-    example = if classes != [], do: Patterns.example(doc)
+    example = if classes != [], do: Example.example(doc)
 
     %{
       read: read,
       classes: classes,
       example: example,
-      alone: if(example, do: Patterns.read(law, example), else: []),
+      alone: if(example, do: Example.read(law, example), else: []),
       # the sentences the catalogue misses (CV-S05a)
       uncaught: Sweep.uncaught(doc, classes)
     }
@@ -99,27 +101,25 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadCache do
 
   @doc """
   The law's extent from its document, computed (never from the cache):
-  `Extent.read/1` with the bounds its unread statements withhold
-  (`Extent.Unread`, CV-S05 round 6).
+  `Extent.Reader.withheld/1`: the statements read, with the bounds the
+  unread ones withhold (`Extent.Unread`, CV-S05 round 6).
   """
   @spec read(Doc.t()) :: Extent.t()
   def read(%Doc{} = doc), do: doc |> read_classes() |> elem(0)
 
   # the statements read, the catalogue's classes of every sentence (read
   # against those statements), then the bounds the unread ones withhold
-  defp read_classes(doc) do
-    read = Extent.read(doc)
-    classes = Patterns.classes(doc, read)
-    {Unread.withheld(read, classes, doc), classes}
-  end
+  defp read_classes(doc), do: Reader.withheld(doc)
 
   @doc """
-  The code version: the extent reading's own (`Extent.ReadVersion`, the
-  modules it reaches), so an amendment-reader change leaves the cache warm
-  (run time 2026-10-26; it was a digest of every module of the app).
+  The code version: the document reading's (`ReadVersion.Document`) and
+  the catalogue's own (`ReadVersion.Catalogue`), so an amendment-reader
+  change, a powers change or a tool's leaves the cache warm (run time
+  2026-10-26; it was a digest of every module of the app, then the whole
+  extent folder until the Extent reader stamps session).
   """
   @spec version() :: String.t()
-  def version, do: ReadVersion.current()
+  def version, do: Document.current() <> "+" <> Catalogue.current()
 
   # each file's path and a digest of its stored bytes
   defp fingerprint(files), do: for(f <- files, do: {f, :erlang.md5(File.read!(f))})

@@ -5,12 +5,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Store do
   always matches its latest reading, and read back as an
   `AmendingLaw.Extent`. Each row is stamped with the reader code that read
   it (`Extent.ReadVersion`, #193). DB only — the reading is
-  `AmendingLaw.Extent`.
+  `Extent.Reader`, and the write with its powers placed is `Extent.Write`,
+  so the build's reads (`for_laws/1`) reach no reader code.
   """
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.Extent
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Powers, ReadVersion}
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.ReadVersion
+  alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
 
   @columns ~w(kind place items position source_law source_ref source_text amends)a
   # what `rows_for/1` reads back, compared before writing
@@ -30,45 +32,23 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Store do
   end
 
   @doc """
-  Store a law's extent as read (`Extent.read/1`), with what it extends to
-  where it states none — an SI's enabling powers, else its legislature's
-  competence (`Powers.with_powers/3`; `cached: true` never fetches) — as
-  `mix lat.extent_check` reads it. The one way `extent_rules` are written
-  (`ExtentWriteTest`): the amendment read pass once stored the bare
-  reading, wiping 482 laws' powers and competence rows (run time,
-  2026-10-26). Rows the same as stored are left as they are. Returns
-  `{:ok, count, extent}`, the extent stored.
+  Re-stamp a law's stored rows with this reader code, where they differ
+  (read again by it, the same: `Extent.Write`). `read_at` is kept, so no
+  rebuild follows.
   """
-  @spec write_read(String.t(), Extent.t(), keyword()) ::
-          {:ok, non_neg_integer(), Extent.t()}
-  def write_read(source_law, %Extent{} = read, opts \\ []) do
-    extent = Powers.with_powers(read, source_law, opts)
-
-    # (the same rows as stored: not written again — a full read pass after
-    # a reader change reads most laws' extent unchanged; run time 2026-10-26)
-    same? =
-      Map.get(rows_for([source_law]), source_law, []) |> MapSet.new() ==
-        extent |> Extent.to_rows(source_law) |> Enum.map(&Map.take(&1, @compared)) |> MapSet.new()
-
-    if same? do
-      # read again by this code, the same: stamped, read_at kept (no rebuild)
-      stamp(source_law)
-      {:ok, length(Extent.to_rows(extent, source_law)), extent}
-    else
-      {:ok, n} = write(source_law, extent)
-      {:ok, n, extent}
-    end
-  end
-
-  defp stamp(source_law) do
+  @spec stamp(String.t()) :: :ok
+  def stamp(source_law) do
     Repo.query!(
       "UPDATE extent_rules SET reader_version = $2 WHERE source_law = $1 AND reader_version IS DISTINCT FROM $2",
       [source_law, ReadVersion.current()]
     )
+
+    :ok
   end
 
-  # replace `source_law`'s extent rules with `extent`
-  defp write(source_law, %Extent{} = extent) do
+  @doc "Replace `source_law`'s extent rules with `extent`'s rows: `{:ok, count}`."
+  @spec write(String.t(), Extent.t()) :: {:ok, non_neg_integer()}
+  def write(source_law, %Extent{} = extent) do
     rows = Extent.to_rows(extent, source_law)
 
     Repo.transaction(fn ->
@@ -106,6 +86,19 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Store do
     |> Enum.group_by(&hd/1, fn [_, k, p, i, r, a] ->
       %{kind: k, place: p, items: i, source_ref: r, amends: a}
     end)
+  end
+
+  @doc """
+  Those of `laws` whose extent is not read (`extents`: `for_laws/1`'s) but
+  could be: their text is held. Sorted. A law read with nothing to say has
+  a `none` row, so absent is never "read, silent".
+  """
+  @spec unread([String.t()], %{String.t() => Extent.t()}) :: [String.t()]
+  def unread(laws, extents) do
+    laws
+    |> Enum.reject(&Map.has_key?(extents, &1))
+    |> Enum.filter(&(ClmlStore.law_files(&1) != []))
+    |> Enum.sort()
   end
 
   @doc "Each law's extent read, for those of `laws` read (absent: not read)."

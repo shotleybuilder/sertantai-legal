@@ -30,7 +30,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
   """
 
   setup do
-    %{extent: Extent.read(Doc.new("UK_ukpga_2005_15", [@doc_xml]))}
+    %{extent: Extent.Reader.read(Doc.new("UK_ukpga_2005_15", [@doc_xml]))}
   end
 
   test "the default, and the lists that widen, confine or defer it", %{extent: e} do
@@ -78,7 +78,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
 
   test "an Act read with no extent clause is one row, read back as no clause" do
     e =
-      Extent.read(
+      Extent.Reader.read(
         Doc.new("UK_ukpga_2099_1", [
           ~S(<Legislation><Primary><Body><P1 id="section-1"><P1para><Text>Words.</Text></P1para></P1></Body></Primary></Legislation>)
         ])
@@ -92,7 +92,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
   # one provision's text as a document
   defp clause(law, id, text),
     do:
-      Extent.read(
+      Extent.Reader.read(
         Doc.new(law, [
           ~s(<Legislation><Body><P1 id="#{id}"><P1para><Text>#{text}</Text></P1para></P1></Body></Legislation>)
         ])
@@ -302,7 +302,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
     """
 
     setup do
-      %{hswa: Extent.read(Doc.new("UK_ukpga_1974_37", [@hswa]))}
+      %{hswa: Extent.Reader.read(Doc.new("UK_ukpga_1974_37", [@hswa]))}
     end
 
     test "the Act: Great Britain", %{hswa: e} do
@@ -351,7 +351,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
           ~s(<P1 id="#{id}"><P1para><Text>#{text}</Text></P1para></P1>)
         end)
 
-      Extent.read(
+      Extent.Reader.read(
         Doc.new(law, ["<Legislation><Primary><Body>#{body}</Body></Primary></Legislation>"])
       )
     end
@@ -490,7 +490,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
   describe "defaults, lists and application read from the law's own words" do
     defp read_xml(law, body),
       do:
-        Extent.read(
+        Extent.Reader.read(
           Doc.new(law, ["<Legislation><Primary><Body>#{body}</Body></Primary></Legislation>"])
         )
 
@@ -793,7 +793,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
   describe "places joined, list order, a Part outside the clause, and qualified list items" do
     defp read2(law, body),
       do:
-        Extent.read(
+        Extent.Reader.read(
           Doc.new(law, ["<Legislation><Primary><Body>#{body}</Body></Primary></Legislation>"])
         )
 
@@ -965,7 +965,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
   describe "a Westminster Act extending to Northern Ireland, an application's own, a list's own extent over a same list" do
     defp read3(law, body),
       do:
-        Extent.read(
+        Extent.Reader.read(
           Doc.new(law, ["<Legislation><Primary><Body>#{body}</Body></Primary></Legislation>"])
         )
 
@@ -1053,7 +1053,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentTest do
   describe "same-extent wordings, lettered statements and compounds, an exception not parsed" do
     defp read4(law, body),
       do:
-        Extent.read(
+        Extent.Reader.read(
           Doc.new(law, ["<Legislation><Primary><Body>#{body}</Body></Primary></Legislation>"])
         )
 

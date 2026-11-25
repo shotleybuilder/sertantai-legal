@@ -143,7 +143,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.TargetedTest do
   describe "read from a document" do
     setup do
       doc = Doc.new("UK_ukpga_2005_15", [@socpa])
-      %{doc: doc, e: Extent.read(doc)}
+      %{doc: doc, e: Extent.Reader.read(doc)}
     end
 
     test "the paragraph's statement is a target, and its sentence read", %{doc: doc, e: e} do

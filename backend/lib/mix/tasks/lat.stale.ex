@@ -143,7 +143,8 @@ defmodule Mix.Tasks.Lat.Stale do
 
   @fixes [
     commencement_reader: "mix lat.commencement (the mode that wrote them), then build",
-    extent_reader: "mix lat.amending --extents --amending A,B, then build"
+    extent_reader:
+      "mix lat.amending --extents --amending A,B (laws on old code, or not read: their text held, no extent_rules), then build"
   ]
 
   # the change register: each built law's reasons, from its inputs taken again

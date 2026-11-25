@@ -44,7 +44,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentPatternsTest do
   setup_all do
     reads =
       load("laws")
-      |> Task.async_stream(fn {law, xml} -> {law, Patterns.read(law, xml)} end,
+      |> Task.async_stream(fn {law, xml} -> {law, Patterns.Example.read(law, xml)} end,
         timeout: :infinity,
         ordered: false
       )
@@ -102,12 +102,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.ExtentPatternsTest do
       assert %{kind: "extent", subject: "whole", verb: "extends", lead: "subject_to", only: true} =
                Patterns.form(s)
 
-      assert Extent.statement(s) == {:default, "E+W"}
+      assert Extent.Default.statement(s) == {:default, "E+W"}
 
-      assert Extent.statement("The following extend also to Scotland— sections 1 to 54;") ==
+      assert Extent.Default.statement("The following extend also to Scotland— sections 1 to 54;") ==
                {:list, :also, "S"}
 
-      assert Extent.statement(
+      assert Extent.Default.statement(
                "Before exercising the power in relation to an enactment which extends to Scotland, the Secretary of State must consult."
              ) == nil
     end

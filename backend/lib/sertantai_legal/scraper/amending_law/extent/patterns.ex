@@ -31,10 +31,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
     not every provision it names: `Extent.Credit`) — or `none` (the
     words, but no statement: "a provision which extends to Scotland").
 
-  An example is the law flattened to what the reading needs: each top-level
-  provision with these words, whole, and the Parts and sections around them
-  as empty shells in document order (`example/1`), read alone with
-  `classes/1`. Pure.
+  The catalogue's example of a law, and each sentence's pattern key, are
+  `Patterns.Example`'s: they shape no reading (`Extent.ReadVersion.Catalogue`),
+  while these classes are part of the stored reading (`Extent.Unread`
+  withholds the bounds the `unread:` ones name; `Extent.ReadVersion.Document`).
+  Pure.
   """
 
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Extent}
@@ -126,7 +127,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
   # already — never read twice: run time, CV-S05)
   @spec classes(Doc.t(), Extent.t() | nil) :: [{String.t(), String.t(), String.t()}]
   def classes(%Doc{} = doc, e \\ nil) do
-    e = e || Extent.read(doc)
+    e = e || Extent.Reader.read(doc)
 
     # a provision's territorial versions say the same once: each
     # sentence of a provision read at its first
@@ -161,7 +162,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
   end
 
   # a Schedule (or a Part of one) whose paragraphs are units of their own
-  defp container?(doc, id) do
+  @doc false
+  # (also the catalogue's example: `Patterns.Example`)
+  def container?(doc, id) do
     case Regex.run(~r/^(schedule(?:-\d+[A-Z]*)?)(?:-part(?:-[^-]+)?)?$/, id) do
       # (its Parts too: a repeals Schedule's "Part I", "Part II")
       [whole, sch | _] ->
@@ -186,7 +189,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
 
   # {class, whether the clause's default has been taken}
   defp outcome(s, ref, %Extent{} = e, %Doc{type: type} = doc, default_seen?) do
-    statement = Extent.statement(s, type)
+    statement = Extent.Default.statement(s, type)
     in_clause? = e.ref != nil and e.ref == ref
 
     cond do
@@ -339,11 +342,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
 
     items =
       items ||
-        case following != s and Extent.statement(following, doc.type) do
+        case following != s and Extent.Default.statement(following, doc.type) do
           {:list, k, p} -> Credit.list_class(following, ref, doc, e.lists, k, p, nil)
           _ -> nil
         end ||
-        case first && Extent.statement(first, doc.type) do
+        case first && Extent.Default.statement(first, doc.type) do
           {:list, k, p} -> Credit.list_class(first, ref, doc, e.lists, k, p, nil)
           _ -> nil
         end
@@ -449,74 +452,4 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Patterns do
       true -> "none"
     end
   end
-
-  @doc "The pattern key of one sentence: its form and outcome as one key."
-  @spec key(form(), String.t()) :: String.t()
-  def key(f, class) do
-    flag = fn b, name -> if b, do: name, else: "-" end
-
-    Enum.join(
-      [
-        f.kind,
-        f.subject,
-        f.verb,
-        f.lead,
-        "places:" <> f.places,
-        flag.(f.only, "only"),
-        flag.(f.also, "also"),
-        class
-      ],
-      "|"
-    )
-  end
-
-  @doc """
-  An example: the law flattened to what `Extent.read/1` reads — each
-  top-level provision speaking of extent or application, with its words,
-  and the Parts, their Chapters and top-level sections (regulations, articles) as empty
-  shells, all in document order — as XML.
-  """
-  @spec example(Doc.t()) :: String.t()
-  def example(%Doc{} = doc) do
-    words = Map.new(provisions(doc), fn {id, _ref, text} -> {id, text} end)
-
-    elements =
-      for id <- doc.ids,
-          {keep} = {Map.has_key?(words, id) and words?(words[id]) and not container?(doc, id)},
-          shell?(id) or keep,
-          do: element(doc, id, keep)
-
-    body = [{:Body, [], elements}]
-
-    [{:Legislation, [], [{:Primary, [], body}]}]
-    |> :xmerl.export_simple(:xmerl_xml, prolog: [])
-    |> :unicode.characters_to_binary()
-  end
-
-  # (a Part's Chapters too: "Chapter 1 of Part 3 … extends to …", CV-S05 NEW-A)
-  defp shell?(id),
-    do:
-      id =~
-        ~r/^(?:part-[^-]+(?:-chapter-[^-]+)?|(?:section|regulation|article|rule)-\d+[A-Z]*)$/
-
-  defp element(_doc, id, false), do: {:P1, [id: to_charlist(id)], []}
-
-  # the provision with its subsections, each whole (the units read)
-  defp element(doc, id, true) do
-    case Doc.children(doc, id) do
-      [] ->
-        {:P1, [id: to_charlist(id)], [text(doc, id)]}
-
-      children ->
-        {:P1, [id: to_charlist(id)],
-         for(c <- children, do: {:P2, [id: to_charlist(c)], [text(doc, c)]})}
-    end
-  end
-
-  defp text(doc, id),
-    do: {:Text, [], [doc |> Doc.element(id) |> Doc.lines() |> Enum.join(" ") |> to_charlist()]}
-
-  @doc "What the reader makes of an example (`example/1`'s XML) for `law`."
-  @spec read(String.t(), String.t()) :: [{String.t(), String.t(), String.t()}]
-  def read(law, xml), do: law |> Doc.new([xml]) |> classes()
 end

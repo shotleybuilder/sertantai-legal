@@ -168,7 +168,7 @@ defmodule Mix.Tasks.Lat.ExtentPatterns do
     acc =
       for {ref, s, class} <- classes, reduce: acc do
         acc ->
-          key = Patterns.key(Patterns.form(s), class)
+          key = Patterns.Example.key(Patterns.form(s), class)
           id = example_id(law, ref, s)
           entry = Map.get(acc.patterns, key, %{count: 0, examples: []})
           laws = Enum.map(entry.examples, &law_of/1)

@@ -28,6 +28,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Store.Inputs do
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.ReadVersion, as: ExtentReadVersion
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.Store, as: ExtentStore
   alias SertantaiLegal.Scraper.Commencement.Store, as: CommencementStore
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
 
@@ -63,7 +64,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Store.Inputs do
   The readers whose readings the build read are by other reader code, or
   were read before the code was recorded (`reader_version` nil):
   `:commencement_reader` (each rule's own read path's `Commencement.ReadVersion`), `:extent_reader`
-  (`Extent.ReadVersion`). Taken now, never recorded. The amending laws' own
+  (`Extent.ReadVersion`, or a law whose extent the build would read with
+  its text held but no `extent_rules`: not read, so the build has no extent
+  from it; the Extent reader stamps session). Taken now, never recorded. The amending laws' own
   rules need no reason: the build reads a stale one from its text
   (`Primary.primary/2`).
   """
@@ -77,13 +80,23 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Store.Inputs do
        other_code?("extent_rules WHERE source_law = ANY($1)", [
          extended(affecting, sources),
          ExtentReadVersion.current()
-       ])}
+       ]) or extent_unread?(extended(affecting, sources))}
     ]
     |> Enum.filter(&elem(&1, 1))
     |> Enum.map(&elem(&1, 0))
   end
 
   defp commenced(law, sources), do: Enum.uniq([law | sources])
+
+  # a law the build would read the extent of, its text held, never read
+  defp extent_unread?(laws) do
+    Repo.query!(
+      "SELECT l FROM unnest($1::text[]) l WHERE NOT EXISTS (SELECT 1 FROM extent_rules WHERE source_law = l)",
+      [Enum.filter(laws, &ExtentStore.reads?/1)]
+    ).rows
+    |> Enum.any?(fn [l] -> ClmlStore.law_files(l) != [] end)
+  end
+
   defp extended(affecting, sources), do: Enum.uniq(affecting ++ sources)
 
   # each rule against its own read path's version (`CommencementStore.stale_condition/1`)

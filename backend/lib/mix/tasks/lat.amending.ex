@@ -208,7 +208,7 @@ defmodule Mix.Tasks.Lat.Amending do
       parents,
       fn p ->
         {:ok, _, _} =
-          Extent.Store.write_read(p, Extent.ReadCache.law(p).read, cached: opts[:cached])
+          Extent.Write.write_read(p, Extent.ReadCache.law(p).read, cached: opts[:cached])
       end,
       fn _, _ -> :ok end,
       workers: workers
@@ -239,7 +239,7 @@ defmodule Mix.Tasks.Lat.Amending do
     # the reading kept between runs (`Extent.ReadCache`, shared with the
     # catalogue and the check)
     {:ok, n, e} =
-      Extent.Store.write_read(a, Extent.ReadCache.law(a).read, cached: cached)
+      Extent.Write.write_read(a, Extent.ReadCache.law(a).read, cached: cached)
 
     stated =
       cond do

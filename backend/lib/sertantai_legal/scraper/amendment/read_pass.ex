@@ -154,7 +154,7 @@ defmodule SertantaiLegal.Scraper.Amendment.ReadPass do
           nil -> Extent.ReadCache.read(doc)
         end
 
-      {:ok, _, _} = Extent.Store.write_read(amending, read, cached: true)
+      {:ok, _, _} = Extent.Write.write_read(amending, read, cached: true)
     end
 
     :ok = Index.write(amending, doc, r.laws, pointer_keys(r.refs))

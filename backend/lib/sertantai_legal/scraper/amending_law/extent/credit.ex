@@ -140,7 +140,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Credit do
 
     found =
       for item <- items do
-        case Extent.statement(item, doc.type) do
+        case Extent.Default.statement(item, doc.type) do
           {:list, kind, place} ->
             cond do
               list_read?(item, ref, doc, lists, kind, place) -> "list:#{kind}:#{place || "same"}"

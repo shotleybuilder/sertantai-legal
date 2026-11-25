@@ -49,6 +49,7 @@ defmodule Mix.Tasks.Lat.Scope do
   use Mix.Task
 
   alias SertantaiLegal.Repo
+  alias SertantaiLegal.Scraper.EnactedBy.EnablingCache
   alias SertantaiLegal.Scraper.LatArchive
   alias SertantaiLegal.Scraper.LatScope
   alias SertantaiLegal.Scraper.LatScope.Relevance
@@ -57,8 +58,6 @@ defmodule Mix.Tasks.Lat.Scope do
   alias SertantaiLegal.Scraper.LiveStatus.EffectsBackfill
 
   @shortdoc "Set a law's scoped LAT fragments (#166)"
-
-  @enabling_cache Path.join(["data", "cache", "enabling"])
 
   # Fragments named per Act, on top of the Parts its in-family SIs cite.
   # Each is confirmed with Jason before it is applied (2026-10-07).
@@ -134,8 +133,8 @@ defmodule Mix.Tasks.Lat.Scope do
 
     wanted =
       for name <- names,
-          {:ok, json} <- [File.read(Path.join(@enabling_cache, name <> ".json"))],
-          p <- Jason.decode!(json),
+          {:ok, ps} <- [EnablingCache.cached(name)],
+          p <- ps,
           reduce: %{} do
         acc ->
           Map.update(

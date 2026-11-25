@@ -6,7 +6,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.AppliesTest do
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Applies, Excepted, Lookup, Rows, Same, Units}
   alias SertantaiLegal.Scraper.ApplicationClause
 
-  defp read(law, body), do: Extent.read(ExtentDoc.doc(law, body))
+  defp read(law, body), do: Extent.Reader.read(ExtentDoc.doc(law, body))
   defp words(ns, kind), do: Enum.map_join(ns, &p1("#{kind}-#{&1}", "Words."))
   defp rows(e, kind), do: for({^kind, place, refs} <- e.lists ++ e.applies, do: {place, refs})
 

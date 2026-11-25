@@ -66,9 +66,9 @@ defmodule SertantaiLegal.Scraper.Checks.ExtentShapes.Verdicts do
         {:list, Named.named_kind(m), Places.places(m["places"])}
 
       true ->
-        case Extent.statement(item, doc.type) do
+        case Extent.Default.statement(item, doc.type) do
           {:list, _, _} = s -> s
-          _ -> Extent.statement(sentence, doc.type)
+          _ -> Extent.Default.statement(sentence, doc.type)
         end
     end
   end

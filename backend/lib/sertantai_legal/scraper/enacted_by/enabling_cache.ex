@@ -2,14 +2,16 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingCache do
   @moduledoc """
   An SI's enabling provisions, fetched from its made introduction (never
   the body; a revoked SI's asked for by version: CV-07), parsed by `EnactedBy.EnablingProvisions` and cached in
-  `data/cache/enabling/<law>.json`.
+  `data/cache/enabling/<law>.json` with the parser that wrote it
+  (`ParserVersion`: `{"parser", "provisions"}`).
 
   Shared by `mix live.enabling` (enabling-extent evidence) and `mix lat.scope
   --relevance` (#166: which Parts of a large Act its SIs are made under).
   """
 
   alias SertantaiLegal.Scraper.EnactedBy
-  alias SertantaiLegal.Scraper.EnactedBy.EnablingProvisions
+  alias SertantaiLegal.Scraper.EnactedBy.{EnablingProvisions, IntroductionXml}
+  alias SertantaiLegal.Scraper.EnactedBy.EnablingCache.ParserVersion
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
 
   @cache Path.join(["data", "cache", "enabling"])
@@ -17,30 +19,59 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingCache do
   @doc """
   The cached provisions for `name`, fetching (and caching) them on a miss.
   `retry_empty: true` fetches again where none were parsed before (the
-  parser has since learnt a form: CV-07, Acts named in plain words).
+  parser has since learnt a form: CV-07, Acts named in plain words). An
+  entry parsed by older code (`ParserVersion`) is re-parsed from the
+  introduction held first, never fetched. `:dir`: the cache (tests).
   """
   @spec get(String.t(), keyword()) :: [map()]
   def get(name, opts \\ []) do
-    path = Path.join(@cache, name <> ".json")
-
-    case File.read(path) do
-      {:ok, json} when json != "[]" ->
-        Jason.decode!(json)
-
-      {:ok, _empty} ->
-        if opts[:retry_empty], do: store(path, fetch(name)), else: []
-
-      _ ->
-        store(path, fetch(name))
+    case entry(name, opts) do
+      {:current, []} -> if opts[:retry_empty], do: store(name, fetch(name), opts), else: []
+      {:current, ps} -> ps
+      {:behind, ps} -> name |> refresh(ps, opts) |> retry(name, opts)
+      :none -> store(name, fetch(name), opts)
     end
   end
 
-  @doc "The cached provisions for `name`, never fetching: `{:ok, provisions}` or `:none`."
-  @spec cached(String.t()) :: {:ok, [map()]} | :none
-  def cached(name) do
-    case File.read(Path.join(@cache, name <> ".json")) do
-      {:ok, json} -> {:ok, Jason.decode!(json)}
+  defp retry([], name, opts),
+    do: if(opts[:retry_empty], do: store(name, fetch(name), opts), else: [])
+
+  defp retry(ps, _name, _opts), do: ps
+
+  @doc """
+  The cached provisions for `name`, never fetching: `{:ok, provisions}` or
+  `:none`. An entry parsed by older code is re-parsed from the introduction
+  held (kept as it was where none is held). `:dir`: the cache (tests).
+  """
+  @spec cached(String.t(), keyword()) :: {:ok, [map()]} | :none
+  def cached(name, opts \\ []) do
+    case entry(name, opts) do
+      {:current, ps} -> {:ok, ps}
+      {:behind, ps} -> {:ok, refresh(name, ps, opts)}
+      :none -> :none
+    end
+  end
+
+  # an entry and whether this parser wrote it: a bare list was written
+  # before entries recorded their parser (the Extent reader stamps session)
+  defp entry(name, opts) do
+    case File.read(path(name, opts)) do
+      {:ok, json} -> json |> Jason.decode!() |> current()
       _ -> :none
+    end
+  end
+
+  defp current(%{"parser" => v, "provisions" => ps}) do
+    if v == ParserVersion.current(), do: {:current, ps}, else: {:behind, ps}
+  end
+
+  defp current(ps) when is_list(ps), do: {:behind, ps}
+
+  # re-parsed from the introduction held; where none is, as cached
+  defp refresh(name, old, opts) do
+    case reparse(name, opts) do
+      {:ok, ps} -> ps
+      :not_held -> old
     end
   end
 
@@ -85,10 +116,10 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingCache do
   Re-parses the cached provisions from the held introduction (`from_store/1`)
   and writes them: `{:ok, provisions}`, or `:not_held` (the cache untouched).
   """
-  @spec reparse(String.t()) :: {:ok, [map()]} | :not_held
-  def reparse(name) do
+  @spec reparse(String.t(), keyword()) :: {:ok, [map()]} | :not_held
+  def reparse(name, opts \\ []) do
     case from_store(name) do
-      {:ok, ps} -> {:ok, store(Path.join(@cache, name <> ".json"), ps)}
+      {:ok, ps} -> {:ok, store(name, ps, opts)}
       :not_held -> :not_held
     end
   end
@@ -105,7 +136,7 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingCache do
 
   defp stored_enacting(path) do
     case ClmlStore.get(path) do
-      {:ok, xml, _meta} -> {:ok, EnactedBy.parse_enacting_xml(xml)}
+      {:ok, xml, _meta} -> {:ok, IntroductionXml.parse(xml)}
       _ -> :none
     end
   end
@@ -116,9 +147,13 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingCache do
     |> Enum.map(&%{"law" => &1.law, "sections" => &1.sections, "schedules" => &1.schedules})
   end
 
-  defp store(path, ps) do
-    File.mkdir_p!(@cache)
-    File.write!(path, Jason.encode!(ps))
+  defp path(name, opts), do: Path.join(Keyword.get(opts, :dir, @cache), name <> ".json")
+
+  # with the parser that wrote it (`ParserVersion`)
+  defp store(name, ps, opts) do
+    path = path(name, opts)
+    File.mkdir_p!(Path.dirname(path))
+    File.write!(path, Jason.encode!(%{"parser" => ParserVersion.current(), "provisions" => ps}))
     ps
   end
 

@@ -10,7 +10,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.StoreInputsDbTest do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.ChangeStaleness
   alias SertantaiLegal.Scraper.AmendingLaw.Extent
-  alias SertantaiLegal.Scraper.AmendingLaw.Extent.Store, as: ExtentStore
+  alias SertantaiLegal.Scraper.AmendingLaw.Extent.Write, as: ExtentWrite
   alias SertantaiLegal.Scraper.ChangeVocabulary.{Store, Version}
   alias SertantaiLegal.Scraper.Commencement.Rule
   alias SertantaiLegal.Scraper.Commencement.Store, as: CommencementStore
@@ -115,7 +115,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.StoreInputsDbTest do
       law = law()
       act = "UK_ukpga_2099_7004"
       e = %Extent{default: "E+W", ref: "s.9", text: "This Act extends to England and Wales."}
-      {:ok, _, _} = ExtentStore.write_read(act, e, cached: true)
+      {:ok, _, _} = ExtentWrite.write_read(act, e, cached: true)
       assert Store.Inputs.readers(law, [act], []) == []
 
       age("extent_rules", act, "0000older000")
@@ -123,7 +123,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.StoreInputsDbTest do
       assert Store.Inputs.readers(law, [], [act]) == [:extent_reader]
 
       read_at = Store.Inputs.of(law, [act], []).extent_rules
-      {:ok, _, _} = ExtentStore.write_read(act, e, cached: true)
+      {:ok, _, _} = ExtentWrite.write_read(act, e, cached: true)
       assert Store.Inputs.readers(law, [act], []) == []
       assert Store.Inputs.of(law, [act], []).extent_rules == read_at
     end

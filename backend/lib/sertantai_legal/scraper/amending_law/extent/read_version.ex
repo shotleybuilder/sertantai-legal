@@ -1,38 +1,43 @@
 defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.ReadVersion do
   @moduledoc """
-  The version of the code a law's extent reading depends on (`SourceVersion`):
-  the extent reader, its catalogue classes (`Extent.Patterns`) and the
-  document readers they use — never the amendment reader, so a change to it
-  leaves `Extent.ReadCache` warm (run time 2026-10-26: the read pass re-read
-  every law's extent after each reader change, 40% of a write pass).
-  `CommencementReadStampsTest` holds it to exactly what its files reach:
-  none of the commencement readers, only the ref and sentence helpers they
-  share (`ClmlRef`, `LawStart.Sentences`; the Commencement reader staleness
-  session).
+  The version of the code a law's stored extent rules depend on
+  (`SourceVersion`), stamped on each `extent_rules` row (#193): the
+  document reading (`ReadVersion.Document`, `Extent.Reader`'s reach) and
+  the placement of an SI's powers and a silent Act's stated extent
+  (`Extent.Powers`, `Extent.StatedExtent`), with the powers parser whose
+  cached provisions they place (`EnablingCache.ParserVersion`) — what
+  `Extent.Write` stores.
+  Never the catalogue's own code (`ReadVersion.Catalogue`), the store,
+  the cache or the step's tools, so an edit to those stales no reading;
+  never the amendment reader. `ExtentReadStampsTest` holds it to exactly
+  what `Extent.Reader` and `Extent.Powers` reach, and the parser's files (the Extent reader stamps
+  session; before it, `extent/*.ex` by glob: any edit there staled every
+  reading and every build).
   """
 
+  alias __MODULE__.Document
+  alias SertantaiLegal.Scraper.EnactedBy.EnablingCache.ParserVersion
+
+  @placement ~w(
+    lib/sertantai_legal/scraper/amending_law/extent/powers.ex
+    lib/sertantai_legal/scraper/amending_law/extent/stated_extent.ex
+  )
+
   use SertantaiLegal.Scraper.SourceVersion,
-    # its own folder, and outside it each file it reaches, by name
-    # (`CommencementReadStampsTest`: exactly its reach)
-    patterns: ~w(
-      lib/sertantai_legal/scraper/amending_law/extent.ex
-      lib/sertantai_legal/scraper/amending_law/extent/*.ex
-      lib/sertantai_legal/scraper/amending_law/doc.ex
-      lib/sertantai_legal/scraper/amending_law/doc/list_items.ex
-      lib/sertantai_legal/scraper/amending_law/ref_list.ex
-      lib/sertantai_legal/scraper/amending_law/schedule_refs.ex
-      lib/sertantai_legal/scraper/amending_law/sub_path.ex
-      lib/sertantai_legal/scraper/application_clause.ex
-      lib/sertantai_legal/scraper/commencement/clml_ref.ex
-      lib/sertantai_legal/scraper/lat_parser/xml.ex
-      lib/sertantai_legal/scraper/law_start/sentences.ex
-      lib/sertantai_legal/scraper/territory.ex
-    ),
-    # the step's check (its tallies reach the change vocabulary's measures)
-    # and its family gate (the commencement gate's statuses), never what an
-    # extent reading depends on
-    except: ~w(
-      lib/sertantai_legal/scraper/amending_law/extent/check.ex
-      lib/sertantai_legal/scraper/amending_law/extent/withheld.ex
+    patterns: Document.patterns() ++ @placement ++ ParserVersion.patterns()
+
+  @doc """
+  Where a read path ends, for the coverage tests: the store, the write,
+  the cache and the stamps themselves, which shape no reading.
+  """
+  @spec boundaries() :: [String.t()]
+  def boundaries,
+    do: ~w(
+      lib/sertantai_legal/scraper/amending_law/extent/store.ex
+      lib/sertantai_legal/scraper/amending_law/extent/write.ex
+      lib/sertantai_legal/scraper/amending_law/extent/read_cache.ex
+      lib/sertantai_legal/scraper/amending_law/extent/read_version.ex
+      lib/sertantai_legal/scraper/amending_law/extent/read_version/document.ex
+      lib/sertantai_legal/scraper/amending_law/extent/read_version/catalogue.ex
     )
 end

@@ -5,7 +5,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.NamedTest do
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{Named, Units}
   alias SertantaiLegal.Scraper.AmendingLaw.Extent
 
-  defp read(law, body), do: Extent.read(ExtentDoc.doc(law, body))
+  defp read(law, body), do: Extent.Reader.read(ExtentDoc.doc(law, body))
   defp p1(id, text), do: ExtentDoc.p1(id, text)
   defp rows(e, kind), do: for({^kind, place, refs} <- e.lists ++ e.applies, do: {place, refs})
 

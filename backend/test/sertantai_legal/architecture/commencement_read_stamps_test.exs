@@ -6,7 +6,8 @@ defmodule SertantaiLegal.Architecture.CommencementReadStampsTest do
   only the clauses', and a tool module beside them nothing. And the build's
   and the extent reader's stamps hold none of the order reader, so an
   orders fix stales no build or extent reading by itself (the Commencement
-  reader staleness session). Reach as in `StageSplitTest`.
+  reader staleness session). Reach as in `StageSplitTest`. The extent
+  reader's own stamps: `ExtentReadStampsTest`.
   """
   use ExUnit.Case, async: true
 
@@ -48,19 +49,6 @@ defmodule SertantaiLegal.Architecture.CommencementReadStampsTest do
       # stamped, never reached: take out of its list
       assert diff(files(unquote(version)), reached) == []
     end
-  end
-
-  test "the extent reader's stamp is exactly what its reader reaches" do
-    entry = ExtentVersion.files() |> Enum.map(&Path.relative_to_cwd/1)
-
-    own =
-      for f <- entry,
-          String.starts_with?(f, "lib/sertantai_legal/scraper/amending_law/extent"),
-          do: f
-
-    reached = own |> ModuleReach.reach(@io) |> MapSet.difference(MapSet.new(@io))
-    assert diff(reached, files(ExtentVersion)) == []
-    assert diff(files(ExtentVersion), reached) == []
   end
 
   test "each treatment is stamped by its own read path" do

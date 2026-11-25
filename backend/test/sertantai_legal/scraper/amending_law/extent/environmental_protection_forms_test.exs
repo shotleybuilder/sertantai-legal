@@ -8,7 +8,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.EnvironmentalProtectionForms
   alias SertantaiLegal.ExtentDoc
   alias SertantaiLegal.Scraper.AmendingLaw.Extent
 
-  defp read(law, body), do: Extent.read(ExtentDoc.doc(law, body))
+  defp read(law, body), do: Extent.Reader.read(ExtentDoc.doc(law, body))
   defp sections(ns), do: Enum.map_join(ns, &ExtentDoc.p1("section-#{&1}", "Words."))
 
   defp p2s(n, subs) do

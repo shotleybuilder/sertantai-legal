@@ -14,38 +14,9 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedPatterns.Version do
       lib/sertantai_legal/scraper/amending_law/doc.ex
       lib/sertantai_legal/scraper/amending_law/doc/*.ex
       lib/sertantai_legal/scraper/amending_law/extent.ex
-      lib/sertantai_legal/scraper/amending_law/extent/amended_excepted.ex
-      lib/sertantai_legal/scraper/amending_law/extent/amends.ex
-      lib/sertantai_legal/scraper/amending_law/extent/application.ex
-      lib/sertantai_legal/scraper/amending_law/extent/applies.ex
-      lib/sertantai_legal/scraper/amending_law/extent/asides.ex
       lib/sertantai_legal/scraper/amending_law/extent/change_target.ex
-      lib/sertantai_legal/scraper/amending_law/extent/default.ex
-      lib/sertantai_legal/scraper/amending_law/extent/excepted.ex
-      lib/sertantai_legal/scraper/amending_law/extent/excepting.ex
-      lib/sertantai_legal/scraper/amending_law/extent/exception_list.ex
-      lib/sertantai_legal/scraper/amending_law/extent/forms.ex
-      lib/sertantai_legal/scraper/amending_law/extent/item_exceptions.ex
-      lib/sertantai_legal/scraper/amending_law/extent/list_items.ex
-      lib/sertantai_legal/scraper/amending_law/extent/lists.ex
       lib/sertantai_legal/scraper/amending_law/extent/lookup.ex
-      lib/sertantai_legal/scraper/amending_law/extent/makes_following.ex
-      lib/sertantai_legal/scraper/amending_law/extent/named.ex
-      lib/sertantai_legal/scraper/amending_law/extent/nested_locators.ex
-      lib/sertantai_legal/scraper/amending_law/extent/own_paragraph.ex
-      lib/sertantai_legal/scraper/amending_law/extent/part_lead.ex
-      lib/sertantai_legal/scraper/amending_law/extent/parts.ex
-      lib/sertantai_legal/scraper/amending_law/extent/places.ex
-      lib/sertantai_legal/scraper/amending_law/extent/qualified_items.ex
       lib/sertantai_legal/scraper/amending_law/extent/rows.ex
-      lib/sertantai_legal/scraper/amending_law/extent/same.ex
-      lib/sertantai_legal/scraper/amending_law/extent/same_exceptions.ex
-      lib/sertantai_legal/scraper/amending_law/extent/schedule_rest.ex
-      lib/sertantai_legal/scraper/amending_law/extent/schedule_words.ex
-      lib/sertantai_legal/scraper/amending_law/extent/statements.ex
-      lib/sertantai_legal/scraper/amending_law/extent/subdivisions.ex
-      lib/sertantai_legal/scraper/amending_law/extent/targeted.ex
-      lib/sertantai_legal/scraper/amending_law/extent/units.ex
       lib/sertantai_legal/scraper/amending_law/pointer.ex
       lib/sertantai_legal/scraper/amending_law/ref_list.ex
       lib/sertantai_legal/scraper/amending_law/schedule_refs.ex
