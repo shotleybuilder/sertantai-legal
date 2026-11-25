@@ -1,13 +1,26 @@
 ---
 session: 'Extent reader: Census Mix Task'
-status: pending
+status: closed
 opened: '2026-10-28'
-parent: archive/change-vocabulary/2026-10-22-cv-s05-extent-reader.md
+closed: '2026-11-25'
+outcome: deferred
+summary: >
+  Superseded. The census was delivered as `mix lat.extent_census` by the session "Extent census as a task (#192)" (2026-11-07), proven byte for byte against run-07. Its three leftovers (a `--family` population, the noise-bin audit, the census in the skill's steps) moved to the pending session "Extent reader: step procedures" (Extent reader readiness review, 2026-11-25).
+decisions:
+  - what: Closed as superseded, leftovers moved
+    why: the task exists; the rest is step procedure work, decided in the readiness review
+    result: three todos in 2026-11-25-extent-reader-step-procedures.md
+lessons: []
+bugs: []
+artifacts: []
 depends_on:
-  - archive/change-vocabulary/2026-10-27-cv-s05d-whole-reader-census.md
+  - 2026-11-07-extent-census-as-a-task
+enables:
+  - "Extent reader: step procedures"
+parent: archive/change-vocabulary/2026-10-22-cv-s05-extent-reader.md
 ---
 
-# Session: Extent reader: Census Mix Task (PENDING)
+# Session: Extent reader: Census Mix Task (CLOSED)
 
 ## Problem
 
@@ -25,3 +38,7 @@ CV-S05d's whole-reader census found the extent reader's long-tail misreads by co
 ## Dependencies
 
 - ✅ CV-S05d Whole-Reader Census (closed): prototype, run-01 to run-06, triage format
+
+## Close (2026-11-25)
+
+Superseded by `mix lat.extent_census` (`2026-11-07-extent-census-as-a-task.md`). The `--family` population, the noise-bin audit and the census in the skill's steps are todos in `2026-11-25-extent-reader-step-procedures.md`. The agreement-with-run-06 acceptance was replaced by run-07 parity.
