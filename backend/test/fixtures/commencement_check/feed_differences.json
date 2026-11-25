@@ -21,11 +21,11 @@
   },
   "differ | own dated by order_schedule | own earlier @ UK_nisi_2006_3336": {
     "owner": "Commencement reader",
-    "status": "fix: the pattern table-row-long-exception is held where the feed holds no commencement (1 laws; 1 where it does), so the Reader is the source and reads it (RULES `feed-differences-are-patterns-by-feed-coverage`; Jason 2026-11-24, Decision 1 (a)): NISR 2007/194 Sch.1 Pt II, its rows' long exceptions read as the whole item partly, or swallowing the rest of the list; the order is post-2002 and the feed dates them"
+    "status": "known: the pattern table-row-long-exception is held only where the feed holds the commencement (1 laws), so the feed is the date (RULES `feed-differences-are-patterns-by-feed-coverage`; Jason 2026-11-24, Decision 1 (a)): NISR 2007/194 Sch.1 Pt II, its rows' long exceptions read as the whole item partly, or swallowing the rest of the list; the order is post-2002 and the feed dates them"
   },
   "differ | own dated by order_schedule | own later @ UK_nisi_2006_3336": {
     "owner": "Commencement reader",
-    "status": "fix: the pattern table-row-long-exception is held where the feed holds no commencement (1 laws; 1 where it does), so the Reader is the source and reads it (RULES `feed-differences-are-patterns-by-feed-coverage`; Jason 2026-11-24, Decision 1 (a)): NISR 2007/194 Sch.1 Pt II, its rows' long exceptions read as the whole item partly, or swallowing the rest of the list; the order is post-2002 and the feed dates them"
+    "status": "known: the pattern table-row-long-exception is held only where the feed holds the commencement (1 laws), so the feed is the date (RULES `feed-differences-are-patterns-by-feed-coverage`; Jason 2026-11-24, Decision 1 (a)): NISR 2007/194 Sch.1 Pt II, its rows' long exceptions read as the whole item partly, or swallowing the rest of the list; the order is post-2002 and the feed dates them"
   },
   "feed_only | own by_order by by_order | feed full @ UK_nisi_1997_2778": {
     "owner": "Sources",
@@ -33,7 +33,7 @@
   },
   "feed_only | own by_order by by_order | feed full @ UK_nisi_2006_3336": {
     "owner": "Commencement reader",
-    "status": "fix: the pattern table-row-long-exception is held where the feed holds no commencement (1 laws; 1 where it does), so the Reader is the source and reads it (RULES `feed-differences-are-patterns-by-feed-coverage`; Jason 2026-11-24, Decision 1 (a)): NISR 2007/194 Sch.1 Pt II, its rows' long exceptions read as the whole item partly, or swallowing the rest of the list; the order is post-2002 and the feed dates them"
+    "status": "known: the pattern table-row-long-exception is held only where the feed holds the commencement (1 laws), so the feed is the date (RULES `feed-differences-are-patterns-by-feed-coverage`; Jason 2026-11-24, Decision 1 (a)): NISR 2007/194 Sch.1 Pt II, its rows' long exceptions read as the whole item partly, or swallowing the rest of the list; the order is post-2002 and the feed dates them"
   },
   "feed_only | own by_order by by_order | feed partial @ UK_nisi_2006_3336": {
     "owner": "Sources",
@@ -49,7 +49,7 @@
   },
   "feed_only | own by_order_partly by by_order | feed full @ UK_nisi_2006_3336": {
     "owner": "Commencement reader",
-    "status": "fix: the pattern table-row-long-exception is held where the feed holds no commencement (1 laws; 1 where it does), so the Reader is the source and reads it (RULES `feed-differences-are-patterns-by-feed-coverage`; Jason 2026-11-24, Decision 1 (a)): NISR 2007/194 Sch.1 Pt II, its rows' long exceptions read as the whole item partly, or swallowing the rest of the list; the order is post-2002 and the feed dates them"
+    "status": "known: the pattern table-row-long-exception is held only where the feed holds the commencement (1 laws), so the feed is the date (RULES `feed-differences-are-patterns-by-feed-coverage`; Jason 2026-11-24, Decision 1 (a)): NISR 2007/194 Sch.1 Pt II, its rows' long exceptions read as the whole item partly, or swallowing the rest of the list; the order is post-2002 and the feed dates them"
   },
   "feed_only | own by_order_partly by by_order | feed full @ UK_ukpga_2003_37": {
     "owner": "Commencement reader",
