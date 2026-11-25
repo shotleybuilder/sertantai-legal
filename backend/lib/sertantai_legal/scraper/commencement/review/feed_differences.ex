@@ -153,17 +153,36 @@ defmodule SertantaiLegal.Scraper.Commencement.FeedDifferences do
     do: Map.get(reviewed, "#{shape} @ #{law}") || Map.get(reviewed, shape)
 
   @doc """
-  The lines a check prints: each group with its status (or each law's,
-  where a status is keyed by law), then the count of groups any law of
-  which has none.
+  The lines a check prints: the check's laws by feed coverage (`bands`,
+  `%{band => %{covered: n, none: m}}`, when given: whether a difference is
+  the Reader's turns on the laws the feed is silent on, RULES
+  `feed-differences-are-patterns-by-feed-coverage`), each group with its
+  status (or each law's, where a status is keyed by law), then the count of
+  groups any law of which has none.
   """
-  @spec summary([{String.t(), group()}], map()) :: [String.t()]
-  def summary(groups, reviewed) do
+  @spec summary([{String.t(), group()}], map(), map() | nil) :: [String.t()]
+  def summary(groups, reviewed, bands \\ nil) do
     unreviewed = Enum.count(groups, &unstatused?(&1, reviewed))
 
     ["\ndifferences from the feed by cause (two-way gate): #{length(groups)} groups"] ++
+      coverage_lines(bands) ++
       Enum.flat_map(groups, &group_lines(&1, reviewed)) ++
       ["feed difference groups with no status: #{unreviewed}"]
+  end
+
+  defp coverage_lines(nil), do: []
+
+  defp coverage_lines(bands) do
+    sum = &(bands |> Map.values() |> Enum.map(fn b -> b[&1] end) |> Enum.sum())
+
+    by_band =
+      for band <- ["before 2002", "2002 on"],
+          b = Map.get(bands, band, %{covered: 0, none: 0}),
+          do: "#{band}: #{b.covered} / #{b.none}"
+
+    [
+      "  the check's laws by feed coverage: the feed holds #{sum.(:covered)}, silent #{sum.(:none)} (#{Enum.join(by_band, "; ")})"
+    ]
   end
 
   defp unstatused?({shape, g}, reviewed),

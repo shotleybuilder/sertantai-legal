@@ -28,7 +28,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Measures.FeedYardstick do
           groups: non_neg_integer(),
           by_status: %{String.t() => %{String.t() => non_neg_integer()}},
           by_owner: %{String.t() => %{String.t() => non_neg_integer()}},
-          by_row: %{String.t() => %{String.t() => non_neg_integer()}}
+          by_row: %{String.t() => %{String.t() => non_neg_integer()}},
+          coverage: %{String.t() => non_neg_integer()} | nil
         }
 
   @doc "The record file for `family`."
@@ -41,17 +42,20 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Measures.FeedYardstick do
   @doc """
   The record of one check: `yardstick` the check's `{class, rows}` tallies,
   `groups` its feed-difference groups (`FeedDifferences.groups/1`, with the
-  inserted ones), `reviewed` the statuses (`feed_differences.json`).
+  inserted ones), `reviewed` the statuses (`feed_differences.json`), and
+  `coverage` (optional) its laws by feed coverage, `%{covered: n, none: m}`.
   """
   @spec record(map()) :: t()
-  def record(%{
-        family: f,
-        at: at,
-        fresh: fresh,
-        yardstick: tallies,
-        groups: groups,
-        reviewed: rev
-      }) do
+  def record(
+        %{
+          family: f,
+          at: at,
+          fresh: fresh,
+          yardstick: tallies,
+          groups: groups,
+          reviewed: rev
+        } = check
+      ) do
     counts = Map.new(tallies, fn {k, n} -> {to_string(k), n} end)
     shares = Enum.flat_map(groups, &law_shares(&1, rev))
 
@@ -64,9 +68,15 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Measures.FeedYardstick do
       groups: length(groups),
       by_status: tally(shares, & &1.status),
       by_owner: tally(shares, & &1.owner),
-      by_row: tally(shares, & &1.row)
+      by_row: tally(shares, & &1.row),
+      coverage: coverage(check[:coverage])
     }
   end
+
+  # the check's laws by whether the feed holds their commencement
+  # (`FeedCoverage.of/1`); nil for a record taken before the split
+  defp coverage(nil), do: nil
+  defp coverage(%{covered: c, none: n}), do: %{"covered" => c, "none" => n}
 
   @doc "The table `mix lat.measures` prints; `built_at` the family's last build."
   @spec lines(t() | nil, DateTime.t() | nil) :: [String.t()]
@@ -85,8 +95,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Measures.FeedYardstick do
         "  difference groups: #{r.groups}, by status: #{shares(r.by_status)}",
         "  by owning step: #{shares(r.by_owner)}",
         "  by row: #{shares(r.by_row)}"
-      ]
+      ] ++ coverage_line(r[:coverage])
   end
+
+  defp coverage_line(nil), do: []
+
+  defp coverage_line(c),
+    do: ["  laws by feed coverage: the feed holds #{c["covered"]}, silent #{c["none"]}"]
 
   @doc "Writes the record."
   @spec write(t(), String.t()) :: :ok
@@ -116,7 +131,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Measures.FeedYardstick do
       groups: m["groups"],
       by_status: m["by_status"],
       by_owner: m["by_owner"] || %{},
-      by_row: m["by_row"]
+      by_row: m["by_row"],
+      coverage: m["coverage"]
     }
   end
 

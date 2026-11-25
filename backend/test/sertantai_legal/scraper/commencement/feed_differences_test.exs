@@ -109,6 +109,23 @@ defmodule SertantaiLegal.Scraper.Commencement.FeedDifferencesTest do
              "with no status: 0"
   end
 
+  # RULES `feed-differences-are-patterns-by-feed-coverage`: whether a
+  # difference is the Reader's turns on the laws the feed is silent on
+  test "the summary prints the check's laws by feed coverage, by year band" do
+    tally = %{
+      "before 2002" => %{covered: 1, none: 4},
+      "2002 on" => %{covered: 6, none: 2}
+    }
+
+    [head, coverage | _] = FeedDifferences.summary([], %{}, tally)
+    assert head =~ "two-way gate"
+
+    assert coverage ==
+             "  the check's laws by feed coverage: the feed holds 7, silent 6 (before 2002: 1 / 4; 2002 on: 6 / 2)"
+
+    assert FeedDifferences.summary([], %{}) |> Enum.at(1) =~ "with no status"
+  end
+
   test "a status keyed by law (\"<shape> @ <law>\") is that law's, and wins over the shape's own" do
     rows = [row(%{law: "UK_a"}), row(%{law: "UK_b", id: "reg.2"})]
     [{shape, _}] = groups = FeedDifferences.groups(rows)

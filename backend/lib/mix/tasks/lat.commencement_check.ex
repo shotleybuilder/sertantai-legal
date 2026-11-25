@@ -114,11 +114,9 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
     meta = law_meta(laws)
 
     covered =
-      for law <- laws, Map.has_key?(meta, law) do
-        [_, type, year, number] = String.split(law, "_", parts: 4)
-        effects = with {:ok, es} <- FeedCache.effects(type, year, number), do: es
-        Map.merge(meta[law], Map.put(FeedCoverage.of(List.wrap(effects)), :law, law))
-      end
+      for law <- laws,
+          Map.has_key?(meta, law),
+          do: Map.merge(meta[law], Map.put(FeedCoverage.of(law_effects(law)), :law, law))
 
     path = opts[:out] || @coverage_out
     File.mkdir_p!(Path.dirname(path))
@@ -128,6 +126,28 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
   end
 
   defp info(line), do: Mix.shell().info(line)
+
+  # a law's stored feed effects; [] when none is held
+  defp law_effects(law) do
+    [_, type, year, number] = String.split(law, "_", parts: 4)
+
+    case FeedCache.effects(type, year, number) do
+      {:ok, es} when is_list(es) -> es
+      _ -> []
+    end
+  end
+
+  # the check's laws by feed coverage, by year band (`FeedCoverage.tally/1`)
+  defp check_coverage(rows) do
+    laws = rows |> Enum.map(& &1.law) |> Enum.uniq()
+    meta = law_meta(laws)
+
+    laws
+    |> Enum.filter(&Map.has_key?(meta, &1))
+    |> Enum.map(&Map.merge(%{meta[&1] | family: "check"}, FeedCoverage.of(law_effects(&1))))
+    |> FeedCoverage.tally()
+    |> Map.get("check", %{})
+  end
 
   defp law_meta(laws) do
     Repo.query!(
@@ -282,8 +302,9 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
     report_rows(rows, opts)
     report_feed_errors(rows, stale)
     if opts[:feed_errors_dry_run] || opts[:feed_errors_write], do: propose_feed_errors(rows, opts)
-    groups = report_feed_differences(rows, read.inserted, opts)
-    record_yardstick(rows, groups, opts)
+    bands = check_coverage(rows)
+    groups = report_feed_differences(rows, read.inserted, opts, bands)
+    record_yardstick(rows, groups, opts, bands)
     report_gaps(gaps, opts)
 
     if opts[:sample], do: sample(rows, gaps, opts[:sample], opts[:n] || 50, opts[:seed])
@@ -622,7 +643,7 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
   # `feed_differences.json`; the groups written beside the gate report
   @feed_reviewed "test/fixtures/commencement_check/feed_differences.json"
 
-  defp report_feed_differences(rows, inserted, opts) do
+  defp report_feed_differences(rows, inserted, opts, bands) do
     # (an inserted provision's groups are its inserting law's: Decision 7 C)
     groups =
       (FeedDifferences.groups(rows) ++ FeedDifferences.inserted_groups(inserted))
@@ -634,7 +655,7 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
         _ -> %{}
       end
 
-    lines = FeedDifferences.summary(groups, reviewed)
+    lines = FeedDifferences.summary(groups, reviewed, bands)
     path = "data/reports/commencement-reader/feed-differences-#{slug(opts)}-#{Date.utc_today()}"
     File.write!(path <> ".txt", Enum.join(lines, "\n") <> "\n")
 
@@ -649,7 +670,7 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
     shell = Mix.shell()
     shell.info(hd(lines))
 
-    for line <- lines |> tl() |> Enum.filter(&String.starts_with?(&1, "  ")) |> Enum.take(15),
+    for line <- lines |> tl() |> Enum.filter(&String.starts_with?(&1, "  ")) |> Enum.take(16),
         do: shell.info(line)
 
     shell.info(List.last(lines) <> " (all groups: #{path}.txt)")
@@ -658,7 +679,7 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
 
   # the family's standard figures against the feed, for `mix lat.measures`
   # (`Measures.FeedYardstick`; Commencement reader retrospective, Decision 1 e)
-  defp record_yardstick(rows, {groups, reviewed}, opts) do
+  defp record_yardstick(rows, {groups, reviewed}, opts, bands) do
     if family = opts[:family] do
       path = FeedYardstick.path(family)
 
@@ -668,7 +689,11 @@ defmodule Mix.Tasks.Lat.CommencementCheck do
         fresh: opts[:fresh] == true,
         yardstick: Check.row_tallies(rows).yardstick,
         groups: groups,
-        reviewed: reviewed
+        reviewed: reviewed,
+        coverage: %{
+          covered: bands |> Map.values() |> Enum.sum_by(& &1.covered),
+          none: bands |> Map.values() |> Enum.sum_by(& &1.none)
+        }
       }
       |> FeedYardstick.record()
       |> FeedYardstick.write(path)

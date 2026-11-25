@@ -111,6 +111,40 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Measures.FeedYardstickTest do
     File.rm!(path)
   end
 
+  # RULES `feed-differences-are-patterns-by-feed-coverage`: the check's laws
+  # by whether the feed holds their commencement (`FeedCoverage.of/1`)
+  test "the record holds the check's laws by feed coverage, and its lines print them" do
+    r =
+      FeedYardstick.record(%{
+        family: "F",
+        at: ~U[2026-11-25 10:00:00Z],
+        fresh: false,
+        yardstick: [agree: 1],
+        groups: [],
+        reviewed: %{},
+        coverage: %{covered: 3, none: 5}
+      })
+
+    assert r.coverage == %{"covered" => 3, "none" => 5}
+
+    assert "  laws by feed coverage: the feed holds 3, silent 5" in FeedYardstick.lines(r, nil)
+  end
+
+  test "a record from before the coverage split reads back with none" do
+    r =
+      FeedYardstick.record(%{
+        family: "F",
+        at: ~U[2026-11-25 10:00:00Z],
+        fresh: false,
+        yardstick: [],
+        groups: [],
+        reviewed: %{}
+      })
+
+    assert r.coverage == nil
+    refute Enum.any?(FeedYardstick.lines(r, nil), &(&1 =~ "feed coverage"))
+  end
+
   test "the path is per family" do
     assert FeedYardstick.path("Waste, Water and Climate") ==
              "data/reports/commencement-reader/yardstick/waste-water-and-climate.json"
