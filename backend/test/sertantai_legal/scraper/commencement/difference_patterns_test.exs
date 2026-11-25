@@ -179,7 +179,17 @@ defmodule SertantaiLegal.Scraper.Commencement.Review.DifferencePatternsTest do
       mid =
         "Section 83(1) (except in so far as it relates to section 24 of the Act), (3) (except as already in operation), (6) and (7) | Application of the Act to the Crown."
 
+      # an item's own bracketed exception with more of the list after it is
+      # its own form: held where the feed is silent (1963 c.41), the Reader's
       assert P.order([%{kind: "table", id: "t", text: mid}]) == [
+               {"table-row-exception-mid-list", "t"}
+             ]
+
+      # NISR 2007/194's own: an exception, then more of the list after a ";"
+      more =
+        "Article 9(3) of the 1999 Order except paragraphs 1(1)(b), 2(1)(b), 2(3)(a) and 3 of that Schedule; and Articles 10 and 13"
+
+      assert P.order([%{kind: "table", id: "t", text: more}]) == [
                {"table-row-long-exception", "t"}
              ]
 
@@ -214,7 +224,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Review.DifferencePatternsTest do
   end
 
   test "names/0 and entries/1: every pattern names the feed differences it judges" do
-    assert length(P.names()) == 8
+    assert length(P.names()) == 9
     keys = P.names() |> Enum.flat_map(&P.entries/1)
     assert "differ | own dated by clause_made_relative | own earlier @ UK_uksi_2020_1265" in keys
     assert length(keys) == length(Enum.uniq(keys))

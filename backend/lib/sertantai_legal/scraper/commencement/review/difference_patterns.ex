@@ -38,6 +38,9 @@ defmodule SertantaiLegal.Scraper.Commencement.Review.DifferencePatterns do
       "feed_only | own by_order by by_order | feed full @ UK_nisi_2006_3336",
       "feed_only | own by_order_partly by by_order | feed full @ UK_nisi_2006_3336"
     ],
+    # SI 1964/191 Sch.1 Pt III (1963 c.41): no feed difference names it,
+    # the feed being silent
+    "table-row-exception-mid-list" => [],
     "application-with-exception" => [
       "feed_only | own by_order_partly by by_order | feed full @ UK_ukpga_2003_37"
     ],
@@ -222,6 +225,11 @@ defmodule SertantaiLegal.Scraper.Commencement.Review.DifferencePatterns do
     for u <- units, name <- unit_patterns(u), do: {name, u.id}
   end
 
+  # an item's own bracketed exception, more of the list after it: "83(1)
+  # (except in so far as it relates to section 24 of the Act), (3) …" (SI
+  # 1964/191 Sch.1 Pt III); the order reader bounds that item only
+  @bracketed_mid_list ~r/\(\s*except\b[^()]*(?:\([^()]*\)[^()]*)*\)\s*,\s*\(\d+[A-Z]*\)/i
+
   defp unit_patterns(%{kind: "article", text: text}) do
     [
       {"application-with-exception", application_exception?(text)},
@@ -231,8 +239,13 @@ defmodule SertantaiLegal.Scraper.Commencement.Review.DifferencePatterns do
     |> Enum.map(&elem(&1, 0))
   end
 
-  defp unit_patterns(%{kind: "table", text: text}),
-    do: if(long_exception?(text), do: ["table-row-long-exception"], else: [])
+  defp unit_patterns(%{kind: "table", text: text}) do
+    cond do
+      text =~ @bracketed_mid_list -> ["table-row-exception-mid-list"]
+      long_exception?(text) -> ["table-row-long-exception"]
+      true -> []
+    end
+  end
 
   defp unit_patterns(_unit), do: []
 
@@ -272,7 +285,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Review.DifferencePatterns do
   # 1964/191 Sch.1 Pt III; "… except paragraphs 1(1)(b), 2(1)(b), 2(3)(a)
   # and 3 of that Schedule; and Articles 10 and 13": NISR 2007/194 Sch.1)
   @list_limit ~r/\bin\s+so\s+far\s+as\s+it\s+relates\s+to\s*:/i
-  @mid_list ~r/\bexcept\b[^;|“”«»]*?(?:\)\s*,\s*\(\d+[A-Z]*\)|;\s+(?:and\s+)?(?:sections?|articles?|paragraphs?|regulations?|schedules?|parts?)\s+\d)/i
+  @mid_list ~r/\bexcept\b[^;|“”«»]*?;\s+(?:and\s+)?(?:sections?|articles?|paragraphs?|regulations?|schedules?|parts?)\s+\d/i
 
   defp long_exception?(text), do: text =~ @list_limit or text =~ @mid_list
 
