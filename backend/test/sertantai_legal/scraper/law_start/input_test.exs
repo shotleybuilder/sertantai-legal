@@ -40,4 +40,30 @@ defmodule SertantaiLegal.Scraper.LawStart.InputTest do
     assert SertantaiLegal.Scraper.ChangeVocabulary.Build.start("UK_uksi_2099_9") ==
              LawStart.resolve(input)
   end
+
+  describe "named_date/2: another law's provision dated by a rule naming it" do
+    alias SertantaiLegal.Scraper.Commencement.Rule
+
+    defp rule(scope, date, treatment),
+      do:
+        Rule.new(
+          commences: "UK_ukpga_1996_56",
+          scope: scope,
+          when: {:date, date},
+          source: %{law: "UK_ukpga_1996_56", ref: "s.583(2)", text: "x"},
+          treatment: treatment
+        )
+
+    test "a rule naming the provision dates it (Water Act 2003 s.7(3), SI 2006/641)" do
+      rules = [rule(["s.7(3)"], ~D[2018-01-01], :order_article)]
+      assert LawStart.Input.named_date(rules, "s.7(3)") == ~D[2018-01-01]
+    end
+
+    # a provision inserted later is no part of the law's own start
+    # (Education Act 1996 s.562J, WSI 2016/413 reg.2(3))
+    test "the law's whole-law start never dates a provision" do
+      rules = [rule(:all, ~D[1996-11-01], :clause_date)]
+      assert LawStart.Input.named_date(rules, "s.562J") == nil
+    end
+  end
 end

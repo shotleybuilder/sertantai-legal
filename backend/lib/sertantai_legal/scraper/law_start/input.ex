@@ -164,7 +164,7 @@ defmodule SertantaiLegal.Scraper.LawStart.Input do
   # every provision named in (the latest of their days); nil if one isn't dated
   defp other_date(other, refs) do
     rules = SertantaiLegal.Scraper.Commencement.Store.for_law(other)
-    dates = Enum.map(refs, &(ref_date(rules, &1) || feed_date(other, &1)))
+    dates = Enum.map(refs, &(named_date(rules, &1) || feed_date(other, &1)))
     if Enum.all?(dates, &match?(%Date{}, &1)), do: Enum.max(dates, Date)
   end
 
@@ -177,12 +177,18 @@ defmodule SertantaiLegal.Scraper.LawStart.Input do
     end
   end
 
-  defp ref_date([], _ref), do: nil
-
-  defp ref_date(rules, ref) do
-    alias SertantaiLegal.Scraper.Commencement.Evaluator
-    result = Evaluator.evaluate(rules, ref)
-    result.full_from
+  @doc """
+  The day another law's provision came fully into force by the rules naming
+  it (an order, the law's own provision rules); nil when none does. The
+  law's whole-law start never dates it: a provision inserted later is no
+  part of it (Education Act 1996 s.562J, tied to by WSI 2016/413 reg.2(3)).
+  """
+  @spec named_date([SertantaiLegal.Scraper.Commencement.Rule.t()], String.t()) :: Date.t() | nil
+  def named_date(rules, ref) do
+    case Enum.reject(rules, &(&1.scope == :all)) do
+      [] -> nil
+      named -> SertantaiLegal.Scraper.Commencement.Evaluator.evaluate(named, ref).full_from
+    end
   end
 
   defp feed_date(other, ref) do
