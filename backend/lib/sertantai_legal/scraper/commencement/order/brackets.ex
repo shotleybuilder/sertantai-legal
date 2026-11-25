@@ -36,6 +36,7 @@ defmodule SertantaiLegal.Scraper.Commencement.Order.Brackets do
          false <-
            String.replace(list, ~r/\((?:[^()]|\([^()]*\))*\)/u, "") =~
              ~r/\b(?:Schedule|paragraph|Part)s?\b/,
+         true <- bare_list?(list),
          items =
            list
            |> Items.split_items()
@@ -61,6 +62,14 @@ defmodule SertantaiLegal.Scraper.Commencement.Order.Brackets do
       _ -> nil
     end
   end
+
+  # a list of items and their brackets only: refs, numbers, "and", "to",
+  # commas — never an item's own words outside its brackets ("section 35
+  # (…), but only for the purpose of making regulations, and in relation to
+  # England and Wales (except so far as …)": SI 2017/765 reg.3)
+  @bare_list ~r/^(?:[\s,;]|\d+[A-Z]*|\([0-9A-Za-z]+\)|\b(?:and|or|to|sub-?sections?|sections?)\b)*$/i
+
+  defp bare_list?(list), do: list |> without_qualifiers() |> String.match?(@bare_list)
 
   @list ~r/^\W*(?:the\s+)?sections?\s+(\d.*?)(?:,?\s+of\s+the\s+(?:Act|[A-Z](?:[^()]|\([^()]*\))*?\s+Act\s+\d{4})\b(.*))?$/is
   @worded ~r/\((?=[^()]*\s)(?:[^()]|\([^()]*\))*\)/u

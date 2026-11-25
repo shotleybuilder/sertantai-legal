@@ -891,6 +891,30 @@ defmodule SertantaiLegal.Scraper.Commencement.OrderTest do
       assert full.("s.83(3)") and full.("s.83(6)") and full.("s.83(7)")
     end
 
+    # a bracket inside an item's own words is no item qualifier: the line is
+    # no bare list ("section 35 (…), but only for the purpose of making
+    # regulations, and in relation to England and Wales (except so far as
+    # …) and Scotland only": SI 2017/765 reg.3, read fully after c61cc16a)
+    test "an exception inside an item's own words leaves the sentence's limit (SI 2017/765 reg.3)" do
+      rules =
+        Order.rules(
+          Doc.new("UK_uksi_2017_765", [
+            ~s|<Legislation><Secondary><Body><P1 id="regulation-3"><P1para><Text>The following provisions of the Digital Economy Act 2017 come into force on 1st October 2017—</Text><P3 id="regulation-3-a"><P3para><Text>section 34 (power to make regulations);</Text></P3para></P3><P3 id="regulation-3-b"><P3para><Text>section 35 (disclosure of information to improve public service delivery), but only for the purpose of making regulations, and in relation to England and Wales (except so far as it relates to the disclosure of information to or by a water or sewerage undertaker for an area which is wholly or mainly in Wales) and Scotland only;</Text></P3para></P3></P1para></P1></Body></Secondary></Legislation>|
+          ]),
+          %{law: "UK_ukpga_2017_30", title: "Digital Economy Act", year: "2017"}
+        )
+
+      s35 = Enum.filter(rules, &("s.35" in List.wrap(&1.scope)))
+      assert s35 != []
+      refute Enum.any?(s35, &Rule.full?/1)
+
+      # the line as the reader meets it: words outside the brackets, so no
+      # bare list of items each with its own bracket
+      assert Order.Brackets.bracket_items(
+               "section 35 (disclosure of information to improve public service delivery), but only for the purpose of making regulations, and in relation to England and Wales (except so far as it relates to the disclosure of information to or by a water or sewerage undertaker for an area which is wholly or mainly in Wales) and Scotland only;"
+             ) == nil
+    end
+
     test "N1: a qualifier after the date; N2: quoted words and another Act's provisions are not refs" do
       rules =
         epa_order(
