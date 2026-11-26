@@ -27,12 +27,17 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.VersionTest do
         do: refute(f in files(), f)
   end
 
-  test "the vocabulary and its readers are" do
+  test "the vocabulary and the stored rules' reads are" do
     for f <- ~w(
           lib/sertantai_legal/scraper/change_vocabulary.ex
           lib/sertantai_legal/scraper/change_vocabulary/build.ex
-          lib/sertantai_legal/scraper/amendment/reader.ex
+          lib/sertantai_legal/scraper/amendment/store.ex
         ),
         do: assert(f in files(), f)
+  end
+
+  test "the amending-law reader is not: the build reads its stored rules (the Amending-law reader stamps session)" do
+    refute "lib/sertantai_legal/scraper/amendment/reader.ex" in files()
+    refute "lib/sertantai_legal/scraper/amendment/read_law.ex" in files()
   end
 end

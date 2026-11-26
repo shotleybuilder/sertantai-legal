@@ -13,7 +13,8 @@ defmodule SertantaiLegal.Scraper.ChangeStaleness do
     `:extent_rules` (each store's latest reading the build read)
   - a reader whose readings the build read are by other reader code
     (`Store.Inputs.readers/3`, #193): `:commencement_reader`,
-    `:extent_reader` — re-read them, then build
+    `:extent_reader`, `:amending_reader` (an amending law's index not
+    current for the law: stale or never read) — re-read them, then build
 
   An input the build didn't record counts as moved: the build is older than
   the fingerprint, so nothing says it is current. A law with no reasons is
@@ -35,6 +36,7 @@ defmodule SertantaiLegal.Scraper.ChangeStaleness do
           | :extent_rules
           | :commencement_reader
           | :extent_reader
+          | :amending_reader
 
   @doc "The inputs compared, in the order their reasons are given."
   @spec inputs() :: [atom()]

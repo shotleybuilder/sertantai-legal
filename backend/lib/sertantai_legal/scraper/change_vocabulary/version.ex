@@ -11,7 +11,11 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Version do
   never run, so it is left out: a reader's file list moves only its own
   stamp (`StageSplitTest`). Of the extent reader, only the struct and its
   lookups and the store's reads, by name: the build reads stored readings,
-  never a law's text (the Extent reader stamps session).
+  never a law's text (the Extent reader stamps session). Of the
+  Amending-law reader, only the rule, the store's reads and the index's
+  (whether a stored reading is current), by name: the build reads stored
+  rules, never an amending law's text (the Amending-law reader stamps
+  session, 2026-11-26).
   """
 
   use SertantaiLegal.Scraper.SourceVersion,
@@ -37,14 +41,19 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Version do
       lib/sertantai_legal/scraper/change_vocabulary/readers/amending_law/*.ex
       lib/sertantai_legal/scraper/change_vocabulary/merge/*.ex
       lib/sertantai_legal/scraper/change_vocabulary/store/*.ex
-      lib/sertantai_legal/scraper/amending_law/*.ex
-      lib/sertantai_legal/scraper/amending_law/doc/*.ex
+      lib/sertantai_legal/scraper/amending_law/doc.ex
+      lib/sertantai_legal/scraper/amending_law/doc/list_items.ex
+      lib/sertantai_legal/scraper/amending_law/extent.ex
+      lib/sertantai_legal/scraper/amending_law/pointer.ex
+      lib/sertantai_legal/scraper/amending_law/ref_list.ex
+      lib/sertantai_legal/scraper/amending_law/sub_path.ex
       lib/sertantai_legal/scraper/amending_law/extent/lookup.ex
       lib/sertantai_legal/scraper/amending_law/extent/change_target.ex
       lib/sertantai_legal/scraper/amending_law/extent/rows.ex
       lib/sertantai_legal/scraper/amending_law/extent/store.ex
-      lib/sertantai_legal/scraper/amendment/*.ex
-      lib/sertantai_legal/scraper/amendment/reader/*.ex
+      lib/sertantai_legal/scraper/amendment/index.ex
+      lib/sertantai_legal/scraper/amendment/rule.ex
+      lib/sertantai_legal/scraper/amendment/store.ex
       lib/sertantai_legal/scraper/commencement/*.ex
       lib/sertantai_legal/scraper/commencement/text/*.ex
       lib/sertantai_legal/scraper/application_clause.ex
@@ -70,24 +79,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Version do
     # versions, #193) and the checks that draw samples (2026-11-05,
     # 2026-11-06, #194)
     except: ~w(
-      lib/sertantai_legal/scraper/amendment/reader_version.ex
       lib/sertantai_legal/scraper/commencement/order.ex
       lib/sertantai_legal/scraper/commencement/authority.ex
       lib/sertantai_legal/scraper/commencement/amending.ex
       lib/sertantai_legal/scraper/commencement/amending_picks.ex
-      lib/sertantai_legal/scraper/amendment/collect.ex
-      lib/sertantai_legal/scraper/amendment/evaluator.ex
-      lib/sertantai_legal/scraper/amending_law/sweep_form.ex
-      lib/sertantai_legal/scraper/amendment/catalogue_read.ex
-      lib/sertantai_legal/scraper/amendment/catalogue_version.ex
-      lib/sertantai_legal/scraper/amendment/check_sample.ex
-      lib/sertantai_legal/scraper/amendment/check_strata.ex
-      lib/sertantai_legal/scraper/amendment/disagreement.ex
-      lib/sertantai_legal/scraper/amendment/enacted_fetch.ex
-      lib/sertantai_legal/scraper/amendment/pattern_source.ex
-      lib/sertantai_legal/scraper/amendment/patterns.ex
-      lib/sertantai_legal/scraper/amendment/read_pass.ex
-      lib/sertantai_legal/scraper/amendment/read_report.ex
       lib/sertantai_legal/scraper/commencement/amending_read.ex
       lib/sertantai_legal/scraper/commencement/check.ex
       lib/sertantai_legal/scraper/commencement/clml_rows.ex

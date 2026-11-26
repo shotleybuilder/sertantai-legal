@@ -1,8 +1,7 @@
 defmodule SertantaiLegal.Scraper.ChangeVocabulary.Primary do
   @moduledoc """
   The primary sources a law's build reads (CV-03, CV-07; moved out of `mix
-  lat.vocabulary`, CV-06): the amending laws' rules (stored where fresh,
-  else read now), their commencement rules, the affecting laws' extent
+  lat.vocabulary`, CV-06): the amending laws' stored rules, their commencement rules, the affecting laws' extent
   clauses, the law's own commencement and row structure, its continuing
   orders and its feed pages' ids and savings.
 
@@ -19,13 +18,13 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Primary do
   @doc "The build's options from the primary sources for `law` and its feed `effects`."
   @spec primary(String.t(), [map()]) :: keyword()
   def primary(law, effects) do
-    stored_rules = SertantaiLegal.Scraper.Amendment.Store.for_law(law)
-
-    # the stored rules stand only where read by this reader from the text
-    # held now; a stale amending law is read again here, for this law, at
-    # the provisions this law's notes and feed point to (never stale rules:
-    # run time, 2026-10-25)
-    rules = fresh_rules(law, effects, stored_rules)
+    # the amending laws' rules as stored (`mix lat.amending --read`). An
+    # amending law read by other code or not read for this law is a stale
+    # reason (`Store.Inputs`, `:amending_reader`), never a reading from its
+    # text here: that fallback put the whole reader in the build's version
+    # (the Amending-law reader stamps session, 2026-11-26; 969 amending laws
+    # never read, and 1,828 stale, were read from text by every build)
+    rules = SertantaiLegal.Scraper.Amendment.Store.for_law(law)
 
     # each amending law's commencement rules: the rules' sources and the
     # feed's affecting laws
@@ -159,50 +158,6 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Primary do
         do:
           {String.replace_prefix(sid, law <> ":", ""),
            if(part in [nil, ""], do: [], else: ["pt.#{part}"])}
-  end
-
-  # the law's amendment rules: stored where the amending law's index is
-  # fresh, else read now from the text held (`Amendment.ReadLaw`)
-  defp fresh_rules(law, effects, stored) do
-    alias SertantaiLegal.Scraper.Amendment.{Index, ReadLaw, TextEffect}
-    alias SertantaiLegal.Scraper.AmendingLaw.Pointer
-
-    by_feed = for e <- effects, TextEffect.text_effect?(e), do: e
-
-    amending =
-      (Enum.map(stored, & &1.source.law) ++ Enum.map(by_feed, & &1.affecting))
-      |> Enum.filter(&(is_binary(&1) and &1 =~ ~r/^UK_/))
-      |> Enum.uniq()
-
-    stale = Enum.reject(amending, &Index.fresh?(&1, Index.get(&1)))
-    ref = if stale != [], do: ReadLaw.law_ref(law)
-
-    read =
-      for a <- stale, doc = ReadLaw.doc(a), doc != nil do
-        refs =
-          ReadLaw.note_refs(a, ReadLaw.notes(a, law)) ++
-            for(
-              e <- by_feed,
-              e.affecting == a,
-              r <- Pointer.refs_in(e.affecting_provisions),
-              do: r
-            )
-
-        {rules, _ids} = ReadLaw.rules(doc, [ref], refs)
-        rules
-      end
-
-    # never read by the read pass, or read by other code or from other text
-    {unread, outdated} = Enum.split_with(stale, &(Index.get(&1) == nil))
-
-    if stale != [],
-      do:
-        Logger.info(
-          "  #{length(stale)} amending laws read from their text: #{length(unread)} not read by the read pass, " <>
-            "#{length(outdated)} with stale stored rules (mix lat.amending --read)"
-        )
-
-    Enum.reject(stored, &(&1.source.law in stale)) ++ List.flatten(read)
   end
 
   # the law's stored feed pages, raw: the re-keyed effects (`FeedUris`,

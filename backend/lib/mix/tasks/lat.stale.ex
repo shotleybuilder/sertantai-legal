@@ -165,7 +165,9 @@ defmodule Mix.Tasks.Lat.Stale do
   @fixes [
     commencement_reader: "mix lat.commencement (the mode that wrote them), then build",
     extent_reader:
-      "mix lat.reread --family F, or mix lat.amending --extents --stale (laws on old code, or not read: their text held, no extent_rules), then build"
+      "mix lat.reread --family F, or mix lat.amending --extents --stale (laws on old code, or not read: their text held, no extent_rules), then build",
+    amending_reader:
+      "mix lat.amending --read (every amending law read by other code, from other text, or not for the law: ReadPass.stale?), then build"
   ]
 
   # the change register: each built law's reasons, from its inputs taken again

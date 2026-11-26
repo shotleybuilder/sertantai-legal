@@ -78,6 +78,15 @@ defmodule SertantaiLegal.Architecture.AmendmentReadStampsTest do
     assert diff(MapSet.intersection(reached, files(ReaderVersion)), MapSet.new()) == []
   end
 
+  test "the build reads stored rules only: it reaches neither the reader nor the read path" do
+    build = ["lib/sertantai_legal/scraper/change_vocabulary/build.ex"]
+    reached = ModuleReach.reach(build, @io ++ stamps())
+
+    for f <- ~w(read_law.ex reader.ex provision_read.ex law_doc.ex read_pass.ex) do
+      refute (@a <> f) in reached, "the build reaches #{f}"
+    end
+  end
+
   test "the stamps list files by name, never a glob" do
     for version <- [ReaderVersion, CatalogueVersion] do
       assert {version, Enum.filter(version.patterns(), &String.contains?(&1, "*"))} ==
