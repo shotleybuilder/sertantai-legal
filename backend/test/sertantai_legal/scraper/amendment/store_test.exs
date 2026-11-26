@@ -40,6 +40,36 @@ defmodule SertantaiLegal.Scraper.Amendment.StoreTest do
     assert Store.for_source("UK_ukpga_1991_34") == [a2]
   end
 
+  defp read_at(source, amends) do
+    SertantaiLegal.Repo.query!(
+      "SELECT read_at FROM amendment_rules WHERE source_law = $1 AND amends = $2",
+      [source, amends]
+    ).rows
+  end
+
+  test "write_changed/3 rewrites only the amended laws whose rules differ; the rest keep read_at (the stamps session)" do
+    src = "UK_ukpga_1991_34"
+    a = rule("UK_ukpga_1990_8", src, ["s.171A"])
+    b = rule("UK_ukpga_1990_43", src, ["s.33"])
+    assert {:ok, 2, :written} = Store.write_changed(src, [a, b], [])
+    # the sandbox's now() is the transaction's: date the rules back to see a rewrite
+    SertantaiLegal.Repo.query!(
+      "UPDATE amendment_rules SET read_at = '2026-01-01' WHERE source_law = $1",
+      [src]
+    )
+
+    before_b = read_at(src, "UK_ukpga_1990_43")
+
+    a2 = rule("UK_ukpga_1990_8", src, ["s.171C"])
+    assert {:ok, 2, :written} = Store.write_changed(src, [a2, b], Store.for_source(src))
+    assert read_at(src, "UK_ukpga_1990_43") == before_b
+    assert MapSet.new(Store.for_source(src)) == MapSet.new([a2, b])
+
+    # an amended law the reading no longer names loses its rules
+    assert {:ok, 1, :written} = Store.write_changed(src, [a2], Store.for_source(src))
+    assert Store.for_source(src) == [a2]
+  end
+
   test "write/2 refuses a rule from another source" do
     assert_raise ArgumentError, fn ->
       Store.write("UK_ukpga_2004_5", [rule("UK_ukpga_1990_8", "UK_ukpga_1991_34", ["s.171A"])])

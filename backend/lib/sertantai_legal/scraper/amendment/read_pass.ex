@@ -11,7 +11,7 @@ defmodule SertantaiLegal.Scraper.Amendment.ReadPass do
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Extent, Pointer}
-  alias SertantaiLegal.Scraper.Amendment.{Index, ReadLaw, Rule, Store}
+  alias SertantaiLegal.Scraper.Amendment.{Index, ReadLaw, Reader, Rule, Store, TextEffect}
   alias SertantaiLegal.Scraper.LatStagedParser
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
 
@@ -37,7 +37,7 @@ defmodule SertantaiLegal.Scraper.Amendment.ReadPass do
     |> Enum.flat_map(fn law ->
       for e <- LatStagedParser.law_effects(law, store: :only) || [],
           is_binary(e.affecting) and e.affecting =~ ~r/^UK_/,
-          ReadLaw.text_effect?(e),
+          TextEffect.text_effect?(e),
           do: {e.affecting, law, Pointer.refs_in(e.affecting_provisions)}
     end)
     |> Enum.group_by(&elem(&1, 0))
@@ -157,9 +157,22 @@ defmodule SertantaiLegal.Scraper.Amendment.ReadPass do
       {:ok, _, _} = Extent.Write.write_read(amending, read, cached: true)
     end
 
-    :ok = Index.write(amending, doc, r.laws, pointer_keys(r.refs))
+    :ok = Index.write(amending, index_entries(doc), r.laws, pointer_keys(r.refs))
     {:ok, n}
   end
+
+  @doc """
+  What an amending law's index holds of its document: its element ids (for
+  `Locator`), each repeals table's introducing section and each Schedule
+  paragraph's Part (AR-12).
+  """
+  @spec index_entries(Doc.t()) :: Index.entries()
+  def index_entries(doc),
+    do: %{
+      elements: Map.keys(doc.elements),
+      references: Reader.references(doc),
+      parts: Reader.parts(doc)
+    }
 
   @regression "test/fixtures/amendment_read/regression.txt"
 

@@ -164,10 +164,10 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Primary do
   # the law's amendment rules: stored where the amending law's index is
   # fresh, else read now from the text held (`Amendment.ReadLaw`)
   defp fresh_rules(law, effects, stored) do
-    alias SertantaiLegal.Scraper.Amendment.{Index, ReadLaw}
+    alias SertantaiLegal.Scraper.Amendment.{Index, ReadLaw, TextEffect}
     alias SertantaiLegal.Scraper.AmendingLaw.Pointer
 
-    by_feed = for e <- effects, ReadLaw.text_effect?(e), do: e
+    by_feed = for e <- effects, TextEffect.text_effect?(e), do: e
 
     amending =
       (Enum.map(stored, & &1.source.law) ++ Enum.map(by_feed, & &1.affecting))

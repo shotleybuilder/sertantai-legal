@@ -56,7 +56,9 @@ defmodule SertantaiLegal.Architecture.VersionCoverageTest do
       ] do
     test "#{inspect(version)} covers every module its files reach" do
       covered = unquote(version).files() |> Enum.map(&Path.relative_to_cwd/1) |> MapSet.new()
-      stop = @io ++ unquote(stop) ++ stamps(unquote(version))
+      # every stamp is a stop, its own file too: reached only to compare
+      # with, it shapes no reading (the Amending-law reader stamps session)
+      stop = @io ++ unquote(stop) ++ stamps(nil)
 
       missing =
         covered

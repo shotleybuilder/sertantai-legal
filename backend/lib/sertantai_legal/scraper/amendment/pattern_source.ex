@@ -10,7 +10,7 @@ defmodule SertantaiLegal.Scraper.Amendment.PatternSource do
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.Pointer
-  alias SertantaiLegal.Scraper.Amendment.ReadLaw
+  alias SertantaiLegal.Scraper.Amendment.{ReadLaw, TextEffect}
   alias SertantaiLegal.Scraper.ChangeVocabulary.Rounds
   alias SertantaiLegal.Scraper.LatStagedParser
 
@@ -86,7 +86,7 @@ defmodule SertantaiLegal.Scraper.Amendment.PatternSource do
     feed =
       for e <- LatStagedParser.law_effects(law, store: :only) || [],
           is_binary(e.affecting) and e.affecting =~ ~r/^UK_/,
-          ReadLaw.text_effect?(e),
+          TextEffect.text_effect?(e),
           do: {e.affecting, law, Pointer.refs_in(e.affecting_provisions)}
 
     notes ++ feed

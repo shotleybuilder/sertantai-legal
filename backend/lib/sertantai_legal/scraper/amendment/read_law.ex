@@ -8,8 +8,6 @@ defmodule SertantaiLegal.Scraper.Amendment.ReadLaw do
 
   - `notes/2`: the amendment notes on our rows pointing to the amending
     law (the collector's pointer: Citation, else the law the text names);
-  - `text_effect?/1`: a feed effect this reader reads (a text change; a
-    commencement order's "coming into force" is the commencement pass's);
   - `law_ref/1`: a LAT law as the reader matches it (title, rows' prefix);
   - `rules/3`: the rules the amending law's provisions at `refs` state for
     `laws`.
@@ -21,9 +19,6 @@ defmodule SertantaiLegal.Scraper.Amendment.ReadLaw do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Locator, Pointer}
   alias SertantaiLegal.Scraper.Amendment.{ProvisionRead, Reader, Rule}
-  alias SertantaiLegal.Scraper.EffectKind
-
-  @text_kinds ~w(substituted inserted repealed renumbered amended)
 
   @type note :: %{
           law_name: String.t(),
@@ -74,10 +69,6 @@ defmodule SertantaiLegal.Scraper.Amendment.ReadLaw do
         ref <- p.provisions,
         do: ref
   end
-
-  @doc "Whether a feed effect is a text change this reader reads."
-  @spec text_effect?(map()) :: boolean()
-  def text_effect?(effect), do: EffectKind.kind(effect.type, nil) in @text_kinds
 
   @doc "A LAT law's ref as the reader matches it: its title (no year) and its rows' prefix."
   @spec law_ref(String.t()) :: Reader.law_ref()

@@ -16,8 +16,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Index do
   LAT-parsed, or an amending law first cited, after the read pass).
   """
 
-  alias SertantaiLegal.Scraper.AmendingLaw.Doc
-  alias SertantaiLegal.Scraper.Amendment.{Reader, ReaderVersion}
+  alias SertantaiLegal.Scraper.Amendment.ReaderVersion
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
 
   @dir "data/cache/amendment-index"
@@ -33,20 +32,32 @@ defmodule SertantaiLegal.Scraper.Amendment.Index do
     end
   end
 
+  @typedoc "What the read pass found in the document (`ReadPass.index_entries/1`)."
+  @type entries :: %{elements: [String.t()], references: map(), parts: map()}
+
   @doc """
-  Write `amending`'s index from its document, read for `laws` (law names),
-  at `pointers` (the provisions read: notes' and feed's, CV-07).
+  Write `amending`'s index from its document's `entries` (element ids,
+  repeals tables' sections, Schedule paragraphs' Parts:
+  `ReadPass.index_entries/1`), read for `laws` (law names), at `pointers`
+  (the provisions read: notes' and feed's, CV-07). The entries come in
+  ready-made, so the index reaches no reading code and the build can ask
+  `current?/3` without it (the Amending-law reader stamps session).
   """
-  @spec write(String.t(), Doc.t(), [String.t()], [String.t()]) :: :ok
-  def write(amending, doc, laws, pointers \\ []) do
+  @spec write(String.t(), entries(), [String.t()], [String.t()]) :: :ok
+  def write(
+        amending,
+        %{elements: elements, references: references, parts: parts},
+        laws,
+        pointers \\ []
+      ) do
     File.mkdir_p!(@dir)
 
     File.write!(
       path(amending),
       Jason.encode!(%{
-        "elements" => Map.keys(doc.elements),
-        "references" => Reader.references(doc),
-        "parts" => Reader.parts(doc),
+        "elements" => elements,
+        "references" => references,
+        "parts" => parts,
         "reader" => ReaderVersion.current(),
         "files" => ClmlStore.digest(amending),
         "laws" => Enum.sort(Enum.uniq(laws)),
