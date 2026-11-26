@@ -10,11 +10,14 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
   alias SertantaiLegal.Scraper.AmendingLaw.Doc
 
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.{
+    AmendmentsOf,
     PartLead,
     Parts,
+    PlaceApartFrom,
     Places,
     ScheduleWords,
-    Statements
+    Statements,
+    UpperBounds
   }
 
   alias SertantaiLegal.Scraper.Commencement.ClmlRef
@@ -72,7 +75,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
     |> law_pronouns()
   end
 
-  @cited ~r/^\s*(?:\d+[A-Z]*\s+)?(These\s+Regulations|This\s+Order|These\s+Rules|This\s+Act)\s+may\s+be\s+cited\b/u
+  # (the provision's number and its first paragraph's, as the text holds
+  # them: "1 1 These Regulations may be cited …", SI 2021/513 reg.1; Waste,
+  # Water and Climate, 2026-11-26)
+  @cited ~r/^\s*(?:\d+[A-Z]*\s+){0,2}(These\s+Regulations|This\s+Order|These\s+Rules|This\s+Act)\s+may\s+be\s+cited\b/u
   @pronoun_after ~r/((?:[.;]|^)\s*(?:\(?\d+[A-Z]*\)?\s+)?)(?:They|It)\s+(?=(?:shall\s+)?(?:extends?|appl(?:y|ies)|do(?:es)?\s+not\s+(?:extend|apply))\b)/u
 
   # after the law's citation ("These Regulations may be cited as …"), a
@@ -173,6 +179,9 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
     |> in_section()
     |> in_part()
     |> chapters()
+    |> UpperBounds.resolve()
+    |> PlaceApartFrom.resolve()
+    |> AmendmentsOf.resolve()
     |> ScheduleWords.resolve()
     |> PartLead.resolve()
   end
@@ -277,14 +286,15 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Units do
       )
 
   # "In Part 9 (miscellaneous), section 101 (…) extends also to …" (NERC
-  # Act 2006 s.108(6); 2011 c.25, 2015 c.26): the sections, the locator
-  # dropped (a section's number is the law's own; never a lead-in "In
-  # Part 5— (a) …")
+  # Act 2006 s.108(6); 2011 c.25, 2015 c.26), "In this Part of this Act
+  # sections 180, … do not extend to Scotland" (ukpga 1980/65 s.195(3)):
+  # the sections, the locator dropped (a section's number is the law's
+  # own; never a lead-in "In Part 5— (a) …", nor "only sections …")
   defp in_part(text) do
     if text =~ ~r/\bextends?\b/u,
       do:
         Regex.replace(
-          ~r/^(\s*(?:\d+[A-Z]*\s*)?)In\s+Part\s+[\dIVXLC]+[A-Z]*\s*(?:\([^()]*\)\s*)?,\s*(?=(?:sections?|regulations?|articles?)\s+\d)/u,
+          ~r/^(\s*(?:\d+[A-Z]*\s*)?)In\s+(?:Part\s+[\dIVXLC]+[A-Z]*\s*(?:\([^()]*\)\s*)?,|this\s+Part\s+of\s+this\s+Act\s*,?)\s*(?=(?:sections?|regulations?|articles?)\s+\d)/u,
           text,
           "\\1"
         ),

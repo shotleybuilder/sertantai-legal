@@ -142,8 +142,22 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingProvisions do
   # 2006 Act: SI 2007/1711): the Act by title
   defp marked(last, uris, titles, context) do
     case provision(last, uris) do
-      [] -> by_title(last, titles, context)
-      found -> found
+      [] ->
+        by_title(last, titles, context)
+
+      found ->
+        if named_other?(last, found, titles), do: by_title(last, titles, context), else: found
+    end
+  end
+
+  # the Act the words name, where the register knows its title, wins over
+  # a marker linking another law of that year (legislation.gov.uk's
+  # footnote links "1972 c.28" for the European Communities Act 1972:
+  # NISR 2017/88, Waste, Water and Climate Decision 1, 2026-11-26)
+  defp named_other?(chunk, [%{law: law}], titles) do
+    case title_law(chunk, titles) do
+      nil -> false
+      named -> named != law
     end
   end
 
@@ -363,7 +377,9 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingProvisions do
 
       named ->
         [{i, l} | groups] = List.last(named)
-        by_marker(text, groups, urls) || title_law(binary_part(text, 0, i + l), titles)
+        # (the Act the words name first, where the register knows its
+        # title: a marker can link another law, NISR 2017/88, Decision 1)
+        title_law(binary_part(text, 0, i + l), titles) || by_marker(text, groups, urls)
     end || text |> titles() |> Enum.reverse() |> Enum.find_value(&Map.get(titles, &1))
   end
 

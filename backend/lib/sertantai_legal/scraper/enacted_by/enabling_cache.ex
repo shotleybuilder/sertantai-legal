@@ -213,7 +213,16 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingCache do
             [wanted]
           )
 
-        Map.new(rows, fn [t, n] -> {t, n} end)
+        # (a title naming two laws identifies neither: the register holds
+        # "Freedom of Information (Scotland) Act 2002" as asp 2002/13 and
+        # ukpga 2002/13, SSI 2008/339; Waste, Water and Climate, 2026-11-26)
+        rows
+        |> Enum.group_by(fn [t, _] -> t end, fn [_, n] -> n end)
+        |> Enum.flat_map(fn
+          {t, [n]} -> [{t, n}]
+          {_t, _several} -> []
+        end)
+        |> Map.new()
     end
   end
 end

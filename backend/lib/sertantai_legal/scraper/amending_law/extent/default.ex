@@ -235,14 +235,24 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Default do
     end
   end
 
+  # stated elsewhere: the named provisions' own statements are read; or
+  # the exceptions listed after it, each read where it is: "This Act,
+  # apart from the provisions listed below, extends to the whole of the
+  # United Kingdom" (Climate Change Act 2008 s.99(1); Waste, Water and
+  # Climate, 2026-11-26)
+  defp elsewhere?(exc) do
+    exc =~
+      ~r/^(?:except|save)\s+(?:as|where|in\s+so\s+far\s+as)\s+(?:otherwise\s+)?(?:expressly\s+)?(?:provided|stated|specified|mentioned)\b/iu or
+      exc =~
+        ~r/^(?:except|save|apart\s+from|other\s+than)\s+(?:for\s+)?the\s+provisions\s+(?:listed|mentioned|specified|set\s+out)\s+below$/iu
+  end
+
   # the exceptions after a default: [] (stated elsewhere), lists, or :unread
   defp exceptions(%{"exc" => exc, "places" => default_places}, clause_ref, doc) do
     exc = String.trim(exc)
 
     cond do
-      # stated elsewhere: the named provisions' own statements are read
-      exc =~
-          ~r/^(?:except|save)\s+(?:as|where|in\s+so\s+far\s+as)\s+(?:otherwise\s+)?(?:expressly\s+)?(?:provided|stated|specified|mentioned)\b/iu ->
+      elsewhere?(exc) ->
         []
 
       # "except for Part 1, which extends to England and Wales only"

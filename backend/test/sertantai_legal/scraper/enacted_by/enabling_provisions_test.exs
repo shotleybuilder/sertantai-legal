@@ -534,4 +534,38 @@ defmodule SertantaiLegal.Scraper.EnactedBy.EnablingProvisionsTest do
              ]
     end
   end
+
+  describe "Waste, Water and Climate: Extent reader (2026-11-26)" do
+    @titles %{
+      "european communities act 1972" => "UK_ukpga_1972_68",
+      "employment medical advisory service act 1972" => "UK_ukpga_1972_28"
+    }
+
+    test "the Act the words name wins over a marker citing another (NISR 2017/88; Decision 1)" do
+      # legislation.gov.uk's footnote links "1972 c.28" (the Employment
+      # Medical Advisory Service Act) for the European Communities Act
+      text =
+        "The Department for Infrastructure f00001, being a department designated for the purposes of section 2(2) of the European Communities Act 1972 f00003 in relation to measures relating to the requirement for an assessment of the impact on the environment of projects likely to have significant effects on the environment, in exercise of the powers conferred on it by the said section 2(2), hereby makes the following Regulations:"
+
+      urls = %{
+        "f00001" => ["http://www.legislation.gov.uk/id/ukpga/2016/5"],
+        "f00003" => ["http://www.legislation.gov.uk/id/ukpga/1972/28"]
+      }
+
+      assert EnablingProvisions.parse(text, urls, @titles) == [
+               %{law: "UK_ukpga_1972_68", sections: ["2"], schedules: []}
+             ]
+    end
+
+    test "a marker the register title doesn't contradict stands" do
+      text =
+        "in exercise of the powers conferred by section 2(2) of the European Communities Act 1972 f00001 hereby makes:"
+
+      urls = %{"f00001" => ["http://www.legislation.gov.uk/id/ukpga/1972/68"]}
+
+      assert EnablingProvisions.parse(text, urls, @titles) == [
+               %{law: "UK_ukpga_1972_68", sections: ["2"], schedules: []}
+             ]
+    end
+  end
 end

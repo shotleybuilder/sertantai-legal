@@ -38,8 +38,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Forms do
              # (", which subject to subsections (8) to (10) below extends to
              # Scotland only— (a) may be cited as …": the dash lists what the
              # Act does, 1995/36 s.105(1); never with exceptions after it:
-             # "… with the exception of—", ", except …" — CV-S05 N6, N15)
-             "#{@subject}(?:,\\s*which(?:\\s+subject\\s+to\\s+[^—–,]{1,80}?)?)?\\s+(?:shall\\s+)?extends?\\s+(?:(?:only\\s+)?to\\s+(?:the\\s+whole\\s+of\\s+)?|throughout\\s+)((?>#{@place_list}))(?:\\s+only)?(?!\\s*[—–](?!\\s*\\(?a\\)?\\s*may\\s+be\\s+cited))(?!\\s*,?\\s*(?:with\\s+the\\s+exception|except|save\\s+(?:as|that|for)|apart\\s+from|other\\s+than|excluding)\\b)",
+             # "… with the exception of—", ", except …" — CV-S05 N6, N15;
+             # never a conditional extension: "These Regulations extend to
+             # Northern Ireland only insofar as they deal with …", SI 2018/98
+             # reg.1(3), Waste, Water and Climate, 2026-11-26)
+             "#{@subject}(?:,\\s*which(?:\\s+subject\\s+to\\s+[^—–,]{1,80}?)?)?\\s+(?:shall\\s+)?extends?\\s+(?:(?:only\\s+)?to\\s+(?:the\\s+whole\\s+of\\s+)?|throughout\\s+)((?>#{@place_list}))(?:\\s+only)?(?!\\s*(?:only\\s+)?(?:in\\s*so\\s+far|insofar|so\\s+far)\\s+as\\b)(?!\\s*[—–](?!\\s*\\(?a\\)?\\s*may\\s+be\\s+cited))(?!\\s*,?\\s*(?:with\\s+the\\s+exception|except|save\\s+(?:as|that|for)|apart\\s+from|other\\s+than|excluding)\\b)",
              "iu"
            )
   # "The provisions of this Act extend to England and Wales and, except as
@@ -102,7 +105,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Forms do
   # ("… as the relevant part of the Act or instrument amended": 2014 c.12
   # s.184(8); 2012 c.10, 2014 c.2, 2015 c.9; "… as the Regulations being
   # amended": SI 2019/188 reg.1A)
-  @amendments_same ~r/^(?:\(\w+\)\s*)?(?:(?:Subject\s+to|Except\s+as\s+(?:otherwise\s+)?(?:provided|set\s+out|specified|mentioned)\s+(?:by|in))[^,]*,\s*)?(?:(?:An?|The|Any|Each)\s+(?:other\s+)?(?:amendments?|repeals?|revocations?|modifications?)(?:\s*,\s*|\s+(?:and|or)\s+)?(?:(?:other\s+)?(?:amendments?|repeals?|revocations?|modifications?)(?:\s*,\s*|\s+(?:and|or)\s+)?)*|(?:An?|Any|Each)\s+provision\s+(?:of\s+th(?:is|ese)\s+(?:Act|Regulations|Order)\s+)?(?:that|which)\s+(?:amends|repeals|revokes)\b)(?<subj>.*?)\s+(?:(?:has|have|shall\s+have)\s+the\s+same\s+(?:application\s+and\s+)?extent\s+(?:and\s+application\s+)?(?:(?:with)?in\s+the\s+United\s+Kingdom\s+)?as\s+(?:that\s+of\s+)?|extends?\s+to\s+the\s+(?:same\s+)?part\s+or\s+parts\s+of\s+the\s+United\s+Kingdom\s+(?:as|to\s+which)\s+|extends?\s+to\s+any\s+part\s+of\s+the\s+United\s+Kingdom\s+to\s+which\s+)the\s+(?:relevant\s+part\s+of\s+the\s+(?:Act\b|(?=enactment|instrument)))?(?:amended\s+)?(?:enactments?|provisions?|instruments?|legislation|(?<=Act)|(?:Regulations|Order|Act)\s+being\s+amended)\b(?!\s+as\s+if)/iu
+  # ("Unless otherwise stated, each amendment …", SI 2025/412 reg.1; "Any
+  # provision of these Regulations amending a provision …", SI 2019/74
+  # reg.2; "… as the Act or instrument amended", SI 2018/374 reg.2: Waste,
+  # Water and Climate, 2026-11-26)
+  @amendments_same ~r/^(?:\(\w+\)\s*)?(?:(?:Subject\s+to|Except\s+as\s+(?:otherwise\s+)?(?:provided|set\s+out|specified|mentioned)\s+(?:by|in)|Unless\s+otherwise\s+(?:stated|provided|specified))[^,]*,\s*)?(?:(?:An?|The|Any|Each)\s+(?:other\s+)?(?:amendments?|repeals?|revocations?|modifications?)(?:\s*,\s*|\s+(?:and|or)\s+)?(?:(?:other\s+)?(?:amendments?|repeals?|revocations?|modifications?)(?:\s*,\s*|\s+(?:and|or)\s+)?)*|(?:An?|Any|Each)\s+provision\s+(?:of\s+th(?:is|ese)\s+(?:Act|Regulations|Order)\s+)?(?:(?:that|which)\s+(?:amends|repeals|revokes)|amending|repealing|revoking)\b)(?<subj>.*?)\s+(?:(?:has|have|shall\s+have)\s+the\s+same\s+(?:application\s+and\s+)?extent\s+(?:and\s+application\s+)?(?:(?:with)?in\s+the\s+United\s+Kingdom\s+)?as\s+(?:that\s+of\s+)?|extends?\s+to\s+the\s+(?:same\s+)?part\s+or\s+parts\s+of\s+the\s+United\s+Kingdom\s+(?:as|to\s+which)\s+|extends?\s+to\s+any\s+part\s+of\s+the\s+United\s+Kingdom\s+to\s+which\s+)the\s+(?:relevant\s+part\s+of\s+the\s+(?:Act\b|(?=enactment|instrument)))?(?:amended\s+)?(?:enactments?|provisions?|instruments?|legislation|(?<=Act)|Act\s+or\s+instrument|(?:Regulations|Order|Act)\s+being\s+amended)\b(?!\s+as\s+if)/iu
 
   # "This Act shall extend to Northern Ireland with the exception of— (a)
   # the provisions of Part 1; (b) any provision amending … which does not so

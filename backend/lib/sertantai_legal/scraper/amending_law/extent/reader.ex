@@ -18,6 +18,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Reader do
     Default,
     Excepted,
     Excepting,
+    ExceptSame,
     ExceptionList,
     Forms,
     Lists,
@@ -27,8 +28,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Reader do
     Patterns,
     QualifiedItems,
     Same,
+    SameItems,
     ScheduleRest,
     Targeted,
+    ThoseProvisions,
     Units,
     Unread
   }
@@ -109,9 +112,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Reader do
            Excepted.excepted(unit_sentences, doc) ++
            OwnParagraph.lists(doc) ++
            QualifiedItems.lists(unit_sentences, doc) ++
+           ThoseProvisions.lists(unit_sentences, doc) ++
+           ExceptSame.lists(unit_sentences, doc) ++
            extent_entries(applies))
         |> with_same(Same.amendments_same(unit_sentences, doc, default))
         |> Enum.flat_map(&excepted(&1, default))
+        |> SameItems.without_unread(SameItems.lists(unit_sentences, doc))
         |> with_schedule_rest(unit_sentences, default, introduced_by, doc),
       corresponds: Regex.match?(~r/\bcorresponds\s+to\s+the\s+repeal\b/i, clause),
       introduced_by: introduced_by,
