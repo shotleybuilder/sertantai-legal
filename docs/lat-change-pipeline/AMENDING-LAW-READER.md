@@ -1,6 +1,6 @@
 # The Amending-law reader: what it does (DRAFT, 2026-11-26)
 
-The step's spec: its aim, its scope, its boundary with the other readers, its substeps, and what makes them loop. The step's procedure is in WORKFLOW §6 and the `amending-reader-check` skill; the traps met in its code are in `backend/lib/sertantai_legal/scraper/amendment/CLAUDE.md`; the rules it follows are in `RULES.md`; background on the forms it reads is in `AMENDMENT-GUIDE.md`. It comes from the Amending-law reader readiness review (`.claude/sessions/lat-change-pipeline/2026-11-26-amending-law-reader-readiness-review.md`), which asks the Commencement and Extent reader retrospectives' questions of this reader (`COMMENCEMENT-READER.md`, `EXTENT-READER.md`). It describes the reader as it stood on 2026-11-26.
+The step's spec: its aim, its scope, its boundary with the other readers, its substeps, and what makes them loop. The step's procedure is in WORKFLOW §6 and the `amending-reader-check` skill; the traps met in its code are in `backend/lib/sertantai_legal/scraper/amendment/CLAUDE.md`; the rules it follows are in `RULES.md`; background on the forms it reads is in `AMENDMENT-GUIDE.md`. It comes from the Amending-law reader readiness review (`.claude/sessions/lat-change-pipeline/2026-11-26-amending-law-reader-readiness-review.md`), which asks the Commencement and Extent reader retrospectives' questions of this reader (`COMMENCEMENT-READER.md`, `EXTENT-READER.md`). It describes the reader as it stood on 2026-11-26, revised after "Amending-law reader: stamps that follow what changed" the same day; it is revised again after "Amending-law reader: step procedures".
 
 ## 1. Aim
 
@@ -37,22 +37,23 @@ For a change law B makes to law A:
 
 - **One owner per question.** This reader's claims are `law_text operation`, `level`, `by`, `savings`, `placed` (`Readers.AmendingLaw`, pure).
 - **Shared document code.** B is parsed by `AmendingLaw.Doc` and `Text`, which the Commencement and Extent readers and the Feed and Markup catalogues use too. Their stamps list some of these files, so an edit to one stales several readers' readings (§5.1).
-- **How the build joins them:** `Primary.primary/2` loads A's stored rules (`Amendment.Store.for_law`) and `fresh_rules` keeps those whose amending law's index is fresh. **It reads every other amending law from its text at build time** (`primary.ex:164-206`), the fallback the Extent reader dropped on 2026-11-25. So the build's stamp (`ChangeVocabulary.Version`) holds the whole reader (`amendment/*.ex`, `amendment/reader/*.ex`, `amending_law/*.ex`).
+- **How the build joins them:** `Primary.primary/2` loads A's stored rules (`Amendment.Store.for_law`), and `Readers.AmendingLaw` (pure) turns them into claims.
+- **No fallback** (the stamps session, 2026-11-26): the build reads stored rules only. An amending law of A's text changes (the stored rules' sources, and the feed's amending laws on A's changes other than commencements), its text held, whose index is not current for A (read by other code, from other text, for other laws only, or never read) makes A's build stale (`Store.Inputs`, `:amending_reader`) until the read pass writes it. Until then every build read such laws from their text (969 never read, 1,828 stale, on 2026-11-26), so the build's stamp held the whole reader. Now it holds only the rule, the store and the index of it, by name.
 
 ## 4. The substeps
 
 | Substep | Task | Reads | Writes | Stale when |
 |---|---|---|---|---|
-| Read pass | `lat.amending --read` (stale laws; or `--amending A,B` / `@FILE`, `--all`, `--regression`; `--preview [--diff FILE]` writes nothing) | B's CLML, notes and feed pointers (`ReadPass`, `ReadLaw`) | `amendment_rules` (`Store.write_changed`); the index `data/cache/amendment-index/<B>.json`; B's extent reading | `ReadPass.stale?`: `ReaderVersion` moved or B's text changed (`Index.fresh?`); a law pointing at B not read for (`laws_new?`, new LAT rows); the feed pointing at provisions not read |
-| Build | `lat.vocabulary --build` | `amendment_rules` of A; **B's text for any B not fresh** | `provision_changes`, claims | `Store.Inputs` fingerprints `max(read_at)` of A's rules; no stale reason for the reader (the build reads a stale B from its text) |
+| Read pass | `lat.amending --read` (stale laws; or `--amending A,B` / `@FILE`, `--all`, `--regression`; `--preview [--diff FILE]` writes nothing) | B's CLML, notes and feed pointers (`ReadPass`, `ReadLaw`) | `amendment_rules` (`Store.write_changed`: only the amended laws whose rules changed); the index `data/cache/amendment-index/<B>.json` (`Index.write`, its entries from `ReadPass.index_entries/1`); B's extent reading | `ReadPass.stale?`: `ReaderVersion` moved or B's text changed (`Index.fresh?`); a law pointing at B not read for (`laws_new?`, new LAT rows); the feed pointing at provisions not read |
+| Build | `lat.vocabulary --build` | `amendment_rules` of A (stored only) | `provision_changes`, claims | `Store.Inputs` fingerprints `max(read_at)` of A's rules; `:amending_reader` when an amending law of A's text changes is not current for A; `ChangeVocabulary.Version`, which holds only `Rule`, `Store` and `Index` of the reader |
 | Check | `lat.amending_check --family F --strata / --gate [--dump FILE] [--name-standard]` | the stored changes and claims, `disagreements.json` | reports | it reads the last build |
 | Catalogue | `lat.amendment_patterns --laws … [--accept]` | every held amending law through `CatalogueRead` (cache keyed on `CatalogueVersion`) | dry run; `test/fixtures/amendment_patterns/` with `--accept` | `CatalogueVersion` (the catalogue, the reader and the document) |
 | Probe | `lat.amending --amending A --provision ID` | one provision | nothing | — |
 
 ## 5. Why the substeps loop
 
-1. **One stamp over the reader and shared code.** `ReaderVersion` globs `amendment/reader/*.ex` and names the shared document files and `lat_ref.ex`, `territory.ex`; no test holds it exact (`VersionCoverageTest` checks only that nothing reached is missing). So any edit there stales every amending law: all 2,627 indexes hold `7f3bd44a50c4` (2026-11-15), and three commits since, two of them the Commencement reader's (`lat_ref.ex`, 2026-11-21), touched its files. Environmental Protection re-read 798 laws twice for zero-diff edits (25 min each).
-2. **The build's stamp holds the reader.** Because of the fallback (§3), any reader edit moves every build's code version too.
+1. **Stamps exact by reach** (the stamps session, 2026-11-26): `ReaderVersion` is what the read pass's reading reaches (`ReadLaw`, 29 files by name), `CatalogueVersion` what `CatalogueRead` reaches; `AmendmentReadStampsTest` holds both exact both ways. Until then globs missed `ReadLaw`, `ProvisionRead`, `LawDoc` and `AmendingLaw.Enacted` (an edit to them staled no rule) and listed three files only the read pass reaches. Shared files the reading really uses stay in it: the Commencement reader's 2026-11-21 edit to `LatRef.covers?` staled every amending law, and rightly, since `Reader.NewNumbers` calls it. Environmental Protection re-read 798 laws twice for zero-diff edits (25 min each).
+2. **A reader edit no longer moves the build's code version** (the fallback dropped, §3): it stales the builds whose amending laws it stales (`:amending_reader`), and a re-read writing the same rules stales none (`write_changed` by amended law). A shared document file (`text.ex`, `operation.ex`, `schedule_refs.ex`) no longer reaches the build at all.
 3. **The read pass takes no family.** `--read` reads every stale law store-wide or a list by hand; `--stale` and `--family` are the extents write's only. `lat.reread` has no amending substep and `lat.stale` no amending reason.
 4. **The gate is real only after the first write and rebuild** (Maritime Safety: newly read laws joined the gate).
 5. **The by-design groups hide misreads** (quote-dropped, "no record"): each is read by law, never stamped (Environmental Protection, Fire and OH&S).
@@ -81,8 +82,8 @@ Every stored text change, all families (2026-11-26; `backend/data/reports/amendi
 
 ## 7. Open questions
 
-- **Stamps:** an exact `ReaderVersion` (by name, held by a test both ways), shared document code staling only the readers whose reading it changes, and the build's fallback dropped (an `:amending_reader` stale reason instead).
+- **Stamps:** settled by the stamps session (§5.1, §5.2): exact by reach, held by `AmendmentReadStampsTest`; the build's fallback dropped (`:amending_reader`).
 - **Procedures as tasks:** `--read --stale [--family F]`, an amending substep in `lat.reread` (before the commencement and extent substeps), `lat.stale` naming the laws.
-- **Mixed modules:** `ReadPass` (feed, DB, CLML and file IO beside the read) and `ReadLaw` (notes from the DB beside `rules/3`).
+- **Mixed modules:** `TextEffect` is out of `ReadLaw`, and `Index` no longer reaches the reader (its entries come from `ReadPass.index_entries/1`). `ReadLaw`'s notes query stays in the stamp: it decides which provisions are read. `ReadPass` stays the orchestrator, outside every stamp.
 - **Decided 2026-11-26** (readiness review, Decision 1): the stamps, the fallback and the module splits go to "Amending-law reader: stamps that follow what changed"; the procedures to "Amending-law reader: step procedures". This spec is revised after each.
 - **legislation.gov.uk first where it speaks:** decided (§6); the build's part is Evidence's.

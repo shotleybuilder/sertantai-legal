@@ -5,9 +5,11 @@ This file lists the traps met in Amending-law reader work: one line each, with w
 ## Stamps and cycles
 
 - **Any edit under `ReaderVersion`'s files stales every amending law**, a refactor or a compiler-warning fix included. Run `mix compile --warnings-as-errors` and `mix test test/sertantai_legal/architecture` before the read pass, never after. (Environmental Protection, 2026-11-10: 798 laws re-read twice, zero-diff, 25 min each.)
-- **Shared files stale this reader from other steps.** `lat_ref.ex`, `territory.ex` and `amending_law/doc.ex`, `text.ex` are in `ReaderVersion`; two Commencement reader commits to `lat_ref.ex` (2026-11-21) staled all 2,627 amending laws. Check `git log` on the stamp's files before trusting the index. (Readiness review, 2026-11-26.)
-- **The build reads a stale amending law from its text** (`Primary.fresh_rules`), so a stale index costs every build, silently: look for "N amending laws read from their text" in the build log. It checks `Index.fresh?`, not `current?`, so a law new to the index keeps the old rules.
-- **A module under `amendment/` stales every build** unless it is on `ChangeVocabulary.Version`'s except list. New review code goes in `amendment/review/`. (Review tooling, 2026-11-12.)
+- **Shared files stale this reader from other steps.** `lat_ref.ex`, `territory.ex`, `lat_parser/xml.ex` and the `amending_law/` document files are in `ReaderVersion` because the reading reaches them; two Commencement reader commits to `lat_ref.ex` (2026-11-21) staled all 2,627 amending laws. Check `git log` on the stamp's files before trusting the index. (Readiness review, 2026-11-26.)
+- **The stamps are lists by name, exact by reach** (`AmendmentReadStampsTest`). A new file the reading reaches fails the test until it is added; a stamp's own file and every other stamp are stops. (Stamps session, 2026-11-26.)
+- **The build reads stored rules only.** A stale or never-read amending law is `:amending_reader` in `lat.stale`, never read from text by the build: write it with `lat.amending --read`, then build. Only the old label path's collector still reads one from its text. (Stamps session, 2026-11-26: 969 never read, 1,828 stale, had been read from text by every build.)
+- **The build's version lists only `Rule`, `Store` and `Index` of this reader** (`StageSplitTest`). Anything the build calls must not reach `ReadLaw` or `Reader`: keep `Index` free of reading code (its entries come from `ReadPass.index_entries/1`) and ask `TextEffect`, not `ReadLaw`, whether an effect is a text change.
+- **Tests run in one transaction, so `now()` never moves.** To test that a write keeps `read_at`, date the rows back first (`store_test`).
 - **Making laws parses stale the reader.** A law given LAT rows after the read is not in the index's `laws`, so `ReadPass.stale?` re-reads its amenders. (Maritime Safety: the Ports Act 1991.)
 
 ## Running the step

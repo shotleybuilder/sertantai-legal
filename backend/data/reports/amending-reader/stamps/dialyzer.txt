@@ -1,0 +1,22 @@
+Finding suitable PLTs
+Checking PLT...
+[:ash, :ash_json_api, :ash_phoenix, :ash_postgres, :ash_sql, :asn1, :aws_signature, :bandit, :castore, :circular_buffer, :compiler, :conv_case, :corsica, :crux, :crypto, :db_connection, :decimal, :dns_cluster, :ecto, :ecto_sql, :eex, :elixir, :ets, :ex_ast, :ex_unit, :explorer, :expo, :extractous_ex, :finch, :floki, :gettext, :glob_ex, :hpax, :igniter, :inets, :iterex, :jason, :jose, :json_xema, :kernel, :logger, :mime, :mint, :mix, :mnesia, :multigraph, :nimble_csv, :nimble_options, :nimble_pool, :oban, :owl, :pdf_elixide, :phoenix, :phoenix_ecto, :phoenix_html, :phoenix_live_view, :phoenix_pubsub, :phoenix_template, :picosat_elixir, :plug, :plug_crypto, :postgrex, :public_key, :reactor, :req, :rewrite, :runtime_tools, :rustler, :rustler_precompiled, :sertantai_legal, :sourceror, :spark, :spitfire, :splode, :ssl, :stdlib, :stream_data, :sweet_xml, :table, :table_rex, :telemetry, :telemetry_metrics, :telemetry_poller, :text_diff, :thousand_island, :tidewave, :usage_rules, :websock, :websock_adapter, :xema, :xmerl, :yamerl, :yaml_elixir, :ymlr, :zenohex]
+PLT is up to date!
+ignore_warnings: .dialyzer_ignore.exs
+
+Starting Dialyzer
+[
+  check_plt: false,
+  init_plt: ~c"/var/home/jason/Desktop/sertantai-legal/backend/priv/plts/dialyzer.plt",
+  files: [~c"/var/home/jason/Desktop/sertantai-legal/backend/_build/dev/lib/sertantai_legal/ebin/Elixir.SertantaiLegal.Scraper.LawStart.Sentences.beam",
+   ~c"/var/home/jason/Desktop/sertantai-legal/backend/_build/dev/lib/sertantai_legal/ebin/Elixir.SertantaiLegalWeb.Endpoint.beam",
+   ~c"/var/home/jason/Desktop/sertantai-legal/backend/_build/dev/lib/sertantai_legal/ebin/Elixir.SertantaiLegal.Scraper.AmendingLaw.Extent.Statements.beam",
+   ~c"/var/home/jason/Desktop/sertantai-legal/backend/_build/dev/lib/sertantai_legal/ebin/Elixir.SertantaiLegal.Metrics.Reporter.beam",
+   ~c"/var/home/jason/Desktop/sertantai-legal/backend/_build/dev/lib/sertantai_legal/ebin/Elixir.Inspect.SertantaiLegal.Legal.EvidencePattern.beam",
+   ...],
+  ...
+]
+Total errors: 23, Skipped: 23, Unnecessary Skips: 0
+done in 0m35.58s
+done (passed successfully)
+dialyzer exit 0

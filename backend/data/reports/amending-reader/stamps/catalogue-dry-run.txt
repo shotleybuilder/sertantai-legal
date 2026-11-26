@@ -1,0 +1,66 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+527 laws, 1436 amending laws
+laws read 4 at once: 35.6 GB available (6.0 kept), ~1.8 GB a law; 0.5 of 6 cores busy; max 4
+  50/1436
+  100/1436
+  150/1436
+  200/1436
+  250/1436
+  300/1436
+  350/1436
+  400/1436
+  450/1436
+  500/1436
+  550/1436
+  600/1436
+  650/1436
+  700/1436
+  750/1436
+  800/1436
+  850/1436
+  900/1436
+  950/1436
+  1000/1436
+  1050/1436
+  1100/1436
+  1150/1436
+  1200/1436
+  1250/1436
+  1300/1436
+  1350/1436
+  1400/1436
+
+15042 provisions read in 1436 amending laws (32 not held)
+unclassified: 0
+161 patterns, 335 examples; a pattern's first in a law not reading the same alone: 42
+
+provisions by outcome:
+  6489  none
+  3008  rules:substituted:words
+  1596  rules:inserted:words
+  1342  rules:inserted:provision
+  917  rules:repealed:words
+  693  rules:repealed:provision
+  455  rules:substituted:provision
+  302  rules:inserted+substituted:provision
+  57  rules:inserted+substituted:words
+  44  rules:inserted+substituted:provision+words
+  44  rules:repealed:provision+words
+  26  rules:inserted:provision+words
+  16  rules:inserted+repealed:provision+words
+  10  rules:inserted+repealed:words
+  9  rules:repealed+substituted:words
+  8  rules:inserted+repealed+substituted:provision+words
+  8  rules:repealed+substituted:provision+words
+  7  rules:inserted+repealed:provision
+  4  rules:inserted+repealed+substituted:words
+  4  rules:substituted:provision+words
+  3  rules:repealed+substituted:provision
+
+new patterns (no status): 0
+patterns no longer seen: 0
+examples reading differently from expected: 0
+dry run: generated files in data/reports/catalogues/dry-run/amendment_patterns; the fixtures are untouched (--accept writes them)
+run: cold, amending: 0 hits 1436 read, 364.0 s (serial 0.0 s), 3492 MB, 4 workers
