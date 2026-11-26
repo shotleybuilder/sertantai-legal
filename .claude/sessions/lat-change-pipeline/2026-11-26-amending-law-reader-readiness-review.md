@@ -38,6 +38,7 @@ bugs:
     fix: "Evidence's tier order for operation and level on covered changes, with a legislation.gov.uk-error register for proven ones; designed as for #202"
     step: Evidence
     status: open
+    issue: 203
 artifacts:
   - docs/lat-change-pipeline/AMENDING-LAW-READER.md
   - backend/lib/sertantai_legal/scraper/amendment/CLAUDE.md
