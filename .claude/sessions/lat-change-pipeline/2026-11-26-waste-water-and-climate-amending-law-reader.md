@@ -429,6 +429,22 @@ Tests are in `test/sertantai_legal/scraper/amendment/reader/waste_water_climate_
 - **A sixth regression, fixed:** an aside inside a caption, "(as amended by section 19 of the Armed Forces Act 2021)", was no longer stripped once asides stopped at ")". The caption's law was then named, so 2022 c.32 s.195 (9 rules), 1994 c.39 Sch.13 para.80 (3) and SI 2019/453 lost their law. An aside now ends at a lone ")" too; all came back, and 1994 c.39 para.80(9) also gives s.115(3) repealed, as its words say.
 - **New misread, below the triage size:** 2023 c.30 s.339–340 "CEMA 1979 is amended": the defined term is not resolved, so its rules go to the Finance Act 2009 (stored: Finance Act 2021). Both readings are wrong; it is one law, so it stays a known limit for now (bug entry below).
 
+**Preview of every amending law (`wwc/fix-all-*`, Jason's go).** 3,298 amending laws, 1,619 changed pairs. 692 pairs from 111 laws lay outside the round and the regression list; every one was read.
+- **Right:**
+  - Laws named for the first time under their own titles (the title fix): SI 2011/983, SI 2012/973, SI 2000/1335, the VAT Act 1994 changes in 1997 c.16, SI 1992/36, SI 2019/270, SI 2022/1260 and others.
+  - Part headings at `pt.N`; Part substitutions with the quote's new numbers inserted (the decided rule).
+  - List items placed one by one; "there were inserted/substituted" modifications dropped (2020 c.7).
+  - Schedule paragraphs no longer read as sections (1997 c.16 Sch.5).
+- **Four new classes, each fixed test first** (`09736d11`, `e6a89d70`):
+  1. An SI whose regulations apply Act sections as modified, amended in the sections' words ("In section 414 …, for subsection (3) substitute—" under "Regulation 12 is amended"; "in regulation 34A, in the modified section 479A—"). It is now words in the regulation, at the brackets named before the phrase. SI 2016/575 and SI 2019/177 on SI 2008/1911 (131 rules), WSI 2018/725 and SI 2016/562. Exposed by the title fix, with "(Application of Companies Act 2006) Regulations 2008" now named whole.
+  2. A Part beside a provision insertion read as the Part inserted ("After Part 3 … insert—", "In Part 1, after Chapter 4, insert—"): 50 rules in about 40 laws. Also "Chapter N of Part M" and "In Part 18, in regulation 59, omit …" read as the whole Part. Now no Part rule.
+  3. The restated-number fix over-reached: "For regulation 4(4) substitute— (4) (a) …" (NISR 2000/87) and "For regulation 3 (application) substitute— 3 (1) …" (SI 2020/362, SI 2023/787, SI 2021/1316, SI 1995/738) lost their place. A quote restates its number now only when it goes on with the bracket named.
+  4. The title pattern stopped at a year inside the law's own bracket.
+- **Left:**
+  - SI 2009/2093 reads VAT Sch.8's Group 17 as s.1. A Schedule's Group: for the amending Schedules session.
+  - 2023 c.30 "CEMA 1979": the known limit above.
+- **Previews after these fixes:** `fix-e` to `fix-h`, over the laws each fix reaches (stored rules by SQL, every law with a Part rule) and the regression list. Every pair read; all right.
+
 **Parking list**
 - Amending-law reader: SI 2019/414 reg.8(4)(b). An inserted definition holding an as-if list is read as 12 rules; the right reading is one, words inserted in reg.5(1). One law, below the triage size; a known limit unless a field diff shows it wider.
 - Amending-law reader: the Land Drainage Act 1991 is named only in a caption, "(which amends the Land Drainage Act 1991)" (2021 c.30 s.95), and still takes rules. Its reach is to be read in the field diff.
