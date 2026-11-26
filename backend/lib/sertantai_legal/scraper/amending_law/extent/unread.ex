@@ -58,8 +58,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.Unread do
 
   # "Any saving or transitional provision in these Regulations has the same
   # extent … as the provision to which it relates" (SI 2019/742 reg.2(3)):
-  # the law's savings, never its amendments or the law itself
-  @savings ~r/^\s*(?:Any|An?|Each|Every|The)\s+(?:savings?|transitional|transitory)(?:\s*(?:,|or|and)\s*(?:savings?|transitional|transitory))*\s+provisions?\s+(?:in|of|made\s+by)\s+th(?:is|ese)\s+(?:Act|Regulations|Order|Rules)\s*$/iu
+  # the law's savings, never its amendments or the law itself; with no
+  # article, and its supplementary provision too ("Transitional or saving
+  # provision made by these Regulations", SI 2019/93 reg.1; "Any
+  # supplementary provision made by these Regulations in relation to any
+  # enactment or instrument", SI 2005/2035 reg.1: Waste, Water and Climate,
+  # 2026-11-26)
+  @savings ~r/^\s*(?:(?:Any|An?|Each|Every|The)\s+)?(?:savings?|transitional|transitory|supplementary)(?:\s*(?:,|or|and)\s*(?:savings?|transitional|transitory|supplementary))*\s+provisions?\s+(?:in|of|made\s+by)\s+th(?:is|ese)\s+(?:Act|Regulations|Order|Rules)(?:\s+in\s+relation\s+to\s+any\s+enactment(?:\s+or\s+instrument)?)?\s*$/iu
 
   @as_amended ~r/,?\s*as\s+amended\s+by\s+th(?:is|ese)\s+(?:Act|Regulations|Order|Rules)\b/iu
 

@@ -314,4 +314,41 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Extent.WasteWaterClimateFormsTest d
       assert Extent.of_change(e, ["sch.2"], nil) == nil
     end
   end
+
+  # the check after write 2: a savings or supplementary statement makes no change (2 laws, 195 changes)
+  describe "a savings or supplementary provision's same extent withholds nothing" do
+    test "\"Transitional or saving provision made by these Regulations has the same extent …\" (SI 2019/93 reg.1)" do
+      e =
+        read(
+          "UK_uksi_2019_93",
+          p2s("regulation-1", [
+            {3,
+             "An amendment, repeal or revocation made by these Regulations has the same extent as the provision to which it relates."},
+            {4,
+             "Transitional or saving provision made by these Regulations has the same extent as the provision to which it relates."}
+          ]) <> ExtentDoc.p1("regulation-2", "Words.")
+        )
+
+      assert same(e) == [["*"]]
+      assert unread(e) == []
+      assert Extent.of_change(e, ["reg.2"], nil) == :same
+    end
+
+    test "\"Any supplementary provision made by these Regulations in relation to any enactment or instrument has the same extent …\" (SI 2005/2035 reg.1)" do
+      e =
+        read(
+          "UK_uksi_2005_2035",
+          p2s("regulation-1", [
+            {2,
+             "Any amendment or repeal made by these Regulations has the same extent as the enactment being amended or repealed."},
+            {3,
+             "Any supplementary provision made by these Regulations in relation to any enactment or instrument has the same extent as the enactment or instrument in relation to which the supplementary provision is made."}
+          ]) <> ExtentDoc.p1("regulation-8", "Words.")
+        )
+
+      assert same(e) == [["*"]]
+      assert unread(e) == []
+      assert Extent.of_change(e, ["reg.8(3)"], nil) == :same
+    end
+  end
 end
