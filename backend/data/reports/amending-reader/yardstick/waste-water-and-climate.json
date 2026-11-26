@@ -1,0 +1,20 @@
+{
+  "at": "2026-11-26T18:32:24.754390Z",
+  "family": "Waste, Water and Climate",
+  "level": {
+    "agree": 11566,
+    "differ": 232
+  },
+  "operation": {
+    "agree": 10752,
+    "differ": 849,
+    "gov_only": 13236,
+    "law_only": 1711
+  },
+  "strata": {
+    "A": 10702,
+    "D": 1026,
+    "L": 1584
+  },
+  "text_changes": 26548
+}

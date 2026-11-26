@@ -380,7 +380,7 @@ So a catalogue or tool edit stales nothing stored, and a reader fix stales build
 **Outputs.** `amendment_rules`; law-text claims (operation, level, `by`).
 
 **Check.**
-1. **The read pass current.** `ReadPass.stale?` for every family amending law with its text held. A law that points to it but was not read for (given LAT rows since) makes it stale. Read with `mix lat.amending --read --amending <laws>`, one law at a time, after a `--preview`. Take a restore point of `amendment_rules`, `extent_rules` and the amendment index first.
+1. **The read pass current, written first at Measure** (Amending-law reader: step procedures, 2026-11-26). The stale amending laws are those behind the builds' `:amending_reader` reason (`StepProcedures.AmendingStale`): each built law's text amenders (`Amendment.TextAmenders`: its rules' sources, and the feed's amending laws on its text effects), their text held, not read, read by other reader code or from other text, or not read for the law. `mix lat.stale --family F --reasons` counts them, `mix lat.amending --read --stale --family F [--preview --diff FILE]` reads them, and `mix lat.reread --family F --run --tag T` runs that read first in the chain, before the commencement and extent re-reads and the rebuild. Take a restore point of `amendment_rules`, `commencement_rules`, `extent_rules`, `provision_changes`, `provision_change_claims`, `lat_events` and the amendment index first.
 2. **Catalogue:** `mix lat.amendment_patterns --laws <every family's laws so far> --accept`. A `--family` run replaces the fixture, so the catalogue is run over every family's laws together (Decision 2, 2026-11-06). Every changed reading is reviewed.
 3. **Pre-flight for a fix:** `mix lat.preflight --family F` (compile with warnings as errors, the architecture tests, golden from inputs, the checked rows), then `mix lat.amending --read --preview --amending <family laws> --diff FILE` and `--preview --regression --diff FILE`. The field diff (`Amendment.Review.RuleDiff`) groups old against new rules by the fields that differ; class every group before the read pass.
 4. **Rebuild**, then golden from inputs: `mix lat.vocabulary --golden` (never only `--check`, which scores golden laws outside the family from stale stored changes).
@@ -396,12 +396,13 @@ So a catalogue or tool edit stales nothing stored, and a reader fix stales build
      - `unjoined`;
      - `no operation from legislation.gov.uk: …`;
      - `law text only: …`.
-   - **Review.** Each group is read in the amending law's text and rows. Its status goes in `test/fixtures/amendment_patterns/disagreements.json`: `fix:`, `known:` or `check:`, keyed `"<cause> @ <amending law>"`, else by cause.
+   - **By coverage** (RULES `amending-legislation-gov-uk-first-where-it-speaks`): each group is split by stratum. A D group (legislation.gov.uk states the change and differs) with no reviewed status is `known: legislation-gov-uk-speaks`; only the L groups are left to review. `--strata` also records the yardstick (`Measures.AmendingYardstick`: operation agree, differ, law only, legislation.gov.uk only; level agree, differ), which `mix lat.measures --family F` prints.
+   - **Review.** Each L group is read in the amending law's text and rows. Its status goes in `test/fixtures/amendment_patterns/disagreements.json`: `fix:`, `known:` or `check:`, keyed `"<cause> @ <amending law>"`, else by cause.
    - **The review's tasks** (Amending-law reader: review tooling, 2026-11-12): `--gate --dump FILE` writes each group's changes with their provisions' words, rules and legislation.gov.uk's claims; `mix lat.amending --amending A --provision ID` probes one provision; `--gate --name-standard --review REPORT` proposes the standard wordings beside each group's words (a dry run; `--write` once Jason decides). The write sequence is in the `amending-reader-check` skill, step 6.
 
 **Pass rule** (Decision 1, Jason 2026-11-06, Maritime Safety: Amending-law reader):
-- the read pass is current (no stale family amending law);
-- the gate prints PASS: every D and L group named `known:`;
+- the read pass is current (`mix lat.stale --family F` shows no `:amending_reader`);
+- the gate prints PASS: every L group named `known:`, the D groups `known:` by coverage unless reviewed otherwise;
 - the catalogue test passes over every family's laws, with each fixed form unit-tested;
 - golden all-pass;
 - no regression in the families already through (their strata).

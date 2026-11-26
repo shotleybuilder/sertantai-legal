@@ -1,23 +1,23 @@
                      grp                     | text_changes | law_speaks | gov_speaks | op_agree | op_differ | op_law_only | op_gov_only | lv_agree | lv_differ 
 ---------------------------------------------+--------------+------------+------------+----------+-----------+-------------+-------------+----------+-----------
-                                             |       104935 |      36091 |      99476 |    28293 |      2339 |        5459 |       68844 |    30603 |       554
- Waste, Water and Climate (round)            |        36362 |      13312 |      34651 |    10755 |       846 |        1711 |       23050 |    11564 |       234
- 💚 ENVIRONMENTAL PROTECTION                 |        12467 |       3986 |      12060 |     3254 |       325 |         407 |        8481 |     3574 |        72
- 💚 TOWN & COUNTRY PLANNING                  |        10432 |       3883 |       9507 |     2724 |       234 |         925 |        6549 |     2964 |        63
- 💙 TRANSPORT: Road Safety                   |         7967 |       2958 |       7239 |     2054 |       176 |         728 |        5009 |     2261 |        68
- 💙 OH&S: Occupational / Personal Safety     |         6976 |       1908 |       6556 |     1349 |       139 |         420 |        5068 |     1473 |        23
- 💙 PUBLIC: Building Safety                  |         6580 |       2118 |       6295 |     1540 |       293 |         285 |        4462 |     1824 |        26
- 💙 PUBLIC: Consumer / Product Safety        |         6239 |       1917 |       5943 |     1586 |        35 |         296 |        4322 |     1618 |         5
- 💙 TRANSPORT: Maritime Safety               |         4674 |       1611 |       4509 |     1378 |        68 |         165 |        3063 |     1465 |        21
- 💙 FIRE: Dangerous and Explosive Substances |         3530 |       1882 |       3290 |     1519 |       123 |         240 |        1648 |     1640 |        16
- 💙 FIRE                                     |         2383 |        482 |       2355 |      434 |        20 |          28 |        1901 |      449 |         5
- 💚 NUCLEAR & RADIOLOGICAL                   |         1613 |        662 |       1555 |      572 |        32 |          58 |         951 |      602 |         7
- 💚 PLANT HEALTH                             |         1441 |        173 |       1428 |      154 |         6 |          13 |        1268 |      161 |         0
- 💙 OH&S: Offshore Safety                    |         1143 |        373 |       1110 |      326 |        14 |          33 |         770 |      336 |         7
- 💙 OH&S: Mines & Quarries                   |          913 |        317 |        826 |      219 |        11 |          87 |         596 |      231 |         2
- (none)                                      |          691 |        161 |        684 |      151 |         3 |           7 |         530 |      152 |         2
- 💚 TREES: Forestry & Timber                 |          605 |        175 |        586 |      150 |         6 |          19 |         430 |      155 |         1
- 💙 HEALTH: Coronavirus                      |          504 |         75 |        468 |       35 |         4 |          36 |         429 |       39 |         0
- 💙 OH&S: Gas & Electrical Safety            |          415 |         98 |        414 |       93 |         4 |           1 |         317 |       95 |         2
+                                             |        76119 |      36091 |      70660 |    28293 |      2339 |        5459 |       40028 |    30603 |       554
+ Waste, Water and Climate (round)            |        26548 |      13312 |      24837 |    10755 |       846 |        1711 |       13236 |    11564 |       234
+ 💚 TOWN & COUNTRY PLANNING                  |         9102 |       3883 |       8177 |     2724 |       234 |         925 |        5219 |     2964 |        63
+ 💚 ENVIRONMENTAL PROTECTION                 |         8050 |       3986 |       7643 |     3254 |       325 |         407 |        4064 |     3574 |        72
+ 💙 TRANSPORT: Road Safety                   |         6828 |       2958 |       6100 |     2054 |       176 |         728 |        3870 |     2261 |        68
+ 💙 OH&S: Occupational / Personal Safety     |         5044 |       1908 |       4624 |     1349 |       139 |         420 |        3136 |     1473 |        23
+ 💙 PUBLIC: Consumer / Product Safety        |         4147 |       1917 |       3851 |     1586 |        35 |         296 |        2230 |     1618 |         5
+ 💙 PUBLIC: Building Safety                  |         4063 |       2118 |       3778 |     1540 |       293 |         285 |        1945 |     1824 |        26
+ 💙 TRANSPORT: Maritime Safety               |         3141 |       1611 |       2976 |     1378 |        68 |         165 |        1530 |     1465 |        21
+ 💙 FIRE: Dangerous and Explosive Substances |         2907 |       1882 |       2667 |     1519 |       123 |         240 |        1025 |     1640 |        16
+ 💚 NUCLEAR & RADIOLOGICAL                   |         1334 |        662 |       1276 |      572 |        32 |          58 |         672 |      602 |         7
+ 💚 PLANT HEALTH                             |         1307 |        173 |       1294 |      154 |         6 |          13 |        1134 |      161 |         0
+ 💙 FIRE                                     |          971 |        482 |        943 |      434 |        20 |          28 |         489 |      449 |         5
+ 💙 OH&S: Offshore Safety                    |          632 |        373 |        599 |      326 |        14 |          33 |         259 |      336 |         7
+ 💚 TREES: Forestry & Timber                 |          586 |        175 |        567 |      150 |         6 |          19 |         411 |      155 |         1
+ (none)                                      |          473 |        161 |        466 |      151 |         3 |           7 |         312 |      152 |         2
+ 💙 OH&S: Mines & Quarries                   |          421 |        317 |        334 |      219 |        11 |          87 |         104 |      231 |         2
+ 💙 HEALTH: Coronavirus                      |          374 |         75 |        338 |       35 |         4 |          36 |         299 |       39 |         0
+ 💙 OH&S: Gas & Electrical Safety            |          191 |         98 |        190 |       93 |         4 |           1 |          93 |       95 |         2
 (19 rows)
 

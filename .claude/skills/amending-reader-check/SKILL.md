@@ -1,6 +1,6 @@
 ---
 name: Amending Reader Check
-description: The LAT Change Pipeline's amending-law reader acceptance check for one family of laws — the read pass made current, the amending provisions' catalogue, golden from inputs, the strata, and the code gate (every change the law's text states that legislation.gov.uk contradicts or leaves unstated, grouped by cause and reviewed in disagreements.json). Use for each new family; only misreads are fixed.
+description: The LAT Change Pipeline's amending-law reader acceptance check for one family of laws — the stale amending laws written first (lat.reread), the amending provisions' catalogue, golden from inputs, the strata and yardstick against legislation.gov.uk, and the code gate (every change the law's text states that legislation.gov.uk contradicts or leaves unstated, grouped by cause, amending law and coverage; only the law's text alone is reviewed in disagreements.json). Use for each new family; only misreads are fixed.
 ---
 
 > **LAT Change Pipeline — step: Amending-law reader.** Where it sits, its inputs, outputs and pass rule: `docs/lat-change-pipeline/WORKFLOW.md`. Terms and former codes (CV-…): `docs/lat-change-pipeline/GLOSSARY.md`.
@@ -29,43 +29,51 @@ Prove the amendment reader (`Amendment.Reader`, `Reader.*`; claims via `ChangeVo
 
 ## Steps
 
-Every step is a tested task (Amending-law reader: review tooling, 2026-11-12); no scratch scripts. Ask Jason before the runs that write or take long, and say how long each takes.
+Every step is a tested task; no scratch scripts. Ask Jason before the runs that write or take long, and say how long each takes. The steps follow the phases (WORKFLOW "How a step is run"); the stale list, the chain and the gate by coverage are the Amending-law reader step procedures session's (2026-11-26).
 
-0. **Pre-flight** (about 6 min, read-only): `mix lat.preflight --family "F" [--laws L1,L2]`. It runs the compile with warnings as errors, the architecture tests, golden from inputs and the checked rows, plus the fold gate on the laws named. Fix a failure first; it is the code's, not the family's.
-1. **The read pass current** (seconds to count; about a minute to read ~250 laws). List the family's amending laws: the notes', the feed's, with their text held. Count those `ReadPass.stale?` marks. A law that points to one but was not read for (given LAT rows since) makes it stale. Preview with `mix lat.amending --read --preview --amending <laws> --diff FILE`, which writes nothing; check the report and the field diff hold only gains. Then follow the write sequence (step 6).
-2. **Strata and gate** (seconds, read-only):
+**Plan: from the last close.** The plan lists the step's parked bugs (above) and the FAIL lines of the previous family's `mix lat.step_close --step "Amending-law reader"`, each a todo or out of scope with a reason.
+
+**Measure: write first.** The gate is real only after the first write and its rebuild (gotchas).
+0. **Pre-flight** (about 6 min, read-only): `mix lat.preflight --family "F" [--laws L1,L2]`: the compile with warnings as errors, the architecture tests, golden from inputs and the checked rows. A failure is the code's, fixed first.
+1. **The stale amending laws** (seconds, read-only): `mix lat.stale --family "F" --reasons` names those behind the family's `:amending_reader` by cause: not read, on old reader code or other text, not read for a built law (`StepProcedures.AmendingStale`; `--list` each one). They are each built law's text amenders (`Amendment.TextAmenders`: its rules' sources, the feed's amending laws on its text effects) with their text held.
+2. **The write** (Jason's go; about 16 min for all 2,627 amenders, minutes for a family): a restore point first, `./scripts/nas/nas-backup.sh --tables amendment_rules,commencement_rules,extent_rules,provision_changes,provision_change_claims,lat_events --tag …`, plus a tar of `backend/data/cache/amendment-index/`. Then `mix lat.reread --family "F"` prints the chain (the `amendments` read first, then the commencement and extent re-reads, the build and `lat.stale`) and `--run --tag T` runs it. The read alone: `mix lat.amending --read --stale --family "F"` (`--preview --diff FILE` first writes nothing). Golden from inputs after: `mix lat.vocabulary --golden --workers 1`.
+3. **Strata, yardstick and gate** (seconds, read-only):
    ```bash
    mix lat.amending_check --family "F" --strata
    mix lat.amending_check --family "F" --gate --all
    ```
-   Every D and L change is grouped by cause and amending law (`Amendment.Disagreement`). The causes come from the change and its rule:
+   `--strata` records the yardstick (`data/reports/amending-reader/yardstick/<family>.json`, `Measures.AmendingYardstick`; `mix lat.measures --family F` prints it): every text change's operation, the law's text against legislation.gov.uk (agree, differ, law only, legislation.gov.uk only), and its level. Every D and L change is grouped by cause, amending law and stratum (`Amendment.Disagreement`):
    - `quote-new-number` and `quote-dropped-number`, by design (RULES.md);
    - `operation …` and `level …` conflicts;
    - `unjoined` (Merge's);
    - `no operation from legislation.gov.uk: …`;
    - `law text only: …`.
-3. **Review every group** in the amending law's words, its rules and the CLML:
-   - `mix lat.amending_check --family "F" --gate --dump FILE [--per 10]` writes each group (unnamed first) with its changes. Each change comes with its provision's instruction, quote, parents and rules, and legislation.gov.uk's claims.
+
+   **By coverage** (RULES `amending-legislation-gov-uk-first-where-it-speaks`): a D group (legislation.gov.uk states the change and differs) is `known: legislation-gov-uk-speaks` unless reviewed. A misread found only there is a known limit; only the L groups are the step's to review.
+
+**Find: the review, and the fetch list.**
+4. **Review every L group** in the amending law's words, its rules and the CLML:
+   - `mix lat.amending_check --family "F" --gate --dump FILE [--per 10]` writes each group (unnamed first, with its stratum) with its changes. Each change comes with its provision's instruction, quote, parents and rules, and legislation.gov.uk's claims.
    - `mix lat.amending --amending A --provision ID` shows one provision's words, its stored rules and a fresh reading.
 
    Check the by-design classes by law too: a misread upstream (a lost Schedule lead-in) shows up as quote-dropped repeals. A group's targets can show a misread in a standard cause: Environmental Protection's SSI 2005/658 reg.2(2) read a list of provisions as a cross-product of 400+ targets, under "law text only".
 
-   Name each group in `backend/test/fixtures/amendment_patterns/disagreements.json` as `fix:`, `known:` (by design, legislation.gov.uk's, Merge's, or a one-law wording under the triage size, listed in RULES.md) or `check:`. Write the reasons in a report under `backend/data/reports/amending-reader/`.
+   Name each group in `backend/test/fixtures/amendment_patterns/disagreements.json` as `fix:`, `known:` (by design, legislation.gov.uk's, Merge's, or a one-law wording under the triage size, listed in RULES.md) or `check:`. Write the reasons in a report under `backend/data/reports/amending-reader/`. A reviewed status wins over `legislation-gov-uk-speaks`.
 
    The standard wordings (no record, no operation, Merge's, "in part", the by-design rules) are proposed by `mix lat.amending_check --family "F" --gate --name-standard --review <report>`. It is a dry run, each proposal beside its group's words; one-law wordings are left by hand. Jason decides, then `--write` adds them with sorted keys. A proposal is read, never stamped.
-4. **Fix the `fix:` classes, test first** (`test/sertantai_legal/scraper/amendment/reader/`). Then `mix lat.preflight`, and `--read --preview --amending <family laws> --diff FILE` and `--read --preview --regression --diff FILE`. The field diff (`Amendment.Review.RuleDiff`) pairs the removed and added rules and groups them by the fields that differ (targets, operation, level, treatment), or `removed`/`added`; never judge by count alone. Read every group: a shared reader change reaches every family, so every loss is checked. Batch every fix before the write.
-5. **Catalogue** (about 7 min cold, seconds warm; times in `backend/data/reports/catalogue-runs.jsonl`): `mix lat.amendment_patterns --laws <every family's laws so far> --accept` (a `--family` run replaces the fixture). Review the diff of `expected.json`: every example reading differently is checked in the amending law's text.
-6. **The write sequence** (once per round, Jason's go):
-   1. a restore point: `./scripts/nas/nas-backup.sh --tables amendment_rules,extent_rules,provision_changes,provision_change_claims,lat_events --tag …`, plus a tar of `backend/data/cache/amendment-index/`;
-   2. the read: `mix lat.amending --read --amending <laws>`;
-   3. the commencement and extent re-reads, when `mix lat.stale` shows their reader versions moved (`mix lat.commencement` in the mode that wrote them; `mix lat.amending --extents --amending A,B`);
-   4. the rebuild: `mix lat.vocabulary --build --family "F"`;
-   5. golden from inputs, always: `mix lat.vocabulary --golden --workers 1`.
-7. **Re-run the gate**, name any new group, and check the earlier families' strata. Then the step's close: `mix lat.step_close --family "F" --step "Amending-law reader"` (session-close, step 6b).
+5. **The fetch list.** Amending laws the family's changes name whose text is not held, and repeals Schedules held only as enacted (`mix lat.amending --fetch-enacted --amending A,B`), go on one fetch list now, fetched once (ask), never mid-step.
 
-**Pass** (Decision 1, Jason 2026-11-06, Maritime Safety: Amending-law reader):
-- the read pass is current;
-- the gate prints PASS;
+**Fix: preview, batch.**
+6. **Fix the `fix:` classes, test first** (`test/sertantai_legal/scraper/amendment/reader/`). Then `mix lat.preflight`, and `--read --preview --stale --family "F" --diff FILE` and `--read --preview --regression --diff FILE`. The field diff (`Amendment.Review.RuleDiff`) pairs the removed and added rules and groups them by the fields that differ (targets, operation, level, treatment), or `removed`/`added`; never judge by count alone. Read every group: a shared reader change reaches every family, so every loss is checked. Batch every fix before the write; preview every amender after the last fix (`--preview --all`, about 16 min) and match the write's changed laws.
+7. **Catalogue** (about 7 min cold, seconds warm; times in `backend/data/reports/catalogue-runs.jsonl`): `mix lat.amendment_patterns --laws <every family's laws so far> --accept` (a `--family` run replaces the fixture). Review the diff of `expected.json`: every example reading differently is checked in the amending law's text.
+
+**Settle: one write after the last reader commit.** `mix lat.reread --family "F" --run --tag T` again (restore point first), golden from inputs (`--golden --workers 1`) at **every** Settle, then the gate again: name any new group, and read the switched families' gates (a shared reader edit reaches them; rebuild them in the same write). No reader commit after the last write: any edit under `ReaderVersion` stales every amending law again.
+
+**Check and close.** `mix lat.step_close --family "F" --step "Amending-law reader"` (session-close, step 6b).
+
+**Pass** (Decision 1, Jason 2026-11-06, Maritime Safety: Amending-law reader; by coverage, 2026-11-26):
+- the read pass is current (`lat.stale --family F` shows no `:amending_reader`);
+- the gate prints PASS (every L group named; D groups known by coverage unless reviewed);
 - `AmendmentPatternsTest` passes, with each fixed form unit-tested;
 - golden all-pass;
 - no regression in the families already through.

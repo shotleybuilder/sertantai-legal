@@ -1,14 +1,16 @@
 -- Amending-law reader readiness review (2026-11-26): the law's text against
 -- legislation.gov.uk (feed, then markup) on operation and level, per stored text change.
 -- Read-only. Families: uk_lrt.family; the round = the six Waste, Water and Climate families.
+-- Corrected 2026-11-26 (Amending-law reader: step procedures): the values were read as their whole JSON
+-- text (#>> '{}'), so "<> 'commenced'" never held and commencements counted as text changes; now ->>'v'.
 with c as (
   select pc.id, pc.law_name, l.family,
-    max(cl.value #>> '{}') filter (where cl.source='law_text' and cl.attribute='operation') law_op,
-    max(cl.value #>> '{}') filter (where cl.source='feed'     and cl.attribute='operation') feed_op,
-    max(cl.value #>> '{}') filter (where cl.source='markup'   and cl.attribute='operation') markup_op,
-    max(cl.value #>> '{}') filter (where cl.source='law_text' and cl.attribute='level') law_lv,
-    max(cl.value #>> '{}') filter (where cl.source='feed'     and cl.attribute='level') feed_lv,
-    max(cl.value #>> '{}') filter (where cl.source='markup'   and cl.attribute='level') markup_lv
+    max(cl.value->>'v') filter (where cl.source='law_text' and cl.attribute='operation') law_op,
+    max(cl.value->>'v') filter (where cl.source='feed'     and cl.attribute='operation') feed_op,
+    max(cl.value->>'v') filter (where cl.source='markup'   and cl.attribute='operation') markup_op,
+    max(cl.value->>'v') filter (where cl.source='law_text' and cl.attribute='level') law_lv,
+    max(cl.value->>'v') filter (where cl.source='feed'     and cl.attribute='level') feed_lv,
+    max(cl.value->>'v') filter (where cl.source='markup'   and cl.attribute='level') markup_lv
   from provision_changes pc
   join provision_change_claims cl on cl.change_id = pc.id
   left join uk_lrt l on l.name = pc.law_name
