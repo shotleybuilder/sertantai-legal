@@ -26,6 +26,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
     order: "articles?",
     rule: "rules?"
   }
+  @at_bracket ~r/\b(?:after|before|for)\s+(?:sub-?sections?|(?:sub-?)?paragraphs?)\s+\(/iu
+
   @doc """
   The targets of a clause's quoted provisions (`text.inserted`) under its
   brackets (`named`) and provision numbers.
@@ -33,6 +35,19 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
   @spec quoted_targets(clause(), String.t()) :: [String.t()]
   def quoted_targets(%{text: text, named: named, numbers: numbers}, p) do
     cond do
+      no_place?(text, numbers) ->
+        []
+
+      # a quote restating the provision's own number ("For regulation 3(1)
+      # substitute— 3 (1) …": reg.3(1), never reg.3(3)(1) — NISR 2007/165
+      # reg.3(3), NISR 2015/231 reg.2(4); Waste, Water and Climate
+      # 2026-11-26)
+      restated?(text, numbers) ->
+        for [_ | rest] <- text.inserted,
+            rest != [],
+            uniq: true,
+            do: Brackets.ref(p, [hd(numbers) | rest])
+
       # "For regulation 10 there shall be substituted— (1) … (2)(a) …": the
       # quote is the one provision named, from its paragraphs (SI 2000/1335
       # reg.16, read as regs.1–8: Maritime Safety 2026-11-06)
@@ -48,6 +63,18 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
         quoted_targets(text, named, numbers, p)
     end
   end
+
+  # a quoted Schedule's paragraphs are its own, never the law's provisions
+  # ("After the signature block, insert— SCHEDULE … 1 … 2": never arts.1, 2
+  # — SI 2011/2937 art.23; Waste, Water and Climate 2026-11-26); a quote
+  # placed at a bracket of a provision nothing names ("After sub-paragraph
+  # (3), insert— (4)" under "Amendment of paragraph 30 of Part I of
+  # Schedule 2"): its numbers are that place's, never provisions (NISR
+  # 2006/280 reg.22(3))
+  defp no_place?(text, numbers),
+    do:
+      text.quoted =~ ~r/^\s*SCHEDULE\b/u or
+        (numbers == [] and Clauses.captionless(text).instruction =~ @at_bracket)
 
   defp quoted_targets(text, named, numbers, p) do
     anchor = subsection_anchor(text, numbers)
@@ -79,6 +106,14 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
       do: nested_paths(path, named, numbers, p),
       else: quoted_paths(path, named, numbers, p)
   end
+
+  defp restated?(%Text{inserted: [_ | _] = paths} = text, [n]) do
+    Enum.all?(paths, &(hd(&1) == n)) and Enum.any?(paths, &(length(&1) > 1)) and
+      Clauses.captionless(text).instruction =~
+        ~r/\b(?:sections?|regulations?|articles?|rules?)\s+#{Regex.escape(n)}\s*\(/iu
+  end
+
+  defp restated?(_text, _numbers), do: false
 
   # a substitution of one whole provision whose quote numbers none of its
   # tops as it, nor grown from it
@@ -188,10 +223,12 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
   brackets (`listed_places/1`) is read item by item.
   """
   @spec clause_targets(map(), {String.t(), String.t()}, String.t(), [String.t()]) :: [String.t()]
+  def clause_targets(%{part: {:part, n}, numbers: []}, _op, _p, _tops), do: ["pt.#{n}"]
+
   def clause_targets(c, op, p, tops) do
-    case op != {"inserted", "inserted"} && listed_places(c.text.instruction, p) do
-      [_ | _] = items ->
-        listed_targets(items, c, p, tops)
+    case op != {"inserted", "inserted"} && list_source(c, p) do
+      {source, [_ | _] = items} ->
+        listed_targets(items, c, p, tops, source)
 
       _ ->
         for n <- c.numbers,
@@ -207,8 +244,13 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
   # 12(2) and 15(1), in paragraph (a)": reg.8(9)(a), never reg.6(9) — SI
   # 2005/1434 reg.2(3); "In subsections (1)(e), (5) and (9)(a)": never
   # s.128(1)(a) — 2006 c.8 s.2(3); Maritime Safety 2026-11-06)
-  defp listed_targets(items, c, p, tops) do
-    rest = c.named -- Enum.flat_map(items, &elem(&1, 1))
+  #
+  # the clause's other brackets are those no place owns: a bracket written
+  # on another numbered place is that place's ("… 28(4) of, and Schedule 1
+  # paragraph 8(2)(b) to, …": never reg.28(2)(b) — SI 2008/1482 reg.6(1);
+  # Waste, Water and Climate 2026-11-26)
+  defp listed_targets(items, c, p, tops, source) do
+    rest = c.named -- (Enum.flat_map(items, &elem(&1, 1)) ++ other_places(source, p, c.numbers))
 
     for {n, brackets} <- items,
         n <- if(n, do: [n], else: c.numbers),
@@ -217,6 +259,24 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
         path != [] or brackets == [],
         uniq: true,
         do: Brackets.ref(p, [n | path])
+  end
+
+  # the written list a clause's places come from: its instruction's, else
+  # under a lead "In each of the following provisions …—" the list set out
+  # below it (held as the clause's parent: asp 2005/3 Sch.5 para.7(1))
+  defp list_source(c, p) do
+    case listed_places(c.text.instruction, p, c.numbers) do
+      [] ->
+        if c.text.instruction =~ ~r/\bfollowing provisions\b/i,
+          do:
+            c.text.parents
+            |> Enum.map(&{&1, listed_places(&1, p, c.numbers)})
+            |> Enum.find(&match?({_, [_ | _]}, &1)),
+          else: nil
+
+      items ->
+        {c.text.instruction, items}
+    end
   end
 
   @item "(?:\\d+[A-Z]*(?:\\s+to\\s+\\d+[A-Z]*)?(?:\\([0-9A-Za-z]+\\))*|(?:\\([0-9A-Za-z]+\\))+)"
@@ -235,7 +295,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
                   @no_year <>
                   "(" <>
                   @item <>
-                  "(?:\\s*(?:,|\\band\\b|\\bor\\b|\\bto\\b)\\s*" <>
+                  "(?:(?:\\s*(?:,|;|\\band\\b|\\bor\\b|\\bto\\b))+\\s*" <>
                   @again <> @item <> ")*)",
                 "u"
               )
@@ -261,28 +321,51 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
   reads the same as before), and where numbered items are not the law's
   own provisions (`p`, its prefix).
   """
-  @spec listed_places(String.t(), String.t()) :: [{String.t() | nil, [String.t()]}]
-  def listed_places(instruction, p) do
-    plain = instruction |> Clauses.unquote_words() |> Clauses.no_captions()
-
-    # every list the clause writes ("section 84(1)(b), (2)(a) …; section
-    # 85(1) and (4) …": SI 1999/1820 Sch.2 para 116(4)), as the numbers it
-    # names are read; never a place alone ("In section 21(1), paragraph
-    # (a)(i), (iii)"; "Section 7 of the Gas Act 1986 and section 68(1) and
-    # (2) of the principal Act": another law's)
-    lists =
-      for [_, word, list] <- Regex.scan(@place_list, plain),
-          items = list_items(list),
-          do: %{own?: word =~ @own_word[p], items: items}
-
-    lists = Enum.filter(lists, &(length(&1.items) > 1))
+  @spec listed_places(String.t(), String.t(), [String.t()]) :: [{String.t() | nil, [String.t()]}]
+  def listed_places(instruction, p, numbers \\ []) do
+    lists = instruction |> plain() |> lists(p, numbers) |> Enum.filter(& &1.own?)
     items = Enum.flat_map(lists, & &1.items)
 
-    ours? = Enum.all?(lists, &(&1.own? or Enum.all?(&1.items, fn {n, _} -> n == nil end)))
-
-    if lists != [] and ours? and length(items) > 1 and own_brackets?(items),
+    if lists != [] and length(items) > 1 and own_brackets?(items),
       do: items,
       else: []
+  end
+
+  defp plain(instruction), do: instruction |> Clauses.unquote_words() |> Clauses.no_captions()
+
+  # every list the clause writes ("section 84(1)(b), (2)(a) …; section
+  # 85(1) and (4) …": SI 1999/1820 Sch.2 para 116(4)), as the numbers it
+  # names are read; never a place alone ("In section 21(1), paragraph
+  # (a)(i), (iii)"; "Section 7 of the Gas Act 1986 and section 68(1) and
+  # (2) of the principal Act": another law's)
+  #
+  # a list of another kind is its own place, left out ("in schedule 1,
+  # paragraphs 6(4), 7 and 8" beside the sections: asp 2005/3 Sch.5
+  # para.7(1)); an Order's articles are its own where the clause reads their
+  # numbers as the law's (SI 2011/493 art.7(9))
+  defp lists(plain, p, numbers),
+    do: plain |> place_lists(p, numbers) |> Enum.filter(&(length(&1.items) > 1))
+
+  defp place_lists(plain, p, numbers) do
+    for [_, word, list] <- Regex.scan(@place_list, plain),
+        items = list_items(list),
+        do: %{own?: own_list?(word, items, p, numbers), items: items}
+  end
+
+  defp own_list?(word, items, p, numbers) do
+    numbered = for {n, _} <- items, n, do: n
+
+    word =~ @own_word[p] or numbered == [] or
+      (p == "reg" and word =~ ~r/^articles?$/i and Enum.all?(numbered, &(&1 in numbers)))
+  end
+
+  # the brackets written on places of another kind ("Schedule 1 paragraph
+  # 8(2)(b)", "paragraphs 6(4), 7 and 8"): theirs, never the list items'
+  defp other_places(source, p, numbers) do
+    for %{own?: false, items: items} <- source |> plain() |> place_lists(p, numbers),
+        {_, brackets} <- items,
+        b <- brackets,
+        do: b
   end
 
   # a range of bare numbers stays one ("Sections 28 to 34, 41 …": asp
@@ -291,6 +374,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
   # "(1)(e), (5)": (5))
   defp list_items(list) do
     list = Regex.replace(~r/\b(\d+[A-Z]*)\s+to\s+(\d+[A-Z]*)\b(?!\s*\()/u, list, "\\1..\\2")
+    # a bracket range is each bracket in it ("12(3) to (5)": (3), (4), (5))
+    list = expand_ranges(list)
 
     ~r/(\d+[A-Z]*(?:\.\.\d+[A-Z]*)?)?((?:\([0-9A-Za-z]+\))*)/u
     |> Regex.scan(list, capture: :all_but_first)
@@ -361,6 +446,59 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
         Enum.any?(items, &match?([_, ""], &1)) and Enum.any?(items, &(not match?([_, ""], &1))),
         [m, ""] <- items,
         do: m
+  end
+
+  @romans_up %{
+    "I" => "1",
+    "II" => "2",
+    "III" => "3",
+    "IV" => "4",
+    "V" => "5",
+    "VI" => "6",
+    "VII" => "7",
+    "VIII" => "8",
+    "IX" => "9",
+    "X" => "10"
+  }
+  @part ~r/\bPart\s+(\d+[A-Z]*|[IVX]+)\b(?:\s*\([^)]*\))?(\s+of\s+(?:the\s+)?(?:[Ss]chedule|Chapter|Part)\b)?/u
+
+  @doc """
+  The Part a clause names as its own place where it names no provision
+  number: `{:part, n}` ("Omit Part 5 (offences)", "For Part III
+  substitute—"), `:schedule` for a Schedule's Part ("Part 1 (the
+  Commissioner) of schedule 1 … is repealed": a Schedule's, not placed
+  here), nil when it names none.
+  """
+  @spec own_part(String.t()) :: {:part, String.t()} | :schedule | nil
+  def own_part(text) do
+    # (a block "set out in Part I of Schedule 4" is the amending law's own,
+    # its provisions the places: AR-05)
+    plain = Clauses.no_captions(text)
+
+    found =
+      if plain =~ ~r/\bset\s+out\s+in\b/i,
+        do: nil,
+        else: part_named(plain)
+
+    case found do
+      [n] -> {:part, Map.get(@romans_up, n, n)}
+      [_, _of] -> :schedule
+      nil -> nil
+    end
+  end
+
+  # (a Schedule's Part with either case, "Part 1 of Schedule 6", and never a
+  # Part named for its application: "in the application of Part 1 of the
+  # Act … omit" is the definition's words — 2003 c.44 s.288, 2021 c.30
+  # s.64(3)(b); Waste, Water and Climate 2026-11-26)
+  @for_application ~r/\b(?:application|purposes?|meaning|operation)\s+of\s+(?:the\s+)?$/iu
+  defp part_named(plain) do
+    with [{at, _} | _] <- Regex.run(@part, plain, return: :index),
+         false <- binary_part(plain, 0, at) =~ @for_application do
+      Regex.run(@part, plain, capture: :all_but_first)
+    else
+      _ -> nil
+    end
   end
 
   @doc """
@@ -466,7 +604,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
   (2)(b)" gives its parent; "(which becomes …)" left out.
   """
   @spec brackets(Text.t()) :: [String.t()]
-  def brackets(%Text{instruction: i}) do
+  def brackets(%Text{instruction: i}), do: bracket_names(i)
+
+  defp bracket_names(i) do
     i
     |> String.replace(~r/[“"][^”"]*[”"]/u, "")
     # "after paragraph (2)(b)": the anchor is a sibling, its parent the place
@@ -494,6 +634,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
       run -> Enum.map_join(run, " ", &"(#{&1})")
     end
   end
+
+  defp expand_ranges(s), do: String.replace(s, @bracket_range, &expand_range/1)
 
   defp run(from, to) do
     cond do

@@ -98,6 +98,22 @@ defmodule SertantaiLegal.Scraper.Amendment.ReviewTest do
              } = StandardStatus.proposals(failing, "r.md")
     end
 
+    test "a group already reviewed (a fix: name) is neither proposed nor left by hand: a reviewed status wins" do
+      failing = [
+        %{
+          shape: "law text only: inserted words",
+          law: @amending,
+          status: "fix: a misread (review 1)"
+        },
+        %{shape: "law text only: repealed words", law: @amending, status: nil}
+      ]
+
+      assert %{
+               proposed: [{"law text only: repealed words @ " <> @amending, "known: " <> _}],
+               by_hand: []
+             } = StandardStatus.proposals(failing, "r.md")
+    end
+
     test "written with sorted keys, the reviewed fixture as it stands is written back byte for byte" do
       body = File.read!(@fixture)
       assert StandardStatus.write(Jason.decode!(body), []) == body

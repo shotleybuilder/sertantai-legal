@@ -61,6 +61,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Scope do
         [i | parents],
         &(&1
           |> Clauses.unquote_words()
+          |> Clauses.no_made_text()
           |> Clauses.no_captions()
           |> Clauses.no_entry_names()
           |> String.replace(@own_schedule, ""))

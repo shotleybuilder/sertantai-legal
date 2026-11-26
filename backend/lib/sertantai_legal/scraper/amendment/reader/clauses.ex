@@ -60,6 +60,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
 
     cuts =
       for [{pos, len}] <- Regex.scan(~r/;\s*|,?\s+and\s+/, masked, return: :index),
+          not deleted_for?(masked, pos, len),
           do: pos + len
 
     pieces =
@@ -87,6 +88,15 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   end
 
   defp verb?(masked), do: Operation.of(%Text{id: nil, instruction: masked}) != nil
+
+  # "delete “X” and substitute “Y”", "delete the full stop and substitute
+  # …": one substitution, never cut (SSI 2000/432 reg.3(3); Waste, Water
+  # and Climate 2026-11-26)
+  defp deleted_for?(masked, pos, len) do
+    binary_part(masked, 0, pos) =~
+      ~r/\b(?:delete|omit)\s+(?:the\s+(?:words?\s+)?)?(?:x{2,}|full\s+stop|comma|semi-?colon|colon)\s*$/iu and
+      binary_part(masked, pos + len, byte_size(masked) - pos - len) =~ ~r/^substitute\b/iu
+  end
 
   @doc """
   Words the instruction doesn't spell out: an emptied quote ("“”": the
@@ -122,10 +132,26 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   # Environmental Protection, Decision 2)
   @quote_slot ~r/\b(?:omit|after|before|for)\s*(?:[,;.]|$|(?=(?:insert|substitute)\b))/iu
   @provision_object ~r/\b(?:omit|repeal|revoke|for)\s+(?:the\s+)?(?:sub-?)?(?:sections?|paragraphs?|regulations?|articles?|rules?|heads?)\s*\d*[A-Z]*\(/iu
-  defp inline_words?(%Text{quoted: q, inserted: [], instruction: i}) when q != "",
-    do: i =~ @quote_slot and not (i =~ @provision_object)
+  # (never "for paragraph 1, substitute “1. …”": an EU paragraph whole,
+  # SI 2019/649 reg.6(9)(b))
+  @provision_for ~r/\bfor\s+(?:the\s+)?(?:sub-?)?(?:sections?|paragraphs?|regulations?|articles?|rules?|points?)\s*(?:\d|\()/iu
+  @bare_substitute ~r/(?:^|[—–:,]\s*)substitute\s*[.;,]?(?:\s+and)?\s*$/iu
+
+  # (the words named in a parent, "in subsection (3), for “local
+  # authority”— where they occur in the proviso, substitute “…”", or lost
+  # from the text, "In section 89 (…)— substitute “Health Authority”": 1994
+  # c.39 Sch.13 para.75(12)(b)(ii), 1995 c.17 Sch.1 para.120(3); Waste,
+  # Water and Climate 2026-11-26)
+  defp inline_words?(%Text{quoted: q, inserted: [], instruction: i} = text) when q != "",
+    do:
+      (i =~ @quote_slot or parent_words?(text) or
+         (i =~ @bare_substitute and not (i =~ @provision_for))) and
+        not (i =~ @provision_object)
 
   defp inline_words?(_text), do: false
+
+  defp parent_words?(%Text{parents: [p | _]}), do: p =~ ~r/\bfor\s+[“"][^”"]*[”"]\s*[—–:]\s*$/u
+  defp parent_words?(_text), do: false
 
   @doc """
   The instruction's operation, its captions aside; an insertion quoting no
@@ -174,7 +200,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
          [_, noun] <- Regex.run(@parent_noun, parent) do
       %{text | instruction: @noun_verb[String.downcase(noun)] <> " " <> i}
     else
-      nil -> captioned_verb(text, parent)
+      nil -> listed_verb(text, parent)
       _ -> text
     end
   end
@@ -188,14 +214,11 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   # starting with its own numbered provisions ("the remaining provisions
   # of Part 5 of that Act" names none: 2011 c.20 s.109(1)(b))
   @parent_verb ~r/\bthe\s+following\s+(?:provisions?|enactments?|sections?|regulations?)\s+((?:is|are|shall\s+be)\s+(?:hereby\s+)?(?:repealed|revoked|omitted))\s*[—–:]\s*$/iu
-  # (kept to an item whose caption held a verb, as it read before captions
-  # nested: every verb-less item under such a parent is a wider form, not
-  # measured)
-  defp captioned_verb(%Text{instruction: i} = text, parent) do
-    if Operation.of(text) == nil,
-      do: text,
-      else: %{text | instruction: parent_verb(parent, i) || i}
-  end
+  # (every verb-less item, caption or none: "section 10 (schemes initiated
+  # by the Scottish Ministers)," had been kept to an item whose caption held
+  # a verb — asp 2015/13 s.1(2)(a); Waste, Water and Climate 2026-11-26)
+  defp listed_verb(%Text{instruction: i} = text, parent),
+    do: %{text | instruction: parent_verb(parent, i) || i}
 
   @numbered ~r/^\s*(?:sections?|regulations?|articles?|rules?)\s+\d/iu
   defp parent_verb(parent, i) do
@@ -287,9 +310,84 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   """
   @spec no_effect_asides(String.t()) :: String.t()
   def no_effect_asides(s) do
+    s = no_made_text(s)
     s = Regex.replace(@effect_aside, s, ",")
     s = Regex.replace(@meaning_aside, s, "\\1")
     Regex.replace(@entry_described, s, "\\1")
+  end
+
+  # text an amendment made, named as such: "in the inserted section 87 of
+  # the Water Industry Act 1991 (…)", "in the substituted Article 54",
+  # "in the text of section 144(1A)(b) … as inserted by that
+  # sub-paragraph" — an earlier amending provision's words (or a
+  # Schedule's), never a place of the law it names nor its operation
+  # (2014 c.21 Sch.7 para.134 had made WIA s.87(2)(b) inserted; SI
+  # 2022/1173 art.14(4) placed Sch.5's "Article 34a" on art.34; Waste,
+  # Water and Climate 2026-11-26)
+  # an aside's words: balanced brackets ("regulations 5(2) to 5(4)") but
+  # never a lone ")" — the aside then sits in a caption, which the captions
+  # rule reads ("(inserted by paragraph 17(6)) add—" had lost its verb:
+  # 2010 c.29 Sch.4 para.23(3), 2002 c.40 s.267(2); Waste, Water and
+  # Climate 2026-11-26)
+  @aside_refs "(?:[^,;—–()]|\\([^()]*\\))*?"
+  @made_stop "(?=\\s*[,;—–)]|\\s+(?:for|omit|after|before|insert|substitute|there|is|are)\\b|$)"
+  @made_text [
+    Regex.compile!(
+      "\\b(?:in\\s+)?the\\s+text\\s+of\\s+" <>
+        @aside_refs <>
+        "\\bas\\s+(?:it\\s+has\\s+effect\\s+as\\s+)?(?:inserted|substituted)\\s+by\\b" <>
+        @aside_refs <>
+        "" <>
+        @made_stop,
+      "iu"
+    ),
+    Regex.compile!(
+      "\\b(?:in\\s+)?the\\s+(?:inserted|substituted)\\s+(?:Articles?|sections?|sub-?sections?|regulations?|(?:sub-?)?paragraphs?|rules?)" <>
+        "(?:\\s+\\d+[A-Za-z]*)?(?:\\s*\\([0-9A-Za-z]+\\))*(?:\\s*(?:,|and|or|to)\\s*\\d*[A-Za-z]*(?:\\([0-9A-Za-z]+\\))+)*" <>
+        "(?:\\s+of\\s+" <> @aside_refs <> @made_stop <> ")?",
+      "iu"
+    ),
+    # "in the words inserted into section 213(1) of the … Act" (2014 c.21
+    # Sch.7 para.145); "as substituted by subsection (4)", "inserted by
+    # regulation 6(2)": the amending law's own provisions (1997 c.11 Sch.2
+    # para.27(a), SI 2008/1482 reg.8)
+    Regex.compile!(
+      "\\b(?:in\\s+)?the\\s+words\\s+(?:inserted|substituted)\\s+(?:into|in)\\b" <>
+        @aside_refs <>
+        "" <>
+        @made_stop,
+      "iu"
+    ),
+    Regex.compile!(
+      "\\b(?:as\\s+)?(?:substituted|inserted|amended)\\s+by\\s+(?:sub-?sections?|sections?|(?:sub-?)?paragraphs?|regulations?|articles?|rules?)\\s+" <>
+        @aside_refs <>
+        "" <>
+        @made_stop,
+      "iu"
+    ),
+    # "Subject to paragraph (2), regulation 3(1) … revoked": the amending
+    # law's own paragraph (SSI 2002/276 reg.7(1))
+    ~r/^\s*Subject\s+to\s+(?:sub-?sections?|sections?|(?:sub-?)?paragraphs?|regulations?|articles?)\s+[^,]*,\s*/iu
+  ]
+
+  @doc """
+  The text without the text an amendment made, named as such ("in the
+  inserted section 87 of the … Act", "in the substituted Article 54").
+  """
+  @spec no_made_text(String.t()) :: String.t()
+  @quoted_words ~r/“[^”]*”|"[^"]*"/u
+  @quoted_words_whole ~r/^(?:“[^”]*”|"[^"]*")$/u
+
+  # (outside quoted words only: "omit “as amended by subsection (1)
+  # above”" had lost its words — 1994 c.19 Sch.15 para.40(b))
+  def no_made_text(s) do
+    @quoted_words
+    |> Regex.split(s, include_captures: true)
+    |> Enum.map_join(fn piece ->
+      if piece =~ @quoted_words_whole,
+        do: piece,
+        else: Enum.reduce(@made_text, piece, &Regex.replace(&1, &2, ""))
+    end)
   end
 
   @doc """

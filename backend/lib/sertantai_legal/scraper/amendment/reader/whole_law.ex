@@ -16,7 +16,10 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.WholeLaw do
 
   # a provision named (a number, never a title's year: "Regulations 2008"):
   # never the whole law
-  @provision ~r/\b(?:sections?|regulations?|articles?|rules?|paragraphs?|Schedules?|Parts?|Chapters?)\s+\d{1,3}[A-Z]*\b|\bfollowing\b|\bin\s+so\s+far\b|\bto\s+the\s+extent\b/i
+  # (a Part or Chapter by a roman numeral too: "Part IV (drainage works) of
+  # the 1999 Regulations is revoked" had revoked the whole law — SSI
+  # 2017/114 reg.50(1); Waste, Water and Climate 2026-11-26)
+  @provision ~r/\b(?:sections?|regulations?|articles?|rules?|paragraphs?|Schedules?|Parts?|Chapters?)\s+\d{1,3}[A-Z]*\b|\b(?:Parts?|Chapters?)\s+[IVXLC]+\b|\bfollowing\b|\bin\s+so\s+far\b|\bto\s+the\s+extent\b/iu
 
   @doc "The whole-law rule an instruction `text` states for one of `laws`; [] when not this form."
   @spec rules(Text.t(), map(), [map()], map()) :: [Rule.t()]

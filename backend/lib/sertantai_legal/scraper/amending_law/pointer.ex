@@ -114,8 +114,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Pointer do
 
   # the provision refs in a pointer tail, a bare number continuing the last
   # kind ("ss. 140(8), 152(3)")
+  # (a "(with …)" aside is no amending provision, and its comma had cut
+  # off the item before it: "ss. 5(1)(a), 7 (with s. 9(1) …)" lost s. 7)
   defp refs(tail) do
     tail
+    |> String.replace(~r/\s*\(with\b.*$/su, "")
     |> String.split(",")
     # (a pointer in braces: "{Sch. Pt. 1 para. 8(a)(i)}", CV-S07 round 3)
     |> Enum.map(
@@ -125,6 +128,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Pointer do
         |> String.trim_trailing("}")
         |> String.trim())
     )
+    |> Enum.flat_map(&expand/1)
     |> Enum.reduce({[], nil}, fn token, {acc, last} ->
       case ref(token, last) do
         nil -> {acc, last}
@@ -134,6 +138,43 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Pointer do
     |> elem(0)
     |> Enum.reverse()
   end
+
+  # a range ("ss. 3-5", "s. 5(1)-(3)", "Sch. 2 paras. 4-6") names each
+  # provision in it where both ends are plain, else its two ends ("ss.
+  # 12-12B"); it had read the first end alone
+  @range_sub ~r/^(.*?\d+[A-Z]*(?:\([^)]*\))*?)\(([^)]+)\)\s*[-–]\s*\(([^)]+)\)$/u
+  @range_number ~r/^(.*?)(\d+[A-Z]*)\s*[-–]\s*(\d+[A-Z]*)$/u
+
+  defp expand(token) do
+    cond do
+      m = Regex.run(@range_sub, token) ->
+        [_, head, a, b] = m
+        Enum.map(span(a, b), &"#{head}(#{&1})")
+
+      m = Regex.run(@range_number, token) ->
+        [_, head, a, b] = m
+        Enum.map(span(a, b), &(head <> &1))
+
+      true ->
+        [token]
+    end
+  end
+
+  defp span(a, b) do
+    cond do
+      numbers?(a, b) -> Enum.map(String.to_integer(a)..String.to_integer(b), &Integer.to_string/1)
+      letters?(a, b) -> Enum.map(:binary.first(a)..:binary.first(b), &<<&1>>)
+      true -> [a, b]
+    end
+  end
+
+  defp numbers?(a, b),
+    do:
+      a =~ ~r/^\d+$/ and b =~ ~r/^\d+$/ and
+        (String.to_integer(b) - String.to_integer(a)) in 1..50
+
+  # (never "(i)-(v)": roman numerals)
+  defp letters?(a, b), do: a =~ ~r/^[a-hj-z]$/ and b =~ ~r/^[a-z]$/ and b > a
 
   defp ref(token, last) do
     cond do

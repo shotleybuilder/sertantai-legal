@@ -74,7 +74,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Operation do
   # replaced with the following definition—": one substitution (SI
   # 1996/1592 Sch.9 para.3, SI 1997/2776 reg.2(a); Amending-law reader:
   # parked bugs, 2026-11-10)
-  @delete_replace ~r/\b(?:delet|omitt)ed\s+and\s+(?:the\s+following\s+)?(?:substituted|replaced)\b/iu
+  # — and "delete “X” and substitute “Y”", "delete the full stop and
+  # substitute “; and …”" (SI 1994/1386 reg.3; Waste, Water and Climate
+  # 2026-11-26)
+  @delete_replace ~r/\b(?:delet|omitt)ed\s+and\s+(?:the\s+following\s+)?(?:substituted|replaced)\b|\b(?:delete|omit)\b[^;—–]*?[”"\s]and\s+substitute\b/iu
 
   # an insertion verb replacing quoted words reads as a substitution
   defp verbs(s) do
@@ -84,6 +87,13 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Operation do
       true -> @verbs
     end
   end
+
+  # a heading or the amendments an earlier law made, as what is omitted or
+  # ceases ("The italic heading immediately preceding section 88 is
+  # omitted": asp 2024/13 s.10(5); "The amendments made to section 167(1)
+  # … by … shall cease to have effect": 2010 c.29 s.41(1); Waste, Water
+  # and Climate 2026-11-26)
+  @words_subject ~r/^\s*The\s+(?:italic\s+)?(?:cross[- ]?)?heading\s+(?:immediately\s+)?(?:preceding|before|above)\b|^\s*The\s+amendments?\s+made\s+(?:to|in|by)\b/iu
 
   # quoted or named words, definitions or entries (LR-41: SI 2009/2861 reg.
   # 12(a) "omit the following definitions—" omits words of reg. 32, not it);
@@ -106,5 +116,6 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Operation do
            ~r/[“"][^”"]+[”"]|\b(?:words?|definitions?|entr(?:y|ies)|amounts?\s+of\s+£)/u,
            s
          ) or
-           Regex.match?(@heading_or_mark, s) or Regex.match?(@words_part, s))
+           Regex.match?(@heading_or_mark, s) or Regex.match?(@words_part, s) or
+           Regex.match?(@words_subject, s))
 end

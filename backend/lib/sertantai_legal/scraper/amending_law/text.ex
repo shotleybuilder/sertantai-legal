@@ -44,7 +44,10 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
         }
 
   @notes ~w(Commentary CommentaryRef)a
-  @inline ~w(Citation CitationSubRef Term Abbreviation Acronym)a
+  # (links too: "In <ExternalLink id=…>section 25</ExternalLink> of the …"
+  # had lost the section, so the quote's subsections read as sections 2
+  # and 3 — 2025 c.5 s.16(c); Waste, Water and Climate 2026-11-26)
+  @inline ~w(Citation CitationSubRef Term Abbreviation Acronym ExternalLink InternalLink)a
   @numbers ~w(Pnumber Number Title)a
   @quoted ~w(InlineAmendment BlockAmendment)a
 
@@ -299,6 +302,12 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
   # Name="NonBreakingSpace"/>October 2010": SI 2010/2169 art.4)
   defp node({:xmlElement, :Character, _, _, _, _, _, _, _, _, _, _}, acc, in_quote),
     do: node({:xmlText, [], 0, [], ~c" ", :text}, acc, in_quote)
+
+  # a block of text ends a word: list items' blocks were glued ("regulation
+  # 18; and" + "regulation 22" read "andregulation 22": SI 1998/1856
+  # reg.8(1); Waste, Water and Climate 2026-11-26)
+  defp node({:xmlElement, :Text, _, _, _, _, _, _, children, _, _, _}, acc, in_quote),
+    do: collect(children ++ [{:xmlText, [], 0, [], ~c" ", :text}], acc, in_quote)
 
   defp node({:xmlElement, name, _, _, _, _, _, attrs, children, _, _, _}, acc, in_quote) do
     cond do

@@ -39,7 +39,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Review.StandardStatus do
 
   @doc """
   The proposals for the gate's unnamed items: `{key, status}` for each
-  with a standard, and the keys left to write by hand.
+  with a standard, and the keys left to write by hand. An item already
+  reviewed (a `fix:` name, failing until its fix lands) is left out: a
+  reviewed status wins.
   """
   @spec proposals([map()], String.t()) :: %{
           proposed: [{String.t(), String.t()}],
@@ -48,6 +50,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Review.StandardStatus do
   def proposals(failing, review) do
     {proposed, by_hand} =
       failing
+      |> Enum.reject(&Map.get(&1, :status))
       |> Enum.map(fn i -> {"#{i.shape} @ #{i.law}", propose(i.shape, review)} end)
       |> Enum.split_with(fn {_, status} -> status != nil end)
 

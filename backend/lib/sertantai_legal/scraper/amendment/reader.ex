@@ -57,7 +57,12 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   # — "has effect as if", "shall apply … as if", "applies … as if",
   # "shall continue to apply … as if" too, in the instruction's own words
   # (Jason 2026-11-06, option A: SI 1995/3128 reg.10(3) on MSA 1995 s.97(1))
-  @modification ~r/\b(?:(?:have|has|having) effect|be read|be construed|appl(?:y|ies|ying)\b[^.;]{0,200}?)\s*,?\s+as if\b/i
+  # (also "shall have effect, in relation to mergers after …, as if", and
+  # the as-if form's own verb "there were substituted", before any lead-in
+  # dash — never inside an inserted text that reads so (SI 1994/73 reg.2,
+  # WSI 2019/414 reg.6(2)(b)(ii), not SI 2019/414 reg.8(4)(b); Waste,
+  # Water and Climate 2026-11-26)
+  @modification ~r/\b(?:(?:have|has|having) effect|be read|be construed|appl(?:y|ies|ying)\b[^.;]{0,200}?)\s*,?\s+as if\b|\b(?:have|has|having) effect\b[^.;]{0,200}?,\s*as if\b|^[^—–]*?\bthere\s+were\s+(?:substituted|inserted|omitted)\b/i
   # … but older drafting inserts a provision so ("The Factories Act 1961
   # shall have effect as if the following section were inserted after
   # section 10 thereof:— 10A": EMASA 1972 s.3, CV-06 S7); its target is held
@@ -87,9 +92,20 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   def law_ref(law_name, title, prefix, opts \\ []) do
     [_, _type, year, number] = String.split(law_name, "_", parts: 4)
     kind = %{"s" => :section, "reg" => :regulation, "art" => :article, "rule" => :rule}[prefix]
-    kind = if kind == :regulation and opts[:articles], do: :order, else: kind
+
+    kind =
+      if kind == :regulation and (opts[:articles] == true or order?(title)),
+        do: :order,
+        else: kind
+
     %{law_name: law_name, title: title, year: year, number: number, kind: kind || :section}
   end
+
+  # an Order's provisions are articles, though legislation.gov.uk ids its
+  # rows "regulation-" (SI 2024/1130: "After article 25(3) insert— (4)"
+  # read as art.4 — SI 2025/678 art.3(3); Waste, Water and Climate
+  # 2026-11-26)
+  defp order?(title), do: is_binary(title) and title =~ ~r/\bOrder$/
 
   @doc """
   The rules an amending provision (`id` in `doc`, its defined `terms`)
@@ -205,7 +221,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
           Enum.map(
             [text.instruction | Enum.reverse(text.context)],
             &(&1 |> Clauses.unquote_words() |> Clauses.no_effect_asides())
-          )
+          ) ++ heading_place(title)
 
         before = Stream.map(text.before, &Clauses.unquote_words/1)
 
@@ -227,6 +243,24 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
             do: rule
 
       nil ->
+        []
+    end
+  end
+
+  # the provision a heading names as amended, the place where nothing nearer
+  # names one ("Amendment of Regulation 18: Registration …" over "For
+  # paragraph (5) substitute— (5) (5A)": reg.18(5), never reg.5 — NISR
+  # 2006/280 reg.12(4); Waste, Water and Climate 2026-11-26)
+  @heading_place ~r/^Amendments?\s+(?:of|to)\s+((?i:sections?|regulations?|articles?|rules?)\s+\d+[A-Z]*)\b(?!\s+of\b)/u
+  defp heading_place(title) do
+    case title |> List.wrap() |> List.first() do
+      t when is_binary(t) ->
+        case Regex.run(@heading_place, t, capture: :all_but_first) do
+          [place] -> [place]
+          nil -> []
+        end
+
+      _ ->
         []
     end
   end

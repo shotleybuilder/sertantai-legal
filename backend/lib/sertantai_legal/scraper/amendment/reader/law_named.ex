@@ -16,7 +16,13 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
   # Work etc. Act 1974", "The Maternity and Parental Leave etc. Regulations
   # 1999 are amended": SI 2013/283, run time 2026-10-25) — the full stop
   # had ended the match, so such a title named no law
-  @title_words ~S"[A-Z](?:[\w,'’()\- ]|\betc\.)*? (?:Act|Regulations|Order|Rules)(?: \(Northern Ireland\))? \d{4}"
+  # (a title holding another law's title runs to its own year: "Water
+  # Services etc. (Scotland) Act 2005 (Consequential Provisions and
+  # Modifications) Order 2005" is the Order, never the Act — 2013 c.24
+  # Sch.6; and a year printed with no space after "(Northern Ireland)": NISR
+  # 2007/247 Sch.10 para.3's changes had gone to the previous paragraph's
+  # law; Waste, Water and Climate 2026-11-26)
+  @title_words ~S"[A-Z](?:[\w,'’()\- ]|\betc\.)*? (?:Act|Regulations|Order|Rules)(?: \(Northern Ireland\) ?| )\d{4}(?:(?: \([^()]*\))+ (?:Regulations|Order|Rules)(?: \(Northern Ireland\) ?| )\d{4})?"
   @title Regex.compile!(@title_words, "u")
   @title_group Regex.compile!("(" <> @title_words <> ")", "u")
 
@@ -46,23 +52,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
             refs -> Enum.any?(refs, &law_named?(&1, law))
           end
 
-        numbers =
-          case {Targets.numbers([unquoted], law.kind), prev} do
-            {{:ok, ns}, _} ->
-              ns
-
-            # (never from a caption: "In section 11 (interpretation of
-            # sections 3A to 10), in subsection (2)—", 2013/22 s.56(2))
-            {:none, nil} ->
-              with(
-                {:ok, ns} <- Targets.numbers(Enum.map(context, &Clauses.no_captions/1), law.kind),
-                do: ns,
-                else: (_ -> [])
-              )
-
-            {:none, ns} ->
-              ns
-          end
+        own_numbers = Targets.numbers([unquoted], law.kind)
+        part = if own_numbers == :none, do: Targets.own_part(unquoted)
+        numbers = clause_numbers(own_numbers, part, prev, context, law)
 
         own =
           Targets.brackets(%{
@@ -78,11 +70,33 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
 
         named = if c == first, do: own, else: Brackets.above(place, own) ++ own
         named = placed_by(c, named, context) ++ named
-        {%{text: c, named: named, numbers: numbers, ours?: ours?}, {numbers, ours?}}
+        named = if part, do: [], else: named
+
+        {%{text: c, named: named, numbers: numbers, ours?: ours?, part: part}, {numbers, ours?}}
       end)
 
     Enum.filter(scoped, & &1.ours?)
   end
+
+  # a clause's numbers: its own, else (a Part its own place aside) the
+  # clause before's, else the context's
+  defp clause_numbers({:ok, ns}, _part, _prev, _context, _law), do: ns
+
+  # a Part is its own place, never the provision a sibling names ("Omit
+  # Part 5 (offences)" after "In regulation 2(1) …": never reg.2 — SI
+  # 2014/3075 reg.2(4); Waste, Water and Climate 2026-11-26)
+  defp clause_numbers(:none, part, _prev, _context, _law) when part != nil, do: []
+
+  # (never from a caption: "In section 11 (interpretation of sections 3A
+  # to 10), in subsection (2)—", 2013/22 s.56(2))
+  defp clause_numbers(:none, nil, nil, context, law) do
+    case Targets.numbers(Enum.map(context, &Clauses.no_captions/1), law.kind) do
+      {:ok, ns} -> ns
+      _ -> []
+    end
+  end
+
+  defp clause_numbers(:none, nil, prev, _context, _law), do: prev
 
   # where a clause is beyond its own words (run time 2026-10-26; 1995/25
   # Sch. 22 para 30(6)): its parents' brackets, nearest first, each at the
@@ -96,7 +110,14 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
       Enum.map(c.parents, fn words ->
         Targets.brackets(%Text{
           id: nil,
-          instruction: words |> Clauses.unquote_words() |> Clauses.no_captions() |> lead_in()
+          # (asides aside: "in subsection (2) as substituted by subsection
+          # (4)—" places at (2) only, 1997 c.11 Sch.2 para.27(a))
+          instruction:
+            words
+            |> Clauses.unquote_words()
+            |> Clauses.no_effect_asides()
+            |> Clauses.no_captions()
+            |> lead_in()
         })
       end)
 
@@ -264,6 +285,13 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
     end
   end
 
+  # a caption that is an aside names no law amended: "(which amends the
+  # Land Drainage Act 1991)", "(which implies … under section 101 of the
+  # Local Government Act 1972 etc)" (2021 c.30 s.95, 1999 c.29 s.40(3);
+  # Waste, Water and Climate 2026-11-26) — a title's own brackets ("(Northern
+  # Ireland)", "(Prevention of Fire …)") stay
+  @aside_caption ~r/\((?:which|that|as|being|see|inserted|substituted|amended)\b(?:[^()]|\([^()]*\))*\)/iu
+
   defp laws(t, terms) do
     lower = String.downcase(t)
 
@@ -277,7 +305,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
       for [x] <-
             Regex.scan(
               @title_group,
-              t,
+              Regex.replace(@aside_caption, t, ""),
               capture: :all_but_first
             ),
           do: %{law: nil, title: x}

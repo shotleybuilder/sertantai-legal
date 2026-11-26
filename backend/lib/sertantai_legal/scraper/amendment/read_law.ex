@@ -76,7 +76,7 @@ defmodule SertantaiLegal.Scraper.Amendment.ReadLaw do
     title =
       case Repo.query!("SELECT title_en FROM uk_lrt WHERE name = $1 LIMIT 1", [law]) do
         %{rows: [[t]]} when is_binary(t) ->
-          t |> String.replace(~r/\s+\d{4}\b.*$/, "") |> String.trim()
+          own_title(t, law)
 
         _ ->
           nil
@@ -94,6 +94,26 @@ defmodule SertantaiLegal.Scraper.Amendment.ReadLaw do
       end
 
     Reader.law_ref(law, title, prefix, articles: articles?)
+  end
+
+  @doc """
+  A law's title as amending texts name it: the register's title less the
+  law's own year at its end. A year inside the title stays ("Deregulation
+  Act 2015 (Health and Safety at Work) … Order 2015", SI 2015/1637, had
+  been cut to "Deregulation Act" and read as the Act; Waste, Water and
+  Climate 2026-11-26).
+  """
+  @spec own_title(String.t(), String.t()) :: String.t()
+  def own_title(title, law) do
+    year = law |> String.split("_") |> Enum.at(2)
+    # (a register note or a stray full stop after the year goes first:
+    # "… Act 1972 (repealed 27.5.1997)", "… Regulations 2018.")
+    title
+    |> String.trim()
+    |> String.replace(~r/\s*\((?:repealed|revoked)\b[^)]*\)$/i, "")
+    |> String.trim_trailing(".")
+    |> String.replace_suffix(" " <> to_string(year), "")
+    |> String.trim()
   end
 
   @doc """
