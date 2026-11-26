@@ -27,8 +27,8 @@ defmodule SertantaiLegal.Scraper.Amendment.ReviewTest do
 
   describe "the gate's dump" do
     @groups %{
-      {"law text only: repealed words", @amending} => [{@act, :a}, {@act, :b}, {@act, :c}],
-      {"unjoined", "UK_uksi_2010_675"} => [{@act, :d}]
+      {"law text only: repealed words", @amending, :L} => [{@act, :a}, {@act, :b}, {@act, :c}],
+      {"unjoined", "UK_uksi_2010_675", :D} => [{@act, :d}]
     }
 
     test "unnamed groups first, each with its key, status, reach and up to `per` changes" do
@@ -45,7 +45,15 @@ defmodule SertantaiLegal.Scraper.Amendment.ReviewTest do
                "changes" => [%{"n" => 1, "change" => :a}, %{"n" => 2, "change" => :b}]
              } = unnamed
 
-      assert %{"named" => true, "status" => "known: the merge's", "reach" => 1} = named
+      assert %{"named" => true, "status" => "known: the merge's", "reach" => 1, "stratum" => "D"} =
+               named
+
+      # unreviewed, a group legislation.gov.uk speaks for is known
+      assert [
+               %{"named" => false},
+               %{"named" => true, "status" => "known: legislation-gov-uk-speaks" <> _}
+             ] =
+               GateDump.dump(@groups, %{}, item, 2)
 
       assert [_, _] =
                GateDump.dump(@groups, %{}, item, :all)

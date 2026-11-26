@@ -13,7 +13,9 @@ defmodule Mix.Tasks.Lat.Measures do
     with when it ran and whether that follows the family's last build;
     and the Extent reader against the feed: the last extent check's changes
     by how the feed's effect extent compares with the law's bound, and its
-    no-bound changes by whether the feed speaks (`Measures.ExtentYardstick`).
+    no-bound changes by whether the feed speaks (`Measures.ExtentYardstick`),
+    and the amending law's text against legislation.gov.uk on each text
+    change's operation and level (`Measures.AmendingYardstick`).
 
   The territory table (CV-S05) is printed by `mix lat.extent_check`; the
   pass bounds by `mix lat.verdicts`. Read-only.
@@ -28,6 +30,7 @@ defmodule Mix.Tasks.Lat.Measures do
   use Mix.Task
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.{
+    AmendingYardstick,
     Coverage,
     ExtentYardstick,
     FeedYardstick,
@@ -96,6 +99,9 @@ defmodule Mix.Tasks.Lat.Measures do
       IO.puts("")
       extent = family |> ExtentYardstick.path() |> ExtentYardstick.read()
       extent |> ExtentYardstick.lines(Source.last_built(laws)) |> Enum.each(&IO.puts/1)
+      IO.puts("")
+      amending = family |> AmendingYardstick.path() |> AmendingYardstick.read()
+      amending |> AmendingYardstick.lines(Source.last_built(laws)) |> Enum.each(&IO.puts/1)
     end
 
     if path = opts[:sample], do: sample(by_law, path, opts)

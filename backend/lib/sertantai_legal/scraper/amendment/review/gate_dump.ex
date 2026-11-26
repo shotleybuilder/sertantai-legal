@@ -9,6 +9,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Review.GateDump do
   first, widest first. Pure: the item function does the reading.
   """
 
+  alias SertantaiLegal.Scraper.Amendment.Disagreement
   alias SertantaiLegal.Scraper.ChangeVocabulary.Change
   alias SertantaiLegal.Scraper.Commencement.Leftovers
 
@@ -20,20 +21,21 @@ defmodule SertantaiLegal.Scraper.Amendment.Review.GateDump do
   changes shown per group (`:all` for every one).
   """
   @spec dump(
-          %{{String.t(), String.t()} => [change()]},
+          %{{String.t(), String.t(), atom()} => [change()]},
           map(),
           (change(), pos_integer() -> map()),
           pos_integer() | :all
         ) :: [map()]
   def dump(groups, reviewed, item, per) do
     groups
-    |> Enum.map(fn {{cause, by}, changes} ->
-      status = Leftovers.status(cause, reviewed, by)
+    |> Enum.map(fn {{cause, by, stratum}, changes} ->
+      status = Disagreement.status(cause, by, stratum, reviewed)
 
       %{
         "key" => "#{cause} @ #{by}",
         "cause" => cause,
         "amending_law" => by,
+        "stratum" => to_string(stratum),
         "status" => status,
         "named" => Leftovers.named?(status),
         "reach" => length(changes),

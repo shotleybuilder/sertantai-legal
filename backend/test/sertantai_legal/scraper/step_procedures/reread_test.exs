@@ -11,6 +11,27 @@ defmodule SertantaiLegal.Scraper.StepProcedures.RereadTest do
     test "nothing stale is no chain" do
       assert Reread.chain([], "F") == []
       assert Reread.chain([], "F", []) == []
+      assert Reread.chain([], "F", [], []) == []
+    end
+
+    test "stale amending laws: their read first, before the commencement and extent re-reads" do
+      assert [
+               %Step{substep: :amendments, laws: ["UK_x", "UK_y"]} = am,
+               %Step{substep: :own},
+               %Step{substep: :extents},
+               %Step{substep: :build},
+               %Step{substep: :stale}
+             ] =
+               Reread.chain([rule("UK_c", "UK_c", "clause_date")], "F", ["UK_a"], [
+                 "UK_y",
+                 "UK_x",
+                 "UK_y"
+               ])
+
+      assert am.args == ~w(lat.amending --read --amending UK_x,UK_y)
+
+      assert [%Step{substep: :amendments}, %Step{substep: :build}, %Step{substep: :stale}] =
+               Reread.chain([], "F", [], ["UK_x"])
     end
 
     test "stale extent readings: their substep after the commencement ones, before the build" do

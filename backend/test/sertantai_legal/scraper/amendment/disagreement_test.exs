@@ -169,4 +169,62 @@ defmodule SertantaiLegal.Scraper.Amendment.DisagreementTest do
     assert item.words == ["#{@law} reg.5 (regulation-3)"]
     assert Disagreement.gate([item]).pass?
   end
+
+  describe "by legislation.gov.uk's coverage (RULES amending-legislation-gov-uk-first-where-it-speaks)" do
+    test "a change legislation.gov.uk states differently is known unless reviewed: the gate passes" do
+      [item] =
+        [
+          text("#{@by}:regulation-3", "reg.5", :substituted, :words),
+          feed("key-a", "reg.5", :substituted, ["reg.3"], :provision)
+        ]
+        |> rows()
+        |> Disagreement.items(%{}, %{})
+
+      assert item.shape == "level words/provision"
+      assert "known: legislation-gov-uk-speaks" <> _ = item.status
+      assert Disagreement.gate([item]).pass?
+    end
+
+    test "a cause holding changes both sources state and the law's text alone splits in two" do
+      rules = [
+        rule("regulation-3", :inserted, :quoted, "For regulation 5 substitute— 5. … 5A. …"),
+        rule("regulation-9", :inserted, :quoted, "For regulation 7 substitute— 7. … 7A. …")
+      ]
+
+      items =
+        [
+          text("#{@by}:regulation-3", "reg.5A", :inserted),
+          feed("key-a", "reg.5A", :substituted, ["reg.3"]),
+          text("#{@by}:regulation-9", "reg.7A", :inserted)
+        ]
+        |> rows()
+        |> Disagreement.items(%{@law => rules}, %{})
+        |> Enum.sort_by(&(&1.status || ""))
+
+      assert [%{shape: "quote-new-number", reach: 1, status: nil}, speaks] = items
+
+      assert %{
+               shape: "quote-new-number",
+               reach: 1,
+               status: "known: legislation-gov-uk-speaks" <> _
+             } = speaks
+
+      refute Disagreement.gate(items).pass?
+    end
+
+    test "a reviewed status wins over legislation.gov.uk speaking" do
+      reviewed = %{"level words/provision @ #{@by}" => "fix: the quote's definition read whole"}
+
+      [item] =
+        [
+          text("#{@by}:regulation-3", "reg.5", :substituted, :words),
+          feed("key-a", "reg.5", :substituted, ["reg.3"], :provision)
+        ]
+        |> rows()
+        |> Disagreement.items(%{}, reviewed)
+
+      assert item.status == "fix: the quote's definition read whole"
+      refute Disagreement.gate([item]).pass?
+    end
+  end
 end

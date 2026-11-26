@@ -1,14 +1,19 @@
 defmodule SertantaiLegal.Scraper.StepProcedures.Reread do
   @moduledoc """
-  The re-read chain a family's stale readings need: each stale
-  commencement rule goes to the substep that re-reads it, in the order the
-  readers depend on, then the stale extent readings, then the family's
-  rebuild and its staleness report (`docs/lat-change-pipeline/COMMENCEMENT-READER.md`
-  §4–5, `EXTENT-READER.md` §4). Pure: the stale rules come from
+  The re-read chain a family's stale readings need: the stale amending
+  laws' read first, then each stale commencement rule to the substep that
+  re-reads it, in the order the readers depend on, then the stale extent
+  readings, then the family's rebuild and its staleness report
+  (`docs/lat-change-pipeline/AMENDING-LAW-READER.md` §4, `COMMENCEMENT-READER.md`
+  §4–5, `EXTENT-READER.md` §4). Pure: the stale amending laws come from
+  `StepProcedures.AmendingStale`, the stale rules from
   `StepProcedures.RereadStale`, the stale extent laws from
   `StepProcedures.ExtentStale`, and `run/2` takes the runner.
 
   Substeps, in order:
+  - `:amendments`: the amending laws behind the builds' `:amending_reader`
+    (`lat.amending --read`): first, as the read pass writes an Act's extent
+    reading beside its rules;
   - `:own`: a law with LAT, its own clause (`--read`), read by its source law;
   - `:amending`: a law with no LAT, its own clause from the CLML
     (`--read-amending --workers 1`);
@@ -40,14 +45,15 @@ defmodule SertantaiLegal.Scraper.StepProcedures.Reread do
   @orders ~w(order_date order_schedule)
 
   @doc """
-  The chain for `stale` rules and `extent_laws` of `family`: re-read
-  substeps that have laws, then build and stale; empty when nothing is stale.
+  The chain for `stale` rules, `extent_laws` and `amending_laws` of
+  `family`: re-read substeps that have laws, then build and stale; empty
+  when nothing is stale.
   """
-  @spec chain([stale_rule()], String.t(), [String.t()]) :: [Step.t()]
-  def chain(stale, family, extent_laws \\ [])
-  def chain([], _family, []), do: []
+  @spec chain([stale_rule()], String.t(), [String.t()], [String.t()]) :: [Step.t()]
+  def chain(stale, family, extent_laws \\ [], amending_laws \\ [])
+  def chain([], _family, [], []), do: []
 
-  def chain(stale, family, extent_laws) do
+  def chain(stale, family, extent_laws, amending_laws) do
     by = Enum.group_by(stale, &substep/1, &law/1)
 
     reads =
@@ -56,8 +62,9 @@ defmodule SertantaiLegal.Scraper.StepProcedures.Reread do
           laws != [],
           do: %Step{substep: s, laws: laws, args: args(s, laws)}
 
-    reads ++
-      extents(extent_laws) ++
+    listed(:amendments, amending_laws) ++
+      reads ++
+      listed(:extents, extent_laws) ++
       [
         %Step{substep: :build, laws: [], args: ["lat.vocabulary", "--build", "--family", family]},
         %Step{substep: :stale, laws: [], args: ["lat.stale", "--family", family]}
@@ -75,11 +82,11 @@ defmodule SertantaiLegal.Scraper.StepProcedures.Reread do
     |> Enum.reverse()
   end
 
-  defp extents([]), do: []
+  defp listed(_substep, []), do: []
 
-  defp extents(laws) do
+  defp listed(substep, laws) do
     laws = laws |> Enum.uniq() |> Enum.sort()
-    [%Step{substep: :extents, laws: laws, args: args(:extents, laws)}]
+    [%Step{substep: substep, laws: laws, args: args(substep, laws)}]
   end
 
   defp substep(%{treatment: t}) when t in @orders, do: :orders
@@ -89,6 +96,8 @@ defmodule SertantaiLegal.Scraper.StepProcedures.Reread do
 
   defp law(%{treatment: t} = r) when t in @orders or t == "feed_commencement", do: r.commences
   defp law(r), do: r.source_law
+
+  defp args(:amendments, laws), do: ["lat.amending", "--read", "--amending", Enum.join(laws, ",")]
 
   defp args(:own, laws), do: ["lat.commencement", "--read", "--law", Enum.join(laws, ",")]
 

@@ -29,7 +29,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Store.Inputs do
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.ReadVersion, as: ExtentReadVersion
   alias SertantaiLegal.Scraper.AmendingLaw.Extent.Store, as: ExtentStore
-  alias SertantaiLegal.Scraper.Amendment.Index
+  alias SertantaiLegal.Scraper.Amendment.{Index, TextAmenders}
   alias SertantaiLegal.Scraper.Commencement.Store, as: CommencementStore
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
 
@@ -68,7 +68,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Store.Inputs do
   (`Extent.ReadVersion`, or a law whose extent the build would read with
   its text held but no `extent_rules`: not read, so the build has no extent
   from it; the Extent reader stamps session), `:amending_reader` (an
-  amending law of the law's text changes, its text held, whose index is not
+  amending law of the law's text changes (`Amendment.TextAmenders`), its text held, whose index is not
   current for the law: stale or never read; the build reads stored rules
   only, the Amending-law reader stamps session). Taken now, never recorded.
   """
@@ -102,31 +102,14 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Store.Inputs do
 
   defp extended(affecting, sources), do: Enum.uniq(affecting ++ sources)
 
-  # an amending law of the law's text changes (its stored rules' sources,
-  # and the feed's amending laws on its changes other than commencements),
-  # its text held, whose index is not current for the law: read by other
-  # code, from other text, for other laws only, or never read
+  # an amending law of the law's text changes (`Amendment.TextAmenders`:
+  # its stored rules' sources, the feed's amending laws on its text
+  # effects), its text held, whose index is not current for the law: read
+  # by other code, from other text, for other laws only, or never read
   defp amending_stale?(law) do
     law
-    |> text_amenders()
+    |> TextAmenders.of()
     |> Enum.any?(&(ClmlStore.law_files(&1) != [] and not Index.current?(&1, Index.get(&1), law)))
-  end
-
-  defp text_amenders(law) do
-    Repo.query!(
-      """
-      SELECT DISTINCT source_law FROM amendment_rules WHERE amends = $1
-      UNION
-      SELECT DISTINCT cl.value->>'v' FROM provision_changes pc
-      JOIN provision_change_claims cl ON cl.change_id = pc.id
-      WHERE pc.law_name = $1 AND pc.operation IS DISTINCT FROM 'commenced'
-        AND cl.source = 'feed' AND cl.attribute = 'by'
-      """,
-      [law],
-      timeout: :infinity
-    ).rows
-    |> List.flatten()
-    |> Enum.filter(&(is_binary(&1) and &1 =~ ~r/^UK_/))
   end
 
   # each rule against its own read path's version (`CommencementStore.stale_condition/1`)

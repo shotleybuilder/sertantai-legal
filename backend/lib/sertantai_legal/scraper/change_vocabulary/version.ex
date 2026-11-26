@@ -54,6 +54,8 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Version do
       lib/sertantai_legal/scraper/amendment/index.ex
       lib/sertantai_legal/scraper/amendment/rule.ex
       lib/sertantai_legal/scraper/amendment/store.ex
+      lib/sertantai_legal/scraper/amendment/text_amenders.ex
+      lib/sertantai_legal/scraper/amendment/text_effect.ex
       lib/sertantai_legal/scraper/commencement/*.ex
       lib/sertantai_legal/scraper/commencement/text/*.ex
       lib/sertantai_legal/scraper/application_clause.ex

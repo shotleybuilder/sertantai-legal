@@ -16,6 +16,8 @@ defmodule Mix.Tasks.Lat.Amending do
   the laws read for), so the collector needs no XML:
 
       mix lat.amending --read                    # every amending law not read by this reader (resumable)
+      mix lat.amending --read --stale [--family F]   # the amending laws behind the builds' amending_reader reason (`StepProcedures.AmendingStale`)
+      mix lat.amending --read --stale --family F --preview --diff FILE   # the same, read and compared, nothing written
       mix lat.amending --read --amending A,B     # these amending laws (re-read)
       mix lat.amending --read --limit 20         # the next 20
       mix lat.amending --read --preview --amending A,B   # read, report what would change, write nothing
@@ -65,7 +67,7 @@ defmodule Mix.Tasks.Lat.Amending do
   }
 
   alias SertantaiLegal.Scraper.Amendment.Review.{Probe, RuleDiff}
-  alias SertantaiLegal.Scraper.StepProcedures.{ExtentDiff, ExtentStale, LawList}
+  alias SertantaiLegal.Scraper.StepProcedures.{AmendingStale, ExtentDiff, ExtentStale, LawList}
 
   @shortdoc "Print a law's amendment rules; read amending laws into rules"
 
@@ -110,7 +112,7 @@ defmodule Mix.Tasks.Lat.Amending do
 
       true ->
         Mix.raise(
-          "usage: mix lat.amending --law X | --read [--amending A,B] [--limit N] [--preview [--diff FILE]] | --amending A --provision ID | --extents --law X | --extents --amending A,B"
+          "usage: mix lat.amending --law X | --read [--amending A,B | --stale [--family F]] [--limit N] [--preview [--diff FILE]] | --amending A --provision ID | --extents --law X | --extents --amending A,B"
         )
     end
   end
@@ -381,7 +383,7 @@ defmodule Mix.Tasks.Lat.Amending do
   end
 
   # the amending laws a read pass takes: named, the regression set, every
-  # one, or those not read by this reader; `--limit` the first N
+  # one, the builds' stale ones, or those not read by this reader; `--limit` the first N
   defp to_read(opts, feed) do
     laws =
       cond do
@@ -394,11 +396,28 @@ defmodule Mix.Tasks.Lat.Amending do
         opts[:all] ->
           ReadPass.amending_laws(feed)
 
+        opts[:stale] ->
+          stale_amending_laws(opts[:family])
+
         true ->
           feed |> ReadPass.amending_laws() |> Enum.filter(&ReadPass.stale?(&1, Map.get(feed, &1)))
       end
 
     if opts[:limit], do: Enum.take(laws, opts[:limit]), else: laws
+  end
+
+  # the amending laws behind the builds' `:amending_reader`, store-wide or
+  # the family's (`StepProcedures.AmendingStale`)
+  defp stale_amending_laws(family) do
+    stale = AmendingStale.laws(family)
+
+    Mix.shell().info(
+      "stale#{if family, do: " for #{family}'s builds", else: ""}: #{length(stale.not_read)} not read, " <>
+        "#{length(stale.old_code)} read by other reader code or from other text, " <>
+        "#{length(stale.not_for_law)} not read for a built law"
+    )
+
+    AmendingStale.all(stale)
   end
 
   # each changed rule by field, grouped by field set, for review

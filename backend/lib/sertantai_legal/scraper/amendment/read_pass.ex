@@ -11,8 +11,7 @@ defmodule SertantaiLegal.Scraper.Amendment.ReadPass do
 
   alias SertantaiLegal.Repo
   alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Extent, Pointer}
-  alias SertantaiLegal.Scraper.Amendment.{Index, ReadLaw, Reader, Rule, Store, TextEffect}
-  alias SertantaiLegal.Scraper.LatStagedParser
+  alias SertantaiLegal.Scraper.Amendment.{Index, ReadLaw, Reader, Rule, Store, TextAmenders}
   alias SertantaiLegal.Scraper.LegislationGovUk.ClmlStore
 
   @type feed_entry :: %{laws: MapSet.t(String.t()), refs: [Pointer.ref()]}
@@ -35,9 +34,7 @@ defmodule SertantaiLegal.Scraper.Amendment.ReadPass do
     Repo.query!("SELECT DISTINCT law_name FROM legal_articles").rows
     |> List.flatten()
     |> Enum.flat_map(fn law ->
-      for e <- LatStagedParser.law_effects(law, store: :only) || [],
-          is_binary(e.affecting) and e.affecting =~ ~r/^UK_/,
-          TextEffect.text_effect?(e),
+      for e <- TextAmenders.feed_effects(law),
           do: {e.affecting, law, Pointer.refs_in(e.affecting_provisions)}
     end)
     |> Enum.group_by(&elem(&1, 0))

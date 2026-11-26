@@ -26,7 +26,14 @@ defmodule SertantaiLegal.Scraper.Amendment.Disagreement do
   provision) and its status is reviewed in
   `test/fixtures/amendment_patterns/disagreements.json` (`"<cause> @
   <amending law>"`, else `"<cause>"`), with the commencement gate's status
-  semantics (`Commencement.Leftovers.status/3`, `gate/1`). Pure.
+  semantics (`Commencement.Leftovers.status/3`, `gate/1`).
+
+  By coverage (RULES `amending-legislation-gov-uk-first-where-it-speaks`,
+  the Amending-law reader step procedures session): each group is split by
+  stratum, and a D group (legislation.gov.uk states the change and
+  differs) with no reviewed status is `known: legislation-gov-uk-speaks`.
+  Only the changes this reader alone states (L) are the gate's to review;
+  a reviewed status wins either way. Pure.
   """
 
   alias SertantaiLegal.Scraper.Amendment.{CheckStrata, Rule}
@@ -35,6 +42,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Disagreement do
 
   # what this reader reads (`CheckStrata`)
   @judged [:operation, :level, :by]
+
+  @speaks "known: legislation-gov-uk-speaks (legislation.gov.uk states the change and differs: " <>
+            "RULES amending-legislation-gov-uk-first-where-it-speaks)"
 
   @doc """
   The causes reaching the family: `rows` (`{amended law, change, stratum}`,
@@ -49,7 +59,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Disagreement do
   def items(rows, rules_by_law, reviewed) do
     rows
     |> groups(rules_by_law)
-    |> Enum.map(fn {{cause, by}, changes} ->
+    |> Enum.map(fn {{cause, by, stratum}, changes} ->
       words = for {law, c} <- changes, do: %{words: words(law, c)}
 
       Leftovers.item(
@@ -59,22 +69,30 @@ defmodule SertantaiLegal.Scraper.Amendment.Disagreement do
         cause,
         words,
         length(changes),
-        Leftovers.status(cause, reviewed, by)
+        status(cause, by, stratum, reviewed)
       )
     end)
   end
 
   @doc """
-  The changes behind each group, by `{cause, amending law}`, each group's
+  A group's status: its reviewed one (`Leftovers.status/3`), else
+  `known: legislation-gov-uk-speaks` for a D group, else nil.
+  """
+  @spec status(String.t(), String.t(), CheckStrata.stratum(), map()) :: String.t() | nil
+  def status(cause, by, stratum, reviewed),
+    do: Leftovers.status(cause, reviewed, by) || if(stratum == :D, do: @speaks)
+
+  @doc """
+  The changes behind each group, by `{cause, amending law, stratum}`, each group's
   `{amended law, change}` in amended law and target order (the gate's
   items and the review dump, `Amendment.Review.GateDump`).
   """
   @spec groups([{String.t(), Change.t(), CheckStrata.stratum()}], %{String.t() => [Rule.t()]}) ::
-          %{{String.t(), String.t()} => [{String.t(), Change.t()}]}
+          %{{String.t(), String.t(), CheckStrata.stratum()} => [{String.t(), Change.t()}]}
   def groups(rows, rules_by_law) do
     rows
     |> Enum.group_by(
-      fn {law, c, s} -> {cause(c, s, Map.get(rules_by_law, law, [])), by(c)} end,
+      fn {law, c, s} -> {cause(c, s, Map.get(rules_by_law, law, [])), by(c), s} end,
       fn {law, c, _} -> {law, c} end
     )
     |> Map.new(fn {k, changes} ->

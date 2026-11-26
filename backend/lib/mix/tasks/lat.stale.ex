@@ -31,7 +31,7 @@ defmodule Mix.Tasks.Lat.Stale do
 
   use Mix.Task
 
-  alias SertantaiLegal.Scraper.StepProcedures.ExtentStale
+  alias SertantaiLegal.Scraper.StepProcedures.{AmendingStale, ExtentStale}
   alias SertantaiLegal.Scraper.{ChangeStaleness, LabelStaleness}
   alias SertantaiLegal.Scraper.ChangeVocabulary.StaleStages
   alias SertantaiLegal.Repo
@@ -123,6 +123,7 @@ defmodule Mix.Tasks.Lat.Stale do
     if opts[:reasons] do
       by_reason("LAT or labels", lat)
       by_reason("change register", changes)
+      amending_laws(family, opts)
       extent_laws(family, opts)
     end
 
@@ -156,6 +157,28 @@ defmodule Mix.Tasks.Lat.Stale do
     end
   end
 
+  # the amending laws behind `:amending_reader`, store-wide or the family's
+  # builds' (`StepProcedures.AmendingStale`); each with `--list`
+  defp amending_laws(family, opts) do
+    stale = AmendingStale.laws(family)
+
+    Mix.shell().info(
+      "    the amending laws behind it: #{length(stale.not_read)} not read, " <>
+        "#{length(stale.old_code)} on old reader code or other text, " <>
+        "#{length(stale.not_for_law)} not read for a built law (`mix lat.amending --read --stale#{family_arg(family)}`)"
+    )
+
+    if opts[:list] do
+      for {cause, laws} <- [
+            not_read: stale.not_read,
+            old_code: stale.old_code,
+            not_for_law: stale.not_for_law
+          ],
+          l <- laws,
+          do: Mix.shell().info("#{l}\tamending: #{cause}")
+    end
+  end
+
   defp family_arg(nil), do: ""
   defp family_arg(family), do: ~s( --family "#{family}")
 
@@ -167,7 +190,7 @@ defmodule Mix.Tasks.Lat.Stale do
     extent_reader:
       "mix lat.reread --family F, or mix lat.amending --extents --stale (laws on old code, or not read: their text held, no extent_rules), then build",
     amending_reader:
-      "mix lat.amending --read (every amending law read by other code, from other text, or not for the law: ReadPass.stale?), then build"
+      "mix lat.reread --family F, or mix lat.amending --read --stale [--family F] (amending laws not read, on old reader code or other text, or not read for the law), then build"
   ]
 
   # the change register: each built law's reasons, from its inputs taken again
@@ -200,6 +223,7 @@ defmodule Mix.Tasks.Lat.Stale do
       fix = if f = @fixes[reason], do: "  (fix: #{f})", else: ""
       Mix.shell().info("  #{reason}: #{n}#{fix}")
       if reason == :extent_reader, do: extent_laws(nil, opts)
+      if reason == :amending_reader, do: amending_laws(nil, opts)
     end)
 
     Mix.shell().info("  laws holding LAT with no build: #{unbuilt}")

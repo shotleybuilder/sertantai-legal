@@ -6,13 +6,20 @@ defmodule Mix.Tasks.Lat.AmendingCheck do
   random sample of them with the words behind each (`Amendment.CheckSample`)
   for the `amending-reader-check` agent. `--strata` counts the strata
   (agreeing, disagreeing, law text only; `Amendment.CheckStrata`) and the
-  agreement with legislation.gov.uk over every both-sourced change;
+  agreement with legislation.gov.uk over every both-sourced change, and
+  records the yardstick (`Measures.AmendingYardstick`: every text change's
+  operation and level, the law's text against legislation.gov.uk) for `mix
+  lat.measures`;
   `--stratum A|D|L` samples one stratum, `--skip N` the next batch of the
   same draw. `--gate` is the family gate (Decision 1, Jason 2026-11-06,
   Maritime Safety: Amending-law reader): every D and L change grouped by
   cause and amending law (`Amendment.Disagreement`), each with its reviewed
   status (`test/fixtures/amendment_patterns/disagreements.json`); PASS only
-  when every group is named `known:`. Read-only.
+  when every group is named `known:`. Each group is split by stratum: a D
+  group (legislation.gov.uk states the change and differs) with no reviewed
+  status is `known: legislation-gov-uk-speaks` (RULES
+  `amending-legislation-gov-uk-first-where-it-speaks`), so only the law's
+  text alone (L) is left to review. Read-only but for the yardstick record.
 
       mix lat.amending_check --family "OH&S: Occupational" --strata
       mix lat.amending_check --family F --gate [--all]
@@ -34,6 +41,7 @@ defmodule Mix.Tasks.Lat.AmendingCheck do
   use Mix.Task
 
   alias SertantaiLegal.Scraper.ChangeVocabulary.Gate.Step
+  alias SertantaiLegal.Scraper.ChangeVocabulary.Measures.AmendingYardstick
 
   alias SertantaiLegal.Scraper.Amendment.{CheckSample, CheckStrata, Disagreement, PatternSource}
   alias SertantaiLegal.Scraper.Amendment.Review.{GateDump, StandardStatus}
@@ -87,7 +95,7 @@ defmodule Mix.Tasks.Lat.AmendingCheck do
       "#{length(laws)} laws; changes the law's text states: #{length(classified)} #{inspect(stated)}"
     )
 
-    if opts[:strata], do: strata(classified, by_law)
+    if opts[:strata], do: strata(family, classified, by_law)
     step = if opts[:gate], do: gate(classified, opts)
 
     if path = opts[:sample], do: sample(path, opts, classified, stratum)
@@ -113,8 +121,9 @@ defmodule Mix.Tasks.Lat.AmendingCheck do
     )
   end
 
-  defp strata(classified, by_law) do
+  defp strata(family, classified, by_law) do
     counts = Enum.frequencies_by(classified, &elem(&1, 2))
+    yardstick(family, by_law, counts)
     total = length(classified)
 
     Mix.shell().info("\nstrata:")
@@ -134,6 +143,23 @@ defmodule Mix.Tasks.Lat.AmendingCheck do
 
     for {attribute, {a, n}} <- Enum.sort(agreement),
         do: Mix.shell().info("  #{attribute}: #{a}/#{n} (#{pct(a, n)})")
+  end
+
+  # the yardstick against legislation.gov.uk, recorded for `mix lat.measures`
+  defp yardstick(family, by_law, strata) do
+    r =
+      AmendingYardstick.record(
+        family,
+        DateTime.utc_now(),
+        Enum.flat_map(by_law, &elem(&1, 1)),
+        strata
+      )
+
+    path = AmendingYardstick.path(family)
+    :ok = AmendingYardstick.write(r, path)
+    Mix.shell().info("")
+    for l <- AmendingYardstick.lines(r, nil), do: Mix.shell().info(l)
+    Mix.shell().info("  → #{path}")
   end
 
   # the family gate: each D and L change by cause and amending law, reviewed
