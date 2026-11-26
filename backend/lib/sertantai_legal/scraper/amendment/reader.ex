@@ -32,6 +32,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   alias SertantaiLegal.Scraper.Amendment.Rule
 
   alias SertantaiLegal.Scraper.Amendment.Reader.{
+    Brackets,
     Clauses,
     Commencing,
     LawNamed,
@@ -313,19 +314,29 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   # Water and Climate 2026-11-26)
   @applied_section ~r/^\s*(?:\([a-z0-9]+\)\s*)?(?:In|For|Omit|After|Before)\s+(?:the\s+(?:inserted\s+|substituted\s+)?)?sections?\s+\d+[A-Z]*\b/u
   @own_place ~r/\b(?:regulations?|articles?|rules?)\s+\d|\bparagraphs?\s+\(/iu
+  # (and under "in the modified section 479A—" or "in the substituted
+  # section 78A(5)": the brackets after it are the section's, the place
+  # the regulation at the brackets named before — SI 2019/177 reg.50, WSI
+  # 2018/725 reg.3(4))
+  @applied_phrase ~r/\b(?:in|for)\s+the\s+(?:modified|substituted|inserted)\s+(?:text\s+of\s+)?sections?\s+\d/iu
+
   defp applied_sections?(%Text{instruction: i, parents: parents}, kind)
        when kind in [:regulation, :article] do
-    plain = Enum.map([i | parents], &(&1 |> Clauses.unquote_words() |> Clauses.no_captions()))
+    plain = Enum.map([i | parents], &plain/1)
+    near = Enum.take(plain, 2)
 
-    Enum.any?(Enum.take(plain, 2), &(&1 =~ @applied_section)) and
-      not Enum.any?(Enum.take(plain, 2), &(&1 =~ @own_place))
+    Enum.any?(plain, &(&1 =~ @applied_phrase)) or
+      (Enum.any?(near, &(&1 =~ @applied_section)) and not Enum.any?(near, &(&1 =~ @own_place)))
   end
 
   defp applied_sections?(_text, _kind), do: false
 
+  defp plain(s), do: s |> Clauses.unquote_words() |> Clauses.no_captions()
+
   # (only where the lead names the regulation: else the reading as it was)
   defp applied_rules(text, clauses, law, source) do
     p = @prefix[law.kind]
+    before = applied_brackets(text)
 
     case Enum.filter(clauses, &(&1.numbers != [])) do
       [] ->
@@ -336,9 +347,20 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
             op = Clauses.operation(c.text),
             op != nil,
             do: %{
-              Targets.rule(law, Enum.map(c.numbers, &"#{p}.#{&1}"), op, source)
+              Targets.rule(law, Enum.map(c.numbers, &Brackets.ref(p, [&1 | before])), op, source)
               | level: :words
             }
+    end
+  end
+
+  # the brackets named, outermost first, before the applied section's
+  # phrase ([] when the clause opens with the section)
+  defp applied_brackets(%Text{instruction: i, parents: parents}) do
+    chain = Enum.map_join(Enum.reverse(parents) ++ [i], " ", &plain/1)
+
+    case Regex.split(@applied_phrase, chain, parts: 2) do
+      [before, _] -> Targets.brackets(%Text{id: nil, instruction: before})
+      [_] -> []
     end
   end
 

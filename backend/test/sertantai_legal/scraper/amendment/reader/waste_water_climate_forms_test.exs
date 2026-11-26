@@ -570,6 +570,17 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.WasteWaterClimateFormsTest do
         )
 
       assert ["reg.3(1)"] == targets(Reader.instruction(d, "regulation-3-3", %{}, [ppc]))
+
+      # a quote of the paragraph named is no restatement (NISR 2000/87 reg.5)
+      d2 =
+        doc(
+          "UK_nisr_2000_87",
+          ~S|<P1 id="regulation-5"><P1para><Text>For regulation 4(4) of the Offshore Installations Regulations 1995 there shall be substituted the following paragraph—</Text><BlockAmendment><P2><Pnumber>4</Pnumber><P2para><Text>This regulation applies to—</Text><P3><Pnumber>a</Pnumber><P3para><Text>x; and</Text></P3para></P3><P3><Pnumber>b</Pnumber><P3para><Text>y.</Text></P3para></P3></P2para></P2></BlockAmendment></P1para></P1>|,
+          "Secondary"
+        )
+
+      assert "reg.4(4)" in targets(Reader.instruction(d2, "regulation-5", %{}, [ppc]))
+      refute "reg.4(a)" in targets(Reader.instruction(d2, "regulation-5", %{}, [ppc]))
     end
 
     test "\"Part IV (drainage works) of the 1999 Regulations is revoked\": Part IV, never the whole law (SSI 2017/114 reg.50(1))" do
@@ -856,6 +867,97 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.WasteWaterClimateFormsTest do
                )
 
       assert title =~ ~r/Regulations 2008$/
+    end
+
+    test "a Part beside an insertion is its place, never inserted; a Chapter of a Part is no Part (asp 2015/10 s.82; 2016 c.25 Sch.10 para.45)" do
+      alias SertantaiLegal.Scraper.Amendment.Reader.Targets
+
+      part = fn i -> %{part: Targets.own_part(i), numbers: [], text: %{instruction: i}} end
+
+      assert [] ==
+               Targets.clause_targets(
+                 part.("After Part 3 of the 1982 Act insert—"),
+                 {"inserted", "inserted"},
+                 "s",
+                 []
+               )
+
+      assert [] ==
+               Targets.clause_targets(
+                 part.("In Part 1, after Chapter 4, insert—"),
+                 {"inserted", "inserted"},
+                 "s",
+                 []
+               )
+
+      assert ["pt.2"] ==
+               Targets.clause_targets(
+                 part.(
+                   "In the heading of Part 2 (prevention of public danger from disused tips), after “tips” insert “etc.”."
+                 ),
+                 {"inserted", "words inserted"},
+                 "s",
+                 []
+               )
+
+      assert ["pt.7"] ==
+               Targets.clause_targets(part.("Omit Part 7."), {"repealed", "repealed"}, "reg", [])
+
+      assert nil == Targets.own_part("Omit Chapter 1 of Part 1 (interception of communications).")
+
+      # a Part holding the place named is no target (2026 c.18 s.22; SI 2019/177 reg.55)
+      assert [] ==
+               Targets.clause_targets(
+                 part.(
+                   "in Part 3 (tobacco and nicotine products) omit Chapter 2 (retailers of tobacco and nicotine products)."
+                 ),
+                 {"repealed", "repealed"},
+                 "s",
+                 []
+               )
+
+      assert [] ==
+               Targets.clause_targets(
+                 part.(
+                   "In Part 18 (final provisions), in regulation 59 (review), omit paragraph (1A)."
+                 ),
+                 {"repealed", "repealed"},
+                 "s",
+                 []
+               )
+
+      assert ["pt.3"] ==
+               Targets.clause_targets(
+                 part.("In Part III, in the heading to the Part, for “100” substitute “80”."),
+                 {"substituted", "words substituted"},
+                 "reg",
+                 []
+               )
+    end
+
+    test "under \"in the modified section N\" the brackets are the section's: words in the regulation, at the brackets named before (SI 2019/177 reg.50; WSI 2018/725 reg.3(4))" do
+      llp =
+        Reader.law_ref("UK_uksi_2008_1911", "Limited Liability Partnerships Regulations", "reg")
+
+      d =
+        doc(
+          "UK_uksi_2019_177",
+          ~S|<P1 id="regulation-50"><P1para><Text>In the Limited Liability Partnerships Regulations 2008, in regulation 34A (subsidiary LLPs), in the modified section 479A—</Text><P3 id="regulation-50-b"><P3para><Text>in subsection (2)(c), for sub-paragraph (i) substitute “(i) x”.</Text></P3para></P3></P1para></P1>|,
+          "Secondary"
+        )
+
+      assert [%{targets: ["reg.34A"], level: :words}] =
+               Reader.instruction(d, "regulation-50-b", %{}, [llp])
+
+      d2 =
+        doc(
+          "UK_wsi_2018_725",
+          ~S|<P1 id="regulation-3"><P1para><P2 id="regulation-3-1"><P2para><Text>Regulation 5 of the Limited Liability Partnerships Regulations 2008 is amended as follows.</Text></P2para></P2><P2 id="regulation-3-4"><P2para><Text>In paragraph (4), in the substituted section 78A(5) (supplement to definition of harm), for “Secretary of State” substitute “Welsh Ministers”.</Text></P2para></P2></P1para></P1>|,
+          "Secondary"
+        )
+
+      assert [%{targets: ["reg.5(4)"], level: :words}] =
+               Reader.instruction(d2, "regulation-3-4", %{}, [llp])
     end
   end
 end

@@ -107,10 +107,18 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
       else: quoted_paths(path, named, numbers, p)
   end
 
+  # (and the quote goes on with the bracket named: "regulation 3(1)" →
+  # "3 (1) …"; "For regulation 4(4) substitute— (4) (a) …" quotes
+  # paragraph (4), never reg.4 restated — NISR 2000/87 reg.5)
   defp restated?(%Text{inserted: [_ | _] = paths} = text, [n]) do
-    Enum.all?(paths, &(hd(&1) == n)) and Enum.any?(paths, &(length(&1) > 1)) and
-      Clauses.captionless(text).instruction =~
-        ~r/\b(?:sections?|regulations?|articles?|rules?)\s+#{Regex.escape(n)}\s*\(/iu
+    re = ~r/\b(?:sections?|regulations?|articles?|rules?)\s+#{Regex.escape(n)}\s*\(([^)]+)\)/iu
+
+    with true <- Enum.all?(paths, &(hd(&1) == n)),
+         [_, b] <- Regex.run(re, Clauses.captionless(text).instruction) do
+      Enum.any?(paths, &match?([^n, ^b | _], &1))
+    else
+      _ -> false
+    end
   end
 
   defp restated?(_text, _numbers), do: false
@@ -223,7 +231,24 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
   brackets (`listed_places/1`) is read item by item.
   """
   @spec clause_targets(map(), {String.t(), String.t()}, String.t(), [String.t()]) :: [String.t()]
-  def clause_targets(%{part: {:part, n}, numbers: []}, _op, _p, _tops), do: ["pt.#{n}"]
+  # (nor a Part holding the place named: "in Part 3 … omit Chapter 2",
+  # "In Part 18 …, in regulation 59 …, omit paragraph (1A)" — 2026 c.18
+  # s.22, SI 2019/177 reg.55)
+  @inside_part ~r/\bPart\s+(?:\d+[A-Z]*|[IVXLC]+)\b.*?\b(?:Chapters?|sections?|regulations?|articles?|rules?|paragraphs?|sub-?paragraphs?|subsections?|Schedules?)\s+[\d(IVX]/su
+
+  # (a Part beside a provision insertion is its place, never inserted:
+  # "After Part 3 … insert—", "In Part 1, after Chapter 4, insert—" — the
+  # quote gives what is inserted; asp 2015/10, asp 2025/5; Waste, Water
+  # and Climate 2026-11-26)
+  def clause_targets(%{part: {:part, _}, numbers: []}, {"inserted", "inserted"}, _p, _tops),
+    do: []
+
+  def clause_targets(%{part: {:part, n}, numbers: [], text: %{instruction: i}}, _op, _p, _tops),
+    do:
+      if(i |> Clauses.no_captions() |> Clauses.unquote_words() =~ @inside_part,
+        do: [],
+        else: ["pt.#{n}"]
+      )
 
   def clause_targets(c, op, p, tops) do
     case op != {"inserted", "inserted"} && list_source(c, p) do
@@ -491,7 +516,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
   # Part named for its application: "in the application of Part 1 of the
   # Act … omit" is the definition's words — 2003 c.44 s.288, 2021 c.30
   # s.64(3)(b); Waste, Water and Climate 2026-11-26)
-  @for_application ~r/\b(?:application|purposes?|meaning|operation)\s+of\s+(?:the\s+)?$/iu
+  # (nor a Chapter's Part: "Omit Chapter 1 of Part 1" is the Chapter —
+  # 2016 c.25 Sch.10 para.45)
+  @for_application ~r/\b(?:(?:application|purposes?|meaning|operation)\s+of\s+(?:the\s+)?|Chapters?\s+(?:\d+[A-Z]*|[IVXLC]+)\s+of\s+)$/iu
   defp part_named(plain) do
     with [{at, _} | _] <- Regex.run(@part, plain, return: :index),
          false <- binary_part(plain, 0, at) =~ @for_application do
