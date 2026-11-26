@@ -821,5 +821,41 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.WasteWaterClimateFormsTest do
                &LawNamed.law_named?(&1, lda)
              )
     end
+
+    test "an SI applying Act sections, amended section by section, is words in its regulation (SI 2016/575 on SI 2008/1911)" do
+      llp =
+        Reader.law_ref(
+          "UK_uksi_2008_1911",
+          "Limited Liability Partnerships (Accounts and Audit) (Application of Companies Act 2006) Regulations",
+          "reg"
+        )
+
+      lead =
+        ~S|<P2 id="regulation-12-1"><P2para><Text>Regulation 12 of the Limited Liability Partnerships (Accounts and Audit) (Application of Companies Act 2006) Regulations 2008 (approval of accounts) is amended as follows.</Text></P2para></P2>|
+
+      d =
+        doc(
+          "UK_uksi_2016_575",
+          ~s|<P1 id="regulation-12"><P1para>#{lead}<P2 id="regulation-12-2"><P2para><Text>In section 414 (approval and signing of accounts), for subsection (3) substitute “(3) The balance sheet must state the name.”.</Text></P2para></P2><P2 id="regulation-12-3"><P2para><Text>Omit section 410 (information about related undertakings: alternative compliance).</Text></P2para></P2></P1para></P1>|
+        )
+
+      assert [%{targets: ["reg.12"], level: :words, operation: :substituted}] =
+               Reader.instruction(d, "regulation-12-2", %{}, [llp])
+
+      assert [%{targets: ["reg.12"], level: :words, operation: :repealed}] =
+               Reader.instruction(d, "regulation-12-3", %{}, [llp])
+
+      alias SertantaiLegal.Scraper.Amendment.Reader.LawNamed
+
+      assert [%{title: title}] =
+               LawNamed.named(
+                 [
+                   "The Limited Liability Partnerships (Accounts and Audit) (Application of Companies Act 2006) Regulations 2008 are amended."
+                 ],
+                 %{}
+               )
+
+      assert title =~ ~r/Regulations 2008$/
+    end
   end
 end

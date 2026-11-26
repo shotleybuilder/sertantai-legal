@@ -19,10 +19,11 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
   # (a title holding another law's title runs to its own year: "Water
   # Services etc. (Scotland) Act 2005 (Consequential Provisions and
   # Modifications) Order 2005" is the Order, never the Act — 2013 c.24
-  # Sch.6; and a year printed with no space after "(Northern Ireland)": NISR
+  # Sch.6; or from a year inside its own bracket: "… (Application of
+  # Companies Act 2006) Regulations 2008", SI 2016/575; and a year printed with no space after "(Northern Ireland)": NISR
   # 2007/247 Sch.10 para.3's changes had gone to the previous paragraph's
   # law; Waste, Water and Climate 2026-11-26)
-  @title_words ~S"[A-Z](?:[\w,'’()\- ]|\betc\.)*? (?:Act|Regulations|Order|Rules)(?: \(Northern Ireland\) ?| )\d{4}(?:(?: \([^()]*\))+ (?:Regulations|Order|Rules)(?: \(Northern Ireland\) ?| )\d{4})?"
+  @title_words ~S"[A-Z](?:[\w,'’()\- ]|\betc\.)*? (?:Act|Regulations|Order|Rules)(?: \(Northern Ireland\) ?| )\d{4}(?:(?:\)(?: \([^()]*\))*|(?: \([^()]*\))+) (?:Regulations|Order|Rules)(?: \(Northern Ireland\) ?| )\d{4})?"
   @title Regex.compile!(@title_words, "u")
   @title_group Regex.compile!("(" <> @title_words <> ")", "u")
 

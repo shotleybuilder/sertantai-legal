@@ -297,9 +297,54 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   end
 
   defp entry_rules(text, texts, law, source, terms) do
+    clauses = text |> Clauses.clauses() |> LawNamed.scoped(texts, law, terms)
+
+    if applied_sections?(text, law.kind),
+      do: applied_rules(text, clauses, law, source),
+      else: own_rules(text, clauses, law, source)
+  end
+
+  # an instrument whose regulations apply an Act's sections as modified
+  # ("Section 414 applies to LLPs, modified so that it reads …"), amended
+  # in the sections' own words ("In section 414 …, for subsection (3)
+  # substitute—", "Omit section 410"): words in the regulation the lead
+  # names, never its provisions, and no quote placed (SI 2016/575 on SI
+  # 2008/1911: 113 rules on reg.9(2)(c)(i), a made-up reg.397 …; Waste,
+  # Water and Climate 2026-11-26)
+  @applied_section ~r/^\s*(?:\([a-z0-9]+\)\s*)?(?:In|For|Omit|After|Before)\s+(?:the\s+(?:inserted\s+|substituted\s+)?)?sections?\s+\d+[A-Z]*\b/u
+  @own_place ~r/\b(?:regulations?|articles?|rules?)\s+\d|\bparagraphs?\s+\(/iu
+  defp applied_sections?(%Text{instruction: i, parents: parents}, kind)
+       when kind in [:regulation, :article] do
+    plain = Enum.map([i | parents], &(&1 |> Clauses.unquote_words() |> Clauses.no_captions()))
+
+    Enum.any?(Enum.take(plain, 2), &(&1 =~ @applied_section)) and
+      not Enum.any?(Enum.take(plain, 2), &(&1 =~ @own_place))
+  end
+
+  defp applied_sections?(_text, _kind), do: false
+
+  # (only where the lead names the regulation: else the reading as it was)
+  defp applied_rules(text, clauses, law, source) do
+    p = @prefix[law.kind]
+
+    case Enum.filter(clauses, &(&1.numbers != [])) do
+      [] ->
+        own_rules(text, clauses, law, source)
+
+      held ->
+        for c <- held,
+            op = Clauses.operation(c.text),
+            op != nil,
+            do: %{
+              Targets.rule(law, Enum.map(c.numbers, &"#{p}.#{&1}"), op, source)
+              | level: :words
+            }
+    end
+  end
+
+  defp own_rules(text, clauses, law, source) do
     p = @prefix[law.kind]
     tops = text.inserted |> Enum.map(&hd/1) |> Enum.uniq()
-    clauses = text |> Clauses.clauses() |> LawNamed.scoped(texts, law, terms)
     quoting = Targets.quoting_clause(clauses)
 
     quoted =

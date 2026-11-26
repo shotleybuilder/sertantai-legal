@@ -92,3 +92,6 @@ UK_uksi_2015_1637  # a title with a year inside it, never the Deregulation Act 2
 UK_ssi_2017_114  # "Part IV … is revoked" is pt.4, never the whole law, reg.50(1) (Waste, Water and Climate 2026-11-26)
 UK_asp_2015_13  # verbless items under "The following provisions are repealed—", s.1(2) (Waste, Water and Climate 2026-11-26)
 UK_ukpga_2011_20  # verbless items under a repeal lead, s.47, s.109(1) (Waste, Water and Climate 2026-11-26)
+UK_uksi_2016_575  # an SI applying Act sections amended section by section: words in its regulation; a title from a bracketed year (Waste, Water and Climate 2026-11-26)
+UK_wsi_2023_1290  # "In section 46 …" under "The 1990 Act is amended": the Act only, never an SI's regulation (Waste, Water and Climate 2026-11-26)
+UK_ukpga_2025_18  # s.57: the New Roads and Street Works Act 1991, never the Act in an aside (Waste, Water and Climate 2026-11-26)
