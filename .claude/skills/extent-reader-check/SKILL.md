@@ -312,3 +312,10 @@ Fire and OH&S (round of five families, 2026-11-14/15). The session is `.claude/s
 - **One cold catalogue dry run:** 2 held moves, both gains (Decision 4).
 - **Switched families rebuilt** and their causes named (Decision 5). `withheld.json` names are shared across families.
 - **Result.** PASS: bound by the law's text 63% → 76%. Golden 27/27, `mix test` 11,150. No agent pass.
+
+Waste, Water and Climate (round of six families, 2026-11-26). The session is `.claude/sessions/lat-change-pipeline/2026-11-26-waste-water-and-climate-extent-reader.md`.
+- **Write 1 first,** over the round's 1,591 stale laws: our faults 669 → 0, causes 135 → 51. Five introductions fetched.
+- **Fixes in the session, test first** (no fixer): same-extent wordings, the apart-from default, conditional extensions, citation numbers; the powers parser's named Act over a wrong link (Decision 1); five one-law forms (Decision 2); three older catalogue misreads (Decision 3); the savings statement found by check 2.
+- **Three cold catalogue dry runs:** 27 new patterns accepted; 5 held examples moved (2 gains read, 1 relabelled, 2 relabelled by the default the sentence states).
+- **Result.** PASS: causes 135 → 0 not named (302 known), bound by the law's text 40.9% → 68.4%. The switched families PASS. Golden 27/27, `mix test` 12,749. No agent pass.
+

@@ -21,7 +21,7 @@ The next round takes the QQ legal register's families not already covered (Jason
 - ✅ Feed reader (step 2): `2026-11-18-waste-water-and-climate-feed-reader.md` (closed 2026-11-19)
 - ✅ Markup reader (step 3): `2026-11-19-waste-water-and-climate-markup-reader.md` (closed 2026-11-20)
 - ✅ Commencement reader (step 4): `2026-11-20-waste-water-and-climate-commencement-reader.md` (closed 2026-11-23)
-- ⬜ Before the Extent reader (Jason 2026-11-23, the Commencement reader retrospective, Decision 1), in order:
+- ✅ Before the Extent reader (Jason 2026-11-23, the Commencement reader retrospective, Decision 1), in order:
   1. ✅ `2026-11-23-commencement-reader-retrospective.md` (closed 2026-11-23)
   2. ✅ `2026-11-23-commencement-reader-step-procedures.md`: tasks for the step's procedures, feed figures in Measures, WORKFLOW rules (closed 2026-11-23)
   3. ✅ `2026-11-23-commencement-reader-staleness.md`: staleness that follows what changed (closed 2026-11-23)
@@ -29,9 +29,9 @@ The next round takes the QQ legal register's families not already covered (Jason
   5. ✅ `2026-11-23-commencement-reader-order-split.md`: split the order reader (closed 2026-11-24); its second part, `2026-11-24-commencement-reader-clause-split.md` (split the clause reader), closed 2026-11-24
   6. ✅ `2026-11-23-commencement-reader-feed-differences-as-patterns.md`: feed differences as patterns, judged by what the feed covers (closed 2026-11-25; the build's part with Merge, #200)
   7. ✅ `2026-11-23-extent-reader-readiness-review.md`: the retrospective's questions asked of the Extent reader (closed 2026-11-25; spec EXTENT-READER.md; the extent feed-first rule, its build with Evidence, #202)
-  8. `2026-11-25-extent-reader-stamps.md`: stamps that follow what changed, the mixed modules split, the build's stamp to the lookup only (readiness review, Decision 1)
-  9. `2026-11-25-extent-reader-step-procedures.md`: the extents write's preview and stale mode, the re-read substep, the feed yardstick by coverage, the skill and WORKFLOW §5 (readiness review, Decision 1)
-- ⬜ Extent reader (step 5)
+  8. ✅ `2026-11-25-extent-reader-stamps.md`: stamps that follow what changed, the mixed modules split, the build's stamp to the lookup only (readiness review, Decision 1) (closed 2026-11-25)
+  9. ✅ `2026-11-25-extent-reader-step-procedures.md`: the extents write's preview and stale mode, the re-read substep, the feed yardstick by coverage, the skill and WORKFLOW §5 (readiness review, Decision 1) (closed 2026-11-25)
+- ✅ Extent reader (step 5): `2026-11-26-waste-water-and-climate-extent-reader.md` (closed 2026-11-26; check PASS, causes 135 → 0 not named, bound by the law's text 40.9% → 68.4%; the switched families PASS; one rule for Jason: `list-only-act-no-default`)
 
 ## Dependencies
 

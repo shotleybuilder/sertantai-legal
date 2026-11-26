@@ -27,9 +27,14 @@ This file lists the traps met in Extent reader work: one line each, with where i
 - **`withheld.json` names are shared across families.** A cause named for the round also covers a switched family. Rebuild the switched families and read their gates before naming. (Fire and OH&S, Decision 5.)
 - **Another family's gate can look worse while its build is stale.** Causes are relabelled (no powers → provision not named). Compare the causes by law against the reading before calling it a regression. (Environmental Protection.)
 - **The check is not seconds when the cache is cold.** On old versions `lat.extent_check` re-reads: 5 min for the round, 9 min for five families. (Readiness review, 2026-11-25.)
+- **Read the check after every write.** A write's rebuild shows causes the check before it hid under others. Check 2 found a savings statement withholding two whole laws (195 changes), which cost a third write. (Waste, Water and Climate, 2026-11-26.)
+- **A held catalogue example reading differently may be an old misread.** Before blaming a fix, look at the stored rules' `read_at`. In Waste, Water and Climate, three losses (1992 c.52, 1981 c.22, 1996 c.44) had been read so since 2026-11-07.
+- **The preview counts a repeated unread row as added; the write drops it.** The same 3 laws show as changing in every preview (1982 c.48, 1991 c.22, SI 2017/1012). Parked: `preview-counts-duplicate-rows`.
 
 ## Code
 
 - **The build calls the reader's lookup** (`Extent.of_change/3`, `application_at/2` from `readers/feed.ex`), not only its stored rules. A change to `Lookup` changes builds with no write, so `Lookup` is in the build's stamp.
 - **Tests can't reach the CLML store.** The test config disables it (`clml_store_dir: nil`). A test needing held text puts a temporary root in the app config, in a non-async module (`StoreInputsUnreadTest`, `EnablingCacheParserTest`).
 - **A devolved SI's competence doesn't confine its insertion** (`competence_only?`, V1-04).
+- **A change with no amending provision never gets a bound.** `Lookup.of_change(e, [], _)` is nil whatever the default; the check counts these as `same_or_not_named` or `unread_statement`, the law's reason, not the change's.
+- **Hand-built test documents carry no Pnumbers.** `ExtentDoc` drops them, so a wording that depends on the numbers as held ("1 1 These Regulations …") passes in a test and fails on the real law. Test it at the `Units.unlettered` level too (SI 2021/513).

@@ -356,6 +356,12 @@ No agent rounds. Before this, the rule was statistical (2026-10-28): pooled agen
 - **A new extent module** went into `FeedPatterns.Version` and `MarkupPatterns.Version` by hand. Since the stamps session they hold only the struct and its lookups, and a new module goes by name into the stamp whose test reaches it (`ExtentReadStampsTest`, `VersionCoverageTest`).
 - **Result:** our faults 144 → 0, causes 139 → 0 not named, bound by the law's text 63% → 76%, unread statements 516 → 245 changes. The switched families: EP and Maritime PASS; Occupational has 1 cause (SI 2006/475's text not held, parked with Sources).
 
+**Waste, Water and Climate** (round of six families, 2026-11-26). 1,162 amending laws; 1,556 readings stale or never read, so write 1 comes first (our faults 669 → 0, causes 135 → 51).
+- **Fixes by cause, test first, in the session.** Same-extent wordings; a default "apart from the provisions listed below"; a conditional extension never a plain default; "They extend" after a citation carrying its numbers as held. The powers parser takes the Act named over a wrong link (Decision 1, diffed over 2,830 introductions). One-law wordings over the triage size were written as forms (Decision 2), and three older misreads the catalogue held were fixed (Decision 3).
+- **Read the check after each write, not only before.** Check 2 showed one more misread, over the triage size: a savings or supplementary statement withholding its whole law (SI 2005/2035, 2019/93: 195 changes). That cost a third write.
+- **A change with no amending provision never gets a bound.** There is no provision to look up. Most of the round's last causes were these; they are named, not fixed here.
+- **Result:** three writes and three cold catalogue dry runs. Our faults 669 → 0; causes 135 → 0 not named (302 known); bound by the law's text 40.9% → 68.4%; the yardstick's law narrower 219 → 136 changes, disjoint 2 (71 after write 1). The four switched families PASS, each moved only by the fixed classes. One rule is left for Jason: whether an Act stating lists and no default reaches the whole UK less its lists (`list-only-act-no-default`, 32 Acts).
+
 **Stamps** (the Extent reader stamps session, 2026-11-25; the gotchas file `amending_law/extent/CLAUDE.md`):
 - `ReadVersion.Document`, the document reading, and `ReadVersion.Catalogue`, the catalogue's own code, key the reading cache;
 - `ReadVersion` (the reading, the powers' placement and the powers parser) is stamped on `extent_rules`;
