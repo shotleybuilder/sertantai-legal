@@ -32,6 +32,11 @@ The next round takes the QQ legal register's families not already covered (Jason
   8. ✅ `2026-11-25-extent-reader-stamps.md`: stamps that follow what changed, the mixed modules split, the build's stamp to the lookup only (readiness review, Decision 1) (closed 2026-11-25)
   9. ✅ `2026-11-25-extent-reader-step-procedures.md`: the extents write's preview and stale mode, the re-read substep, the feed yardstick by coverage, the skill and WORKFLOW §5 (readiness review, Decision 1) (closed 2026-11-25)
 - ✅ Extent reader (step 5): `2026-11-26-waste-water-and-climate-extent-reader.md` (closed 2026-11-26; check PASS, causes 135 → 0 not named, bound by the law's text 40.9% → 68.4%; the switched families PASS; one rule for Jason: `list-only-act-no-default`)
+- ⬜ Before the Amending-law reader (Jason 2026-11-26), in order:
+  1. ✅ `2026-11-26-amending-law-reader-readiness-review.md`: the Commencement and Extent retrospectives' lessons applied (closed 2026-11-26; spec AMENDING-LAW-READER.md; rule `amending-legislation-gov-uk-first-where-it-speaks`)
+  2. ⬜ `2026-11-26-amending-law-reader-stamps.md`: stamps that follow what changed, the mixed modules split, the build's fallback dropped (Decision 1)
+  3. ⬜ `2026-11-26-amending-law-reader-step-procedures.md`: `--read --stale --family`, the re-read substep, `lat.stale`, the gate by coverage, the skill and WORKFLOW §6 (Decisions 1 and 2)
+- ⬜ Amending-law reader (step 6)
 
 ## Dependencies
 

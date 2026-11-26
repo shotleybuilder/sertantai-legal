@@ -19,6 +19,8 @@ description: The LAT Change Pipeline's amending-law reader acceptance check for 
 
 # Amending Reader Check (CV-S06, per family)
 
+Read first: the reader's spec, `docs/lat-change-pipeline/AMENDING-LAW-READER.md` (aim, scope, boundary, substeps, why they loop), and the gotchas, `backend/lib/sertantai_legal/scraper/amendment/CLAUDE.md`.
+
 ## Purpose
 
 Prove the amendment reader (`Amendment.Reader`, `Reader.*`; claims via `ChangeVocabulary.Readers.AmendingLaw`) reads what an amending provision changes, from its own words: the amended law, the target provisions, the operation (inserted, substituted, repealed) and the level (words or whole provision). The law's text wins where it speaks (source authority), so a misread overrides a right legislation.gov.uk record: precision is what this check measures. Dates are the commencement reader's (CV-S04) and territory the extent reader's (CV-S05); neither is judged here. The reader's yield (provisions read with no rule) is not chased (CV-07).

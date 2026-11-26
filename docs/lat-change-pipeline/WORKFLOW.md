@@ -432,7 +432,7 @@ No agent rounds. A is not sampled: there the law's text and legislation.gov.uk a
   - the switched families' gates PASS (Occupational 1, EP 6 and Maritime 1 named, EP's and Maritime's through the fix), with L in EP 457 → 420;
   - golden 27/27.
 
-**Skill.** `amending-reader-check`. Background: [AMENDMENT-GUIDE.md](AMENDMENT-GUIDE.md).
+**Skill.** `amending-reader-check`. The reader's spec: [AMENDING-LAW-READER.md](AMENDING-LAW-READER.md) (draft, 2026-11-26); its gotchas: `backend/lib/sertantai_legal/scraper/amendment/CLAUDE.md`. Background: [AMENDMENT-GUIDE.md](AMENDMENT-GUIDE.md).
 
 ## 7. Merge
 
