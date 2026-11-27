@@ -2,7 +2,7 @@
 session: 'Waste, Water and Climate: Amending-law reader'
 status: suspended
 suspended: '2026-11-27'
-suspended_reason: 'For the three named sessions (EU article naming first, then amending Schedules and yield), on Jason''s go 2026-11-27; the Settle write (todo 7) follows them'
+suspended_reason: 'For the three named sessions: EU article naming CLOSED 2026-11-27 (764fd74e); amending Schedules next, then yield, each on Jason''s go; the catalogue cold dry run and the Settle write (todo 7) follow them'
 opened: '2026-11-26'
 family: 'Waste, Water and Climate (round)'
 bugs:
@@ -485,3 +485,7 @@ Tests are in `test/sertantai_legal/scraper/amendment/reader/waste_water_climate_
 **Parking list**
 - Amending-law reader: SI 2019/414 reg.8(4)(b). An inserted definition holding an as-if list is read as 12 rules; the right reading is one, words inserted in reg.5(1). One law, below the triage size; a known limit unless a field diff shows it wider.
 - Amending-law reader: the Land Drainage Act 1991 is named only in a caption, "(which amends the Land Drainage Act 1991)" (2021 c.30 s.95), and still takes rules. Its reach is to be read in the field diff.
+
+## Named session closed: EU article naming (2026-11-27)
+
+`2026-11-27-amending-law-reader-eu-article-naming.md`, code `764fd74e`. Six EU classes fixed (row spelling, quoted Articles, EU titles naming other laws, a paragraph's point, words to a held Article in the vocabulary); fresh EU rules with no held target 61 of 3,860 (from 581 plus 345 two-law provisions); nothing outside EU law changed. For the Settle: the vocabulary change (`Readers.AmendingLaw`) reaches EU laws in the switched families, so rebuild them in the same write and read their gates; the catalogue cold run will see the EU rules' new targets. Next: amending Schedules, on Jason's go.
