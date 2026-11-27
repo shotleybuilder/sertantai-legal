@@ -4,6 +4,12 @@ status: active
 opened: '2026-11-26'
 family: 'Waste, Water and Climate (round)'
 bugs:
+  - pattern: "The amendment catalogue's fixture is behind the notes table: the same 1,436 amending laws and 161 patterns, but 34 more provisions read (15,008 → 15,042) and 14 patterns' counts changed"
+    category: fixture-behind-store
+    module: test/fixtures/amendment_patterns
+    fix: "Fixed: --accept over every family's 1,092 laws after the last reader fix (2,322 amending laws, 214 patterns, 0 unclassified); five held moves on Jason's decision (3b74c86d, Waste, Water and Climate 2026-11-27)"
+    step: "Amending-law reader"
+    status: fixed
   - pattern: "AmendingLaw.Pointer.parse word parsing drops the item before '(with', unnumbered 'Sch. para. N', adds '(with …)'/other laws' provisions, splits deep refs"
     category: pointer-word-parsing
     module: amending_law/pointer.ex
@@ -193,7 +199,7 @@ Step 6 of the round. Each amending provision's own words must give the right ame
 - ✅ 3. Find: the fetch list (amending laws not held; repeals Schedules held only as enacted), fetched once on Jason's go
 - ✅ 4. Find: the 15 parked bugs' reach (round and corpus); review every L group not named, widest first; Decisions; `--write` names
 - 🔄 5. Fix: the gate's `fix:` classes and the 15 parked bugs, test first; field diff per fix; `--preview --all` after the last. Then suspend for the three named sessions
-- ⬜ 6. Fix: catalogue cold dry run to a scratch copy, held moves to Jason, `--accept`
+- ✅ 6. Fix: catalogue cold dry run to a scratch copy, held moves to Jason, `--accept` (two cold runs; five moves decided (a); `3b74c86d`)
 - ⬜ 7. Settle: the last write after the last reader commit (restore point); round and switched families rebuilt; golden 27/27; gates PASS; final yardstick; `mix test`, Credo diff, Dialyzer
 - ⬜ 8. Check and close: `mix lat.step_close`; RULES, WORKFLOW §6, the skill's history, gotchas; meta row; bugs updated; commits by path; step report; no push unless asked
 
@@ -398,7 +404,7 @@ Tests are in `test/sertantai_legal/scraper/amendment/reader/waste_water_climate_
 | Whole-law rule makes no change (10 rules) | known limit, as written | the labels are right (the feed carries the revocation) |
 | Golden consolidation repeal (Factories Act 1937 s.108(1)(a)) | known limit; next place Sources | the 1961 Act's Seventh Schedule is itself repealed: the revised text holds dots only. Needs the made text held |
 | Amending gate groups not named ×2 (EP, Occupational) | todo 7 | named or fixed at the Settle gates |
-| Catalogue fixture behind the store | todo 6 | closed by `--accept` |
+| Catalogue fixture behind the store | todo 6 | fixed: `--accept`, `3b74c86d` |
 
 **Field diff, all fixes (`wwc/fix-b-*`).** The round: 1,104 amending laws, 527 pairs. The regression list: 418 laws, 507 pairs, 204 of them not in the round. Every pair was read, one line each (scratch `pairs.txt`, 876 lines, by amending law).
 - **Right:** the fixes landing as meant.
@@ -457,6 +463,22 @@ Tests are in `test/sertantai_legal/scraper/amendment/reader/waste_water_climate_
   - **Below the triage size:** WSI 2013/755 Sch.2 para.468(2)(b), "the section 10(3A) to be inserted into that Act", read as s.10(3A) inserted: one provision, a named known limit.
   - **1994 c.28 s.5(2)(a), one of the five changed examples:** "as respectively inserted and substituted by Part II of Schedule 4 to the 1988 Act" had read "inserted" from the aside. Fixed test first (`f49d651b`, `fix-m`); the other ten laws with such asides are unchanged. Two parts remain, each a known limit of one provision: Schedule 1's "paragraph 4(a) and (d)" lends s.4A(1) its brackets (a Schedule paragraph, the amending Schedules session's), and the Merchant Shipping (Oil Pollution) Act 1971 is read beside the 1974 Act that "of the 1974 Act" names.
   - The dry run was stopped and runs again (`catalogue-dry-2026-11-27-2.txt`) after the three fixes.
+
+**Decision: the catalogue's held moves (todo 6, 2026-11-27).**
+- **Question:** the second cold dry run (`wwc/catalogue-dry-2026-11-27-2.txt`; 1,092 laws, 2,322 amending laws, 32,785 provisions, 0 unclassified) has 5 examples reading differently from their held expectation, plus 55 new patterns and 2 no longer seen. Should `--accept` write them as the new expectations?
+- **Aim:** `binds-on-date`. Each amending provision's own words give the right law, place, operation and level.
+- **The five, each checked in the text:**
+  - NISR 2007/247 Sch.10 para.3(a)(x): no rule → words inserted in NISR 1995/345 (the glued-year fix names the law).
+  - 1994 c.28 s.5(2)(a): inserted+repealed+substituted → words repealed (the "as respectively inserted and substituted" aside).
+  - 2021 c.30 s.95(2)(b)(ii): subsections inserted → words substituted ("in each of the inserted subsections … for … substitute").
+  - SI 2019/649 reg.6(3)(b): provision+words → words ("omit … and substitute").
+  - SI 2019/649 reg.6(9): provision substituted → title words, plus paragraphs 1 and 2 substituted.
+- The other nine held moves listed above have rotated out as examples. Their laws read as decided there, and the catalogue no longer holds them.
+- **Options:**
+  - (a) Accept all five and the 55 new patterns (`--accept`), closing the fixture bug.
+  - (b) Accept the new patterns only, and keep the five held.
+- **Recommendation:** (a). Each is the right reading by the text, and option (b) would leave `AmendmentPatternsTest` failing on right readings.
+- **Decided (Jason, 2026-11-27): (a).** `--accept` (warm, 17 s) wrote the 55 patterns; it keeps held expectations, so the five moves were written into `expected.json` by value. `AmendmentPatternsTest` 435/435; the reader suite 744/744 (`3b74c86d`).
 
 **Parking list**
 - Amending-law reader: SI 2019/414 reg.8(4)(b). An inserted definition holding an as-if list is read as 12 rules; the right reading is one, words inserted in reg.5(1). One law, below the triage size; a known limit unless a field diff shows it wider.
