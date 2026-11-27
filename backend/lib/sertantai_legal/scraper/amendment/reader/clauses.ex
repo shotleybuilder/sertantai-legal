@@ -361,7 +361,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
     # "in the words inserted into section 213(1) of the … Act" (2014 c.21
     # Sch.7 para.145); "as substituted by subsection (4)", "inserted by
     # regulation 6(2)": the amending law's own provisions (1997 c.11 Sch.2
-    # para.27(a), SI 2008/1482 reg.8)
+    # para.27(a), SI 2008/1482 reg.8); "as respectively inserted and
+    # substituted by Part II of Schedule 4 to the 1988 Act" (1994 c.28
+    # s.5(2)(a))
     Regex.compile!(
       "\\b(?:in\\s+)?the\\s+words\\s+(?:inserted|substituted)\\s+(?:into|in)\\b" <>
         @aside_refs <>
@@ -370,7 +372,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
       "iu"
     ),
     Regex.compile!(
-      "\\b(?:as\\s+)?(?:substituted|inserted|amended)\\s+by\\s+(?:sub-?sections?|sections?|(?:sub-?)?paragraphs?|regulations?|articles?|rules?)\\s+" <>
+      "\\b(?:as\\s+(?:respectively\\s+)?)?(?:(?:substituted|inserted|amended)\\s+(?:and|or)\\s+)?(?:substituted|inserted|amended)\\s+by\\s+(?:sub-?sections?|sections?|(?:sub-?)?paragraphs?|regulations?|articles?|rules?|Parts?\\s+\\w+\\s+of\\s+Schedule|Schedule)\\s+" <>
         @aside_refs <>
         "" <>
         @made_stop,

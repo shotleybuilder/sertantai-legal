@@ -1012,4 +1012,25 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.WasteWaterClimateFormsTest do
                Reader.instruction(d5, "regulation-20-3-b-ii", terms, [llp08, ca])
     end
   end
+
+  describe "made-text asides" do
+    # "… as respectively inserted and substituted by Part II of Schedule 4
+    # to the 1988 Act": an aside naming the made text, never an insertion
+    # (1994 c.28 s.5(2)(a); Waste, Water and Climate 2026-11-27)
+    test "\"as respectively inserted and substituted by\" is an aside" do
+      ms74 = Reader.law_ref("UK_ukpga_1974_43", "Merchant Shipping Act", "s")
+
+      d =
+        doc(
+          "UK_ukpga_1994_28",
+          ~S|<P1 id="section-5"><P1para><P2 id="section-5-1"><P2para><Text>For the purpose of enabling effect to be given to the 1992 Protocols, the Merchant Shipping Act 1974 shall have effect subject to the amendments contained in Part II of Schedule 4 to the Merchant Shipping Act 1988.</Text></P2para></P2><P2 id="section-5-2"><P2para><Text>Accordingly—</Text><P3 id="section-5-2-a"><Pnumber>a</Pnumber><P3para><Text>the word “1984” shall be omitted from the section 4A(1) of the 1974 Act and the paragraph 4(a) and (d) constituting Schedule 1 to the 1974 Act as respectively inserted and substituted by Part II of Schedule 4 to the 1988 Act; and</Text></P3para></P3></P2para></P2></P1para></P1>|
+        )
+
+      rules = Reader.instruction(d, "section-5-2-a", %{}, [ms74])
+      refute Enum.any?(rules, &(&1.operation == :inserted))
+      # (Schedule 1's "paragraph 4(a) and (d)" still lends s.4A its brackets:
+      # a Schedule paragraph, the amending Schedules session's)
+      assert [%{targets: ["s.4A(1)" | _], operation: :repealed, level: :words}] = rules
+    end
+  end
 end
