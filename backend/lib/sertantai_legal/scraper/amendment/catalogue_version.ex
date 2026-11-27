@@ -23,6 +23,7 @@ defmodule SertantaiLegal.Scraper.Amendment.CatalogueVersion do
     lib/sertantai_legal/scraper/amendment/patterns.ex
     lib/sertantai_legal/scraper/amendment/patterns/example.ex
     lib/sertantai_legal/scraper/amendment/reader.ex
+    lib/sertantai_legal/scraper/amendment/reader/amendment_table.ex
     lib/sertantai_legal/scraper/amendment/reader/brackets.ex
     lib/sertantai_legal/scraper/amendment/reader/clauses.ex
     lib/sertantai_legal/scraper/amendment/reader/commencing.ex

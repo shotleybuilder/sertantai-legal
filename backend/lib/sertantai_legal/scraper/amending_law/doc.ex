@@ -23,6 +23,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Doc do
     titles: %{},
     roots: [],
     children: %{},
+    short: %{},
     parts: []
   ]
 
@@ -36,6 +37,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Doc do
           titles: %{String.t() => [String.t()]},
           roots: [tuple()],
           children: %{String.t() => [String.t()]},
+          short: %{String.t() => String.t()},
           parts: [{non_neg_integer(), String.t()}]
         }
 
@@ -68,6 +70,11 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Doc do
       titles: titles(roots),
       roots: roots,
       children: children(ids),
+      # a Part-numbered Schedule paragraph's id without its Part
+      # (`shortId="schedule-29-paragraph-3"` on `schedule-29-part-1-paragraph-3`:
+      # SI 2016/1154; amending Schedules, 2026-11-27)
+      short:
+        for(el <- els, short = Xml.attr_or_nil(el, :shortId), into: %{}, do: {short, id(el)}),
       parts: for({id, i} <- Enum.with_index(ids), id =~ ~r/^part-[^-]+$/, do: {i, id})
     }
   end

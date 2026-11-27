@@ -267,8 +267,14 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   # provisions, never the law or the place amended (asc 2023/3 Sch.13 para
   # 72 on TCPA 1990 s.70(3); Amending-law reader: parked bugs, 2026-11-10).
   # Up to the aside's closing comma: its words are the commencement
-  # readers' to read
-  @effect_aside ~r/,\s*as\s+(?:it\s+|they\s+)?(?:has|have|had)\s+effect\s+(?:before|after|until|apart\s+from)\b[^,;]*,/iu
+  # readers' to read. So is a condition on another law's provisions being
+  # in force (", if paragraphs 4 and 5 of Schedule 11 to LURA 2023 are in
+  # force,": asc 2026/7 Sch.1 on TCPA 1990, 26 in one law; amending
+  # Schedules, 2026-11-27)
+  # (opening the sentence: "If paragraphs 3 to 6 of Schedule 11 to LURA
+  # 2023 are in force, omit sections 94 to 96": asc 2026/7 Sch.1 para.61)
+  @opening_condition ~r/^\s*if\s+[^,;—–]*?\b(?:is|are)\s+(?:not\s+)?in\s+force,\s*/iu
+  @effect_aside ~r/,\s*(?:as\s+(?:it\s+|they\s+)?(?:has|have|had)\s+effect\s+(?:before|after|until|apart\s+from)\b[^,;]*|if\s+[^,;—–]*?\b(?:is|are)\s+(?:not\s+)?in\s+force),/iu
 
   @entry_ref "\\d+[A-Z]*(?:\\s*\\([0-9A-Za-z]+\\))*"
   @entry_named Regex.compile!(
@@ -312,6 +318,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   def no_effect_asides(s) do
     s = no_made_text(s)
     s = Regex.replace(@effect_aside, s, ",")
+    s = Regex.replace(@opening_condition, s, "")
     s = Regex.replace(@meaning_aside, s, "\\1")
     Regex.replace(@entry_described, s, "\\1")
   end

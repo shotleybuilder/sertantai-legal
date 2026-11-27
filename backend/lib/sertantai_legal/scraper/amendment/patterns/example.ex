@@ -9,7 +9,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Patterns.Example do
   is not held (counted). Pure.
   """
 
-  alias SertantaiLegal.Scraper.AmendingLaw.Doc
+  alias SertantaiLegal.Scraper.AmendingLaw.{Doc, Text}
   alias SertantaiLegal.Scraper.Amendment.{Patterns, Reader, Rule}
   alias SertantaiLegal.Scraper.LatParser.Xml
 
@@ -64,18 +64,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Patterns.Example do
   end
 
   # the top provision holding `id`; an id with none (a table) itself
-  defp top(id) do
-    case Regex.run(
-           ~r/^(schedule-[^-]+-paragraph-[^-]+|(?:section|regulation|article|rule)-[^-]+)/,
-           id
-         ) do
-      [_, top] -> top
-      nil -> id
-    end
-  end
-
-  defp top?(id),
-    do: id =~ ~r/^(?:schedule-[^-]+-paragraph-[^-]+|(?:section|regulation|article|rule)-[^-]+)$/
+  defp top(id), do: Text.top(id)
+  defp top?(id), do: Text.top?(id)
 
   # the top provisions before `own` in its Schedule (then the body's
   # naming that Schedule), or in the body, nearest first — where the reader

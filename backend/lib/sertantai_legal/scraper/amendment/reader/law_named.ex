@@ -22,8 +22,10 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
   # Sch.6; or from a year inside its own bracket: "… (Application of
   # Companies Act 2006) Regulations 2008", SI 2016/575; and a year printed with no space after "(Northern Ireland)": NISR
   # 2007/247 Sch.10 para.3's changes had gone to the previous paragraph's
-  # law; Waste, Water and Climate 2026-11-26)
-  @title_words ~S"[A-Z](?:[\w,'’()\- ]|\betc\.)*? (?:Act|Regulations|Order|Rules)(?: \(Northern Ireland\) ?| )\d{4}(?:(?:\)(?: \([^()]*\))*|(?: \([^()]*\))+) (?:Regulations|Order|Rules)(?: \(Northern Ireland\) ?| )\d{4})?"
+  # law; Waste, Water and Climate 2026-11-26); "Etc." in a heading's
+  # capitals too ("Amendments of the Health and Safety at Work Etc. Act
+  # 1974": 1975 c.71 Sch.15; amending Schedules, 2026-11-27)
+  @title_words ~S"[A-Z](?:[\w,'’()\- ]|\b[Ee]tc\.)*? (?:Act|Regulations|Order|Rules)(?: \(Northern Ireland\) ?| )\d{4}(?:(?:\)(?: \([^()]*\))*|(?: \([^()]*\))+) (?:Regulations|Order|Rules)(?: \(Northern Ireland\) ?| )\d{4})?"
   @title Regex.compile!(@title_words, "u")
   @title_group Regex.compile!("(" <> @title_words <> ")", "u")
 
@@ -70,7 +72,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
           })
 
         named = if c == first, do: own, else: Brackets.above(place, own) ++ own
-        named = placed_by(c, named, context, law.kind) ++ named
+        lead = if own_numbers == :none, do: lead(context, numbers, law.kind)
+        named = placed_by(c, named, context, law.kind, lead) ++ named
         named = if part, do: [], else: named
 
         {%{text: c, named: named, numbers: numbers, ours?: ours?, part: part}, {numbers, ours?}}
@@ -99,6 +102,24 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
 
   defp clause_numbers(:none, nil, prev, _context, _law), do: prev
 
+  # the nearest lead naming the provision the clause takes its numbers from
+  # ("Regulation 36(3) (…) is amended as follows.", "Section 9(5) of the
+  # Equality Act 2010 is amended in accordance with subsections (2) to
+  # (4)."): its brackets are the clause's above its own, as a parent's ("In
+  # sub-paragraph (a)": reg.36(3)(a), never reg.36(a) — SI 2018/139 reg.5,
+  # 2013 c.24 s.97; amending Schedules, 2026-11-27)
+  @lead ~r/\bamended\s+(?:as\s+follows|in\s+accordance\s+with)\b/u
+  defp lead(context, numbers, kind) do
+    with lead when is_binary(lead) <- Enum.find(context, &(&1 =~ @lead)),
+         [words | _] =
+           lead |> Clauses.no_captions() |> String.split(~r/\b(?:is|are)\s+amended\b/u),
+         {:ok, ^numbers} <- Targets.numbers([words], kind) do
+      words
+    else
+      _ -> nil
+    end
+  end
+
   # where a clause is beyond its own words (run time 2026-10-26; 1995/25
   # Sch. 22 para 30(6)): its parents' brackets, nearest first, each at the
   # levels above those already found ("(f) in subsection (5)— (i) in
@@ -106,9 +127,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
   # with no subsection found: the last one named before it ("(a) in
   # paragraph (a) of subsection (3) …; (b) in paragraph (c)(ii) of that
   # subsection …" → (3))
-  defp placed_by(%Text{} = c, named, context, kind) do
+  defp placed_by(%Text{} = c, named, context, kind, lead) do
     held =
-      Enum.map(c.parents, fn words ->
+      Enum.map(c.parents ++ List.wrap(lead), fn words ->
         Targets.brackets(%Text{
           id: nil,
           # (asides aside: "in subsection (2) as substituted by subsection

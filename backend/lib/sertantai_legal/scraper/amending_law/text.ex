@@ -95,6 +95,26 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
     end
   end
 
+  @doc """
+  A raw element's text read as the instruction `id` under `context` (its
+  lead, the outermost first; each also a parent lending its brackets): a
+  table cell, which has no id of its own (an amendments table's row:
+  `Reader.AmendmentTable`).
+  """
+  @spec of_element(tuple(), String.t(), [String.t()]) :: t()
+  def of_element(el, id, context) do
+    {words, quoted} = words(el)
+
+    %__MODULE__{
+      id: id,
+      instruction: words,
+      quoted: quoted,
+      inserted: inserted(el),
+      context: context,
+      parents: Enum.reverse(context)
+    }
+  end
+
   @doc "The element's own words only (no quoted words, no context); \"\" when not held."
   @spec words_of(Doc.t(), String.t()) :: String.t()
   def words_of(doc, id) do
@@ -281,15 +301,33 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
   defp words_stream(ids, doc),
     do: ids |> Stream.map(&words_of(doc, &1)) |> Stream.reject(&(&1 == ""))
 
-  # the top provision: section-60 for section-60-5, schedule-6-paragraph-33
-  # for schedule-6-paragraph-33-c
-  defp top(id) do
-    case Regex.run(
-           ~r/^(schedule-[^-]+-paragraph-[^-]+|(?:section|regulation|article|rule)-[^-]+)/,
-           id
-         ) do
+  # a top provision's id: section-60, schedule-6-paragraph-33, an
+  # unnumbered Schedule's schedule-paragraph-58, a Part-numbered Schedule's
+  # schedule-26-part-2-paragraph-10 (the last two had been their own tops,
+  # read with no context: SI 2019/734, SI 2016/1154; amending Schedules,
+  # 2026-11-27)
+  @top ~r/^(schedule(?:-(?!paragraph-|part-)[^-]+)?(?:-part-[^-]+)?-paragraph-[^-]+|(?:section|regulation|article|rule)-[^-]+)/
+
+  @doc """
+  The top provision holding `id` (section-60 for section-60-5,
+  schedule-6-paragraph-33 for schedule-6-paragraph-33-c); `id` itself when
+  none does (a table, a Part).
+  """
+  @spec top(String.t()) :: String.t()
+  def top(id) do
+    case Regex.run(@top, id) do
       [_, top] -> top
       nil -> id
+    end
+  end
+
+  @doc "Whether `id` is a top provision (or, with `under?`, lies in one)."
+  @spec top?(String.t(), boolean()) :: boolean()
+  def top?(id, under? \\ false) do
+    case Regex.run(@top, id) do
+      [_, ^id] -> true
+      [_, _top] -> under?
+      nil -> false
     end
   end
 

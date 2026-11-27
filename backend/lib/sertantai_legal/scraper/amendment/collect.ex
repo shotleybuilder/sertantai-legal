@@ -31,7 +31,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Collect do
   @typedoc """
   An amending law as the collector needs it: its `elements` (id → true, for
   `Locator`), each repeals table's introducing section (`references`), each
-  Schedule paragraph's Part (`parts`, AR-12), and its rules for a provision
+  Schedule paragraph's Part (`parts`, AR-12), each Part-numbered paragraph's
+  id by its shortId (`short`, for `Locator`; the store keeps none), and its rules for a provision
   and a law ref (`rules`).
   """
   @type source :: %{
@@ -39,6 +40,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Collect do
           elements: %{String.t() => any()},
           references: %{String.t() => String.t()},
           parts: %{String.t() => String.t()},
+          short: %{String.t() => String.t()},
           rules: (String.t(), Reader.law_ref() -> [Rule.t()])
         }
 
@@ -115,6 +117,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Collect do
       elements: doc.elements,
       references: Reader.references(doc),
       parts: Reader.parts(doc),
+      short: doc.short,
       rules: fn id, law ->
         memo({doc.law_name, id, law.law_name}, fn -> read(doc, id, [law]) end)
       end
@@ -135,6 +138,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Collect do
       elements: Map.new(index["elements"] || [], &{&1, true}),
       references: index["references"] || %{},
       parts: index["parts"] || %{},
+      short: %{},
       rules: fn id, ref -> Map.get(by, {id, ref.law_name}, []) end
     }
   end

@@ -32,6 +32,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   alias SertantaiLegal.Scraper.Amendment.Rule
 
   alias SertantaiLegal.Scraper.Amendment.Reader.{
+    AmendmentTable,
     Brackets,
     Clauses,
     Commencing,
@@ -126,8 +127,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
       provision?(id) ->
         with([] <- instruction(doc, id, terms, laws), do: items(doc, id, terms, laws))
 
+      # a Schedule's amendments table (amending Schedules, 2026-11-27)
       true ->
-        []
+        AmendmentTable.rules(doc, id, terms, laws)
     end
   end
 
@@ -137,8 +139,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   defp items(doc, id, terms, laws),
     do: Enum.flat_map(Doc.children(doc, id), &read_provision(doc, &1, terms, laws))
 
-  defp provision?(id),
-    do: Regex.match?(~r/^(?:section|regulation|article|rule)-|^schedule-[^-]+-paragraph-/, id)
+  defp provision?(id), do: Text.top?(id, true)
 
   @doc "Each Schedule's introducing section (`AmendingLaw.ScheduleRefs.references/1`)."
   @spec references(Doc.t()) :: %{String.t() => String.t()}
@@ -203,11 +204,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   defp set_out_beside(%Text{id: id, instruction: i} = text, doc) do
     with [phrase, n] <-
            Regex.run(~r/\bset\s+out\s+in\s+(?:sub-?paragraph|subsection)\s+\((\w+)\)/iu, i),
-         [_, top] <-
-           Regex.run(
-             ~r/^(schedule-[^-]+-paragraph-[^-]+|(?:section|regulation|article|rule)-[^-]+)/,
-             id
-           ),
+         true <- Text.top?(id, true),
+         top = Text.top(id),
          %Text{inserted: [_ | _] = paths} <- Text.of(doc, "#{top}-#{n}") do
       %{text | inserted: paths, instruction: String.replace(i, phrase, "set out")}
     else
