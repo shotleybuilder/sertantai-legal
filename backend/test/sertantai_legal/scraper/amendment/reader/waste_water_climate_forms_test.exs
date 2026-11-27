@@ -958,6 +958,20 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.WasteWaterClimateFormsTest do
 
       assert [%{targets: ["reg.5(4)"], level: :words}] =
                Reader.instruction(d2, "regulation-3-4", %{}, [llp])
+
+      # "the modified version of section N", "section N … as applied to LLPs" (SI 2021/153 reg.12; SI 2024/1303 reg.11)
+      d3 =
+        doc(
+          "UK_uksi_2021_153",
+          ~S|<P1 id="regulation-1"><P1para><Text>The Limited Liability Partnerships Regulations 2008 are amended as follows.</Text></P1para></P1><P1 id="regulation-12"><P1para><Text>In regulation 19, in the modified version of section 446 of the 2006 Act, after subsection (2A) insert “(2B) x”.</Text></P1para></P1><P1 id="regulation-11"><P1para><Text>In regulation 5 (small LLPs), in section 382(3) (companies qualifying as small) as applied to LLPs by that regulation, for “£10.2 million” substitute “£15 million”.</Text></P1para></P1>|,
+          "Secondary"
+        )
+
+      assert [%{targets: ["reg.19"], level: :words}] =
+               Reader.instruction(d3, "regulation-12", %{}, [llp])
+
+      assert [%{targets: ["reg.5"], level: :words}] =
+               Reader.instruction(d3, "regulation-11", %{}, [llp])
     end
   end
 end

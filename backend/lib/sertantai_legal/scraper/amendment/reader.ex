@@ -318,7 +318,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   # section 78A(5)": the brackets after it are the section's, the place
   # the regulation at the brackets named before — SI 2019/177 reg.50, WSI
   # 2018/725 reg.3(4))
-  @applied_phrase ~r/\b(?:in|for)\s+the\s+(?:modified|substituted|inserted)\s+(?:text\s+of\s+)?sections?\s+\d/iu
+  # (or "in the modified version of section 446", "in section 382(3) … as
+  # applied to LLPs by that regulation": SI 2021/153, SI 2024/1303)
+  @applied_phrase ~r/\b(?:in|for)\s+the\s+(?:modified|substituted|inserted)\s+(?:text\s+of\s+|version\s+of\s+)?sections?\s+\d|\bin\s+sections?\s+\d[^,;—–]*?\bas\s+applied\s+to\b/iu
 
   defp applied_sections?(%Text{instruction: i, parents: parents}, kind)
        when kind in [:regulation, :article] do

@@ -101,3 +101,5 @@ UK_nisr_2000_87  # "For regulation 4(4) substitute— (4) (a) …" quotes paragr
 UK_asp_2015_10  # "After Part 3 … insert—": the Part a place, never inserted (Waste, Water and Climate 2026-11-26)
 UK_ukpga_2016_25  # "Omit Chapter 1 of Part 1": the Chapter, never Part 1 (Waste, Water and Climate 2026-11-26)
 UK_ukpga_2026_18  # "in Part 3 … omit Chapter 2": no Part rule (Waste, Water and Climate 2026-11-26)
+UK_uksi_2021_153  # "in the modified version of section 446": words in reg.19 (Waste, Water and Climate 2026-11-27)
+UK_uksi_2024_1303  # "in section 382(3) … as applied to LLPs by that regulation": words in reg.5 (Waste, Water and Climate 2026-11-27)
