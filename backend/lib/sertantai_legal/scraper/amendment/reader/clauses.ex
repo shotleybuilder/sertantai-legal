@@ -319,7 +319,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   # text an amendment made, named as such: "in the inserted section 87 of
   # the Water Industry Act 1991 (…)", "in the substituted Article 54",
   # "in the text of section 144(1A)(b) … as inserted by that
-  # sub-paragraph" — an earlier amending provision's words (or a
+  # sub-paragraph" (or "… as applied to LLPs") — an earlier amending provision's words (or a
   # Schedule's), never a place of the law it names nor its operation
   # (2014 c.21 Sch.7 para.134 had made WIA s.87(2)(b) inserted; SI
   # 2022/1173 art.14(4) placed Sch.5's "Article 34a" on art.34; Waste,
@@ -335,7 +335,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
     Regex.compile!(
       "\\b(?:in\\s+)?the\\s+text\\s+of\\s+" <>
         @aside_refs <>
-        "\\bas\\s+(?:it\\s+has\\s+effect\\s+as\\s+)?(?:inserted|substituted)\\s+by\\b" <>
+        "\\bas\\s+(?:it\\s+has\\s+effect\\s+as\\s+)?(?:(?:inserted|substituted)\\s+by|applied\\s+to)\\b" <>
         @aside_refs <>
         "" <>
         @made_stop,
@@ -345,6 +345,17 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
       "\\b(?:in\\s+)?the\\s+(?:inserted|substituted)\\s+(?:Articles?|sections?|sub-?sections?|regulations?|(?:sub-?)?paragraphs?|rules?)" <>
         "(?:\\s+\\d+[A-Za-z]*)?(?:\\s*\\([0-9A-Za-z]+\\))*(?:\\s*(?:,|and|or|to)\\s*\\d*[A-Za-z]*(?:\\([0-9A-Za-z]+\\))+)*" <>
         "(?:\\s+of\\s+" <> @aside_refs <> @made_stop <> ")?",
+      "iu"
+    ),
+    # "section 479 of the 2006 Act as applied to LLPs": the applied text an
+    # instrument holds, never the Act amended (SI 2012/2301 reg.20 on SI
+    # 2008/1911; Waste, Water and Climate 2026-11-27)
+    Regex.compile!(
+      "\\b(?:in\\s+|for\\s+|after\\s+)?sections?\\s+\\d" <>
+        @aside_refs <>
+        "\\bas\\s+applied\\s+to\\b" <>
+        @aside_refs <>
+        @made_stop,
       "iu"
     ),
     # "in the words inserted into section 213(1) of the … Act" (2014 c.21

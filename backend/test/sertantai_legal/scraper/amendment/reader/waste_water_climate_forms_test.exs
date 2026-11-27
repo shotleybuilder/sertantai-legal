@@ -6,7 +6,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.WasteWaterClimateFormsTest do
   """
   use ExUnit.Case, async: true
 
-  alias SertantaiLegal.Scraper.AmendingLaw.Doc
+  alias SertantaiLegal.Scraper.AmendingLaw.{DefinedTerms, Doc}
   alias SertantaiLegal.Scraper.Amendment.Reader
 
   @wia Reader.law_ref("UK_ukpga_1991_56", "Water Industry Act", "s")
@@ -972,6 +972,44 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.WasteWaterClimateFormsTest do
 
       assert [%{targets: ["reg.5"], level: :words}] =
                Reader.instruction(d3, "regulation-11", %{}, [llp])
+
+      # "in the text of section N … as it has effect as substituted by that regulation" (SI 2015/1936 reg.4)
+      d4 =
+        doc(
+          "UK_uksi_2015_1936",
+          ~S|<P1 id="regulation-1"><P1para><Text>The Limited Liability Partnerships Regulations 2008 are amended as follows.</Text></P1para></P1><P1 id="regulation-4"><P1para><Text>In regulation 4 (completed mergers), in the text of section 22 of the 2002 Act as it has effect as substituted by that regulation, after subsection (2) insert—</Text><BlockAmendment><P2><Pnumber>3</Pnumber><P2para><Text>No reference shall be made.</Text></P2para></P2></BlockAmendment></P1para></P1><P1 id="regulation-6"><P1para><Text>In regulation 9 (anticipated mergers), in the text of section 33 of the 2002 Act as it has effect as substituted by that regulation—</Text><P3 id="regulation-6-b"><Pnumber>b</Pnumber><P3para><Text>after that subsection insert—</Text><BlockAmendment><P2><Pnumber>2</Pnumber><P2para><Text>y</Text></P2para></P2></BlockAmendment></P3para></P3></P1para></P1>|,
+          "Secondary"
+        )
+
+      assert [%{targets: ["reg.4"], level: :words}] =
+               Reader.instruction(d4, "regulation-4", %{}, [llp])
+
+      assert [%{targets: ["reg.9"], level: :words}] =
+               Reader.instruction(d4, "regulation-6-b", %{}, [llp])
+
+      # the lead names the law; "section 479 of the 2006 Act as applied to
+      # LLPs" names its applied text, never the Act amended (SI 2012/2301
+      # reg.20: 20 rules on the Companies Act 2006)
+      ca = Reader.law_ref("UK_ukpga_2006_46", "Companies Act", "s")
+
+      llp08 =
+        Reader.law_ref(
+          "UK_uksi_2008_1911",
+          "Limited Liability Partnerships (Accounts and Audit) (Application of Companies Act 2006) Regulations",
+          "reg"
+        )
+
+      d5 =
+        doc(
+          "UK_uksi_2012_2301",
+          ~S|<P1 id="regulation-2"><P1para><Text>In these Regulations “the 2006 Act” means the Companies Act 2006, and “the 2008 Regulations” means the Limited Liability Partnerships (Accounts and Audit) (Application of Companies Act 2006) Regulations 2008.</Text></P1para></P1><P1 id="regulation-20"><P1para><P2 id="regulation-20-1"><P2para><Text>The 2008 Regulations are amended as follows.</Text></P2para></P2><P2 id="regulation-20-3"><P2para><Text>In regulation 34 (exemption from audit: small LLPs)—</Text><P3 id="regulation-20-3-b"><Pnumber>b</Pnumber><P3para><Text>in the text of section 479 of the 2006 Act as applied to LLPs (availability of exemption)—</Text><P4 id="regulation-20-3-b-ii"><Pnumber>ii</Pnumber><P4para><Text>omit subsection (2); and</Text></P4para></P4></P3para></P3></P2para></P2></P1para></P1>|,
+          "Secondary"
+        )
+
+      terms = DefinedTerms.of(d5)
+
+      assert [%{amends: "UK_uksi_2008_1911", targets: ["reg.34"], level: :words}] =
+               Reader.instruction(d5, "regulation-20-3-b-ii", terms, [llp08, ca])
     end
   end
 end

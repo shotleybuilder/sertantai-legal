@@ -293,15 +293,19 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
           texts,
           law,
           source,
-          terms
+          terms,
+          text
         )
   end
 
-  defp entry_rules(text, texts, law, source, terms) do
+  # (`written`: the instruction as written, before its asides go — "in the
+  # text of section 22 … as it has effect as substituted by that regulation"
+  # is a made-text aside but tells an applied section: SI 2015/1936)
+  defp entry_rules(text, texts, law, source, terms, written) do
     clauses = text |> Clauses.clauses() |> LawNamed.scoped(texts, law, terms)
 
-    if applied_sections?(text, law.kind),
-      do: applied_rules(text, clauses, law, source),
+    if applied_sections?(written, law.kind),
+      do: applied_rules(text, written, clauses, law, source),
       else: own_rules(text, clauses, law, source)
   end
 
@@ -319,8 +323,10 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   # the regulation at the brackets named before — SI 2019/177 reg.50, WSI
   # 2018/725 reg.3(4))
   # (or "in the modified version of section 446", "in section 382(3) … as
-  # applied to LLPs by that regulation": SI 2021/153, SI 2024/1303)
-  @applied_phrase ~r/\b(?:in|for)\s+the\s+(?:modified|substituted|inserted)\s+(?:text\s+of\s+|version\s+of\s+)?sections?\s+\d|\bin\s+sections?\s+\d[^,;—–]*?\bas\s+applied\s+to\b/iu
+  # applied to LLPs by that regulation", "in the text of section 22 of the
+  # 2002 Act as it has effect as substituted by that regulation": SI 2021/153,
+  # SI 2024/1303, SI 2015/1936)
+  @applied_phrase ~r/\b(?:in|for)\s+the\s+(?:modified|substituted|inserted)\s+(?:text\s+of\s+|version\s+of\s+)?sections?\s+\d|\bin\s+sections?\s+\d[^,;—–]*?\bas\s+applied\s+to\b|\bin\s+the\s+text\s+of\s+sections?\s+\d/iu
 
   defp applied_sections?(%Text{instruction: i, parents: parents}, kind)
        when kind in [:regulation, :article] do
@@ -336,15 +342,18 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   defp plain(s), do: s |> Clauses.unquote_words() |> Clauses.no_captions()
 
   # (only where the lead names the regulation: else the reading as it was)
-  defp applied_rules(text, clauses, law, source) do
+  defp applied_rules(text, written, clauses, law, source) do
     p = @prefix[law.kind]
-    before = applied_brackets(text)
+    before = applied_brackets(written)
 
-    case Enum.filter(clauses, &(&1.numbers != [])) do
-      [] ->
+    case {Enum.filter(clauses, &(&1.numbers != [])), lead_number(written)} do
+      {[], nil} ->
         own_rules(text, clauses, law, source)
 
-      held ->
+      {[], n} ->
+        lead_rules(written, Brackets.ref(p, [n | before]), law, source)
+
+      {held, _} ->
         for c <- held,
             op = Clauses.operation(c.text),
             op != nil,
@@ -352,6 +361,30 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
               Targets.rule(law, Enum.map(c.numbers, &Brackets.ref(p, [&1 | before])), op, source)
               | level: :words
             }
+    end
+  end
+
+  # the regulation and the section in one clause ("In regulation 4 (…), in
+  # the text of section 22 of the 2002 Act …, after subsection (2)
+  # insert—": SI 2015/1936): words in that regulation
+  defp lead_rules(text, ref, law, source) do
+    case Clauses.operation(text) do
+      nil -> []
+      op -> [%{Targets.rule(law, [ref], op, source) | level: :words}]
+    end
+  end
+
+  # the provision of the amended law named before the applied section's
+  # phrase ("In regulation 4 (…), in the text of section 22 …": "4"), or nil
+  @lead_number ~r/\b(?:regulations?|articles?|rules?)\s+(\d+[A-Z]*)\b/iu
+  defp lead_number(%Text{instruction: i, parents: parents}) do
+    chain = Enum.map_join(Enum.reverse(parents) ++ [i], " ", &plain/1)
+
+    with [before, _] <- Regex.split(@applied_phrase, chain, parts: 2),
+         [_, n] <- Regex.run(@lead_number, before) do
+      n
+    else
+      _ -> nil
     end
   end
 
