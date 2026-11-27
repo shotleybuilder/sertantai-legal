@@ -2,7 +2,7 @@
 session: 'Waste, Water and Climate: Amending-law reader'
 status: suspended
 suspended: '2026-11-27'
-suspended_reason: 'For the three named sessions: EU article naming CLOSED 2026-11-27 (764fd74e); amending Schedules next, then yield, each on Jason''s go; the catalogue cold dry run and the Settle write (todo 7) follow them'
+suspended_reason: 'For the three named sessions: EU article naming CLOSED 2026-11-27 (764fd74e); amending Schedules CLOSED 2026-11-27 (15f092d2); yield next, on Jason''s go; the catalogue cold dry run and the Settle write (todo 7) follow them'
 opened: '2026-11-26'
 family: 'Waste, Water and Climate (round)'
 bugs:
@@ -489,3 +489,10 @@ Tests are in `test/sertantai_legal/scraper/amendment/reader/waste_water_climate_
 ## Named session closed: EU article naming (2026-11-27)
 
 `2026-11-27-amending-law-reader-eu-article-naming.md`, code `764fd74e`. Six EU classes fixed (row spelling, quoted Articles, EU titles naming other laws, a paragraph's point, words to a held Article in the vocabulary); fresh EU rules with no held target 61 of 3,860 (from 581 plus 345 two-law provisions); nothing outside EU law changed. For the Settle: the vocabulary change (`Readers.AmendingLaw`) reaches EU laws in the switched families, so rebuild them in the same write and read their gates; the catalogue cold run will see the EU rules' new targets. Next: amending Schedules, on Jason's go.
+
+## Named session closed: amending Schedules (2026-11-27)
+
+`2026-11-27-amending-law-reader-amending-schedules.md`, code `15f092d2`. The 396 amending laws' Schedules fetched into the store; six classes fixed (Part-numbered and unnumbered Schedules read with their leads, a lead's brackets, a capital "Etc." title, amendments tables, conditions naming no law). Schedule-made text changes met by a rule: 45.2% → 74.9% (18,907 → 31,324), on fresh reads of every amending law; no rule lost.
+- **For the Settle:** every amending law re-reads (the reader stamp changed; the 396 fetched laws' index fingerprints changed too). Eight catalogue examples now read rules where they read none, for the cold dry run: 1975 c.71 Sch.15 para.2 and para.12; asp 2019/15 Sch. para.2 and para.5; asp 2007/6 Sch. para.8(a); SI 1996/973 Sch. para.19(2); NISR 2010/160 Sch.5; SI 2008/960 Sch.3.
+- **For the yield session:** "In each of the provisions listed in sub-paragraph (3)—" (SI 2026/386, about 330 changes); short names and abbreviations under a naming heading (2009 c.10 "ICTA"); the read-with-no-rule (3,688) and not-read (3,435) Schedule groups are not Schedule-specific.
+- **With Sources (open):** an amending law's Schedules are needed only on the feed's backlog (`amending-schedules-not-needed`).
