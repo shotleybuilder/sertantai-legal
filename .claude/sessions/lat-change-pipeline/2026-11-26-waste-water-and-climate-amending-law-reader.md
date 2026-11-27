@@ -444,6 +444,19 @@ Tests are in `test/sertantai_legal/scraper/amendment/reader/waste_water_climate_
   - SI 2009/2093 reads VAT Sch.8's Group 17 as s.1. A Schedule's Group: for the amending Schedules session.
   - 2023 c.30 "CEMA 1979": the known limit above.
 - **Previews after these fixes:** `fix-e` to `fix-h`, over the laws each fix reaches (stored rules by SQL, every law with a Part rule) and the regression list. Every pair read; all right.
+- **Second preview of every amending law (`wwc/fix-all2-*`, 2026-11-27, Jason's go).** 1,561 pairs: 183 new and 219 gone since the first. 76 new pairs lay outside the targeted previews, and 15 gone pairs came from laws they didn't cover. Every one was read:
+  - The gone pairs are the restated-number over-reach going back to the stored whole-regulation readings (SI 2014/469 ×3, SI 2014/1771, SI 2016/912, SI 2018/396 …): right.
+  - The new pairs are SI 2021/153 and SI 2024/1303 moving from the Companies Act 2006 to the LLP regulations, which their leads name: right. Two more applied-section wordings ("in the modified version of section 446", "in section 382(3) … as applied to LLPs") still gave the section's brackets; fixed test first (`02153cb3`) and previewed (`fix-i`): words in each regulation.
+- **Catalogue dry run 1** (`wwc/catalogue-dry-2026-11-27-1.txt`; 1,092 laws, the four switched families and the round; cold, 627 s). 2,322 amending laws and 32,785 provisions, 0 unclassified. 214 patterns: 55 new, 2 no longer seen. 5 examples read differently from expected; the other held moves rotated out as examples. Every new pattern's examples were read:
+  - **Right:** verbless list items under a repeal lead; "in the inserted paragraph …, for … substitute" read as words; 2003 c.37 Sch.7 para.13, where the Environment Act 1995 is only the substituting law, now on 1991 c.57 s.222(11) alone.
+  - **Two applied-section wordings misread** (3 laws, 28 rules), fixed test first (`69a2d8ab`):
+    - SI 2015/1936's "in the text of section 22 … as it has effect as substituted by that regulation" was cut as a made-text aside before the check saw it.
+    - SI 2012/2301 reg.20's "section 479 of the 2006 Act as applied to LLPs" named the Companies Act. Its 21 rules there go; regs 4–19, which amend the Act, stand.
+    - Previewed in `fix-j`, `fix-k` and `fix-l` and the regression list. WSI 2018/725 reg.5 is now words in reg.8(3).
+  - **For the named sessions:** Schedule wordings ("Delete paragraph 6 and replace", "in Part C of section 2.2, omit—") and "after that revoked paragraph, insert—" give no rule (yield). SI 2012/2301 is not offered SI 2008/1911, so reg.20's right rules are not read (yield: a pointer not held).
+  - **Below the triage size:** WSI 2013/755 Sch.2 para.468(2)(b), "the section 10(3A) to be inserted into that Act", read as s.10(3A) inserted: one provision, a named known limit.
+  - **1994 c.28 s.5(2)(a), one of the five changed examples:** "as respectively inserted and substituted by Part II of Schedule 4 to the 1988 Act" had read "inserted" from the aside. Fixed test first (`f49d651b`, `fix-m`); the other ten laws with such asides are unchanged. Two parts remain, each a known limit of one provision: Schedule 1's "paragraph 4(a) and (d)" lends s.4A(1) its brackets (a Schedule paragraph, the amending Schedules session's), and the Merchant Shipping (Oil Pollution) Act 1971 is read beside the 1974 Act that "of the 1974 Act" names.
+  - The dry run was stopped and runs again (`catalogue-dry-2026-11-27-2.txt`) after the three fixes.
 
 **Parking list**
 - Amending-law reader: SI 2019/414 reg.8(4)(b). An inserted definition holding an as-if list is read as 12 rules; the right reading is one, words inserted in reg.5(1). One law, below the triage size; a known limit unless a field diff shows it wider.
