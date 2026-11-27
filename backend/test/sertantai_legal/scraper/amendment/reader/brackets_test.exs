@@ -46,5 +46,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.BracketsTest do
     assert Brackets.eu_paragraphs("omit paragraph 4a.", :article) == "omit paragraph (4a)."
     assert Brackets.eu_paragraphs("In paragraph (2)(b)", :article) == "In paragraph (2)(b)"
     assert Brackets.eu_paragraphs("In paragraph 36", :section) == "In paragraph 36"
+    # SI 2019/453 reg.63(4), on the drivers' hours Regulation's Article 10
+    assert Brackets.eu_paragraphs("In paragraph 5(a)—", :article) == "In paragraph (5)(a)—"
   end
 end

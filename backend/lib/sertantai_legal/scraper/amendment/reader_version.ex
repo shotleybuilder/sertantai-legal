@@ -32,6 +32,7 @@ defmodule SertantaiLegal.Scraper.Amendment.ReaderVersion do
     lib/sertantai_legal/scraper/amendment/reader/clauses.ex
     lib/sertantai_legal/scraper/amendment/reader/commencing.ex
     lib/sertantai_legal/scraper/amendment/reader/eu_citation.ex
+    lib/sertantai_legal/scraper/amendment/reader/eu_spelling.ex
     lib/sertantai_legal/scraper/amendment/reader/law_named.ex
     lib/sertantai_legal/scraper/amendment/reader/new_numbers.ex
     lib/sertantai_legal/scraper/amendment/reader/provision_table.ex

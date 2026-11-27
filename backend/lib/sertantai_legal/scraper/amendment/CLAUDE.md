@@ -30,4 +30,5 @@ This file lists the traps met in Amending-law reader work: one line each, with w
 ## Code
 
 - **An element with an id is not always a provision.** `AmendingLaw.Text` once skipped every id'd element outside a quote, Citations included, and lost their laws' years (Maritime Safety).
+- **Count held targets with the vocabulary's names, not the rows'.** `Readers.AmendingLaw` keeps a target only if `Ref.from_clml` of a row's CLML id spells it (`article-36-3n1` is `art.Article 36(3n1)`, a version's `article-10-1` is `art.Article 10(1)`), and only among the rule's own targets. A finer reading can lose a held coarse one where the rows stop short (EU article naming, 2026-11-27: Regulation 2019/631's paragraphs).
 - **The reader version lives in the index file, not on `amendment_rules`.** `data/cache/amendment-index/<law>.json` (`reader`, `files`, `laws`, `pointers`); `read_at` on the rules is what the build fingerprints.

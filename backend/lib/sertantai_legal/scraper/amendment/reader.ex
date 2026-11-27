@@ -35,6 +35,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
     Brackets,
     Clauses,
     Commencing,
+    EuSpelling,
     LawNamed,
     NewNumbers,
     RepealTable,
@@ -114,7 +115,10 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   instruction — never a whole Schedule or Part read as one.
   """
   @spec read(Doc.t(), String.t(), map(), [law_ref()]) :: [Rule.t()]
-  def read(doc, id, terms, laws) do
+  def read(doc, id, terms, laws),
+    do: doc |> read_provision(id, terms, laws) |> EuSpelling.rows_spelling(laws)
+
+  defp read_provision(doc, id, terms, laws) do
     cond do
       repeal_table?(doc, id) ->
         repeal_table(doc, id, laws)
@@ -131,7 +135,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   # of the Factories Act 1961 shall be modified as follows—"): its items do
   # (SI 1988/1655 reg.23(a)–(c), CV-06 S7)
   defp items(doc, id, terms, laws),
-    do: Enum.flat_map(Doc.children(doc, id), &read(doc, &1, terms, laws))
+    do: Enum.flat_map(Doc.children(doc, id), &read_provision(doc, &1, terms, laws))
 
   defp provision?(id),
     do: Regex.match?(~r/^(?:section|regulation|article|rule)-|^schedule-[^-]+-paragraph-/, id)

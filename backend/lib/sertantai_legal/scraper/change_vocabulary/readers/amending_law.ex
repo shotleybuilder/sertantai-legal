@@ -189,8 +189,25 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.Readers.AmendingLaw do
       |> Enum.flat_map(&longest_held(&1, held))
       |> Enum.uniq()
       |> deepest_only()
+      |> or_article(r, known)
     end
   end
+
+  # words in an EU Article's paragraph the rows don't hold are words in the
+  # Article: Regulation (EU) 2019/631's rows hold its Articles without
+  # their paragraphs (SI 2020/1418 reg.3(8)(a)(i), "in paragraph 1—, for
+  # “each Member State” substitute": Article 7; Amending-law reader: EU
+  # article naming, 2026-11-27). Never a whole change, never UK law.
+  defp or_article([], %Rule{level: :words, targets: targets}, known) when known != nil do
+    for t <- targets,
+        String.starts_with?(t, "art.Article "),
+        a = t |> LatRef.ancestors() |> tl() |> Enum.find(&MapSet.member?(known, &1)),
+        a != nil,
+        uniq: true,
+        do: a
+  end
+
+  defp or_article(held, _rule, _known), do: held
 
   # a range ("Sections 61 to 74.": s.61..s.74, a repeals table) is each
   # provision the law holds in it, at the ends' depth (CV-06a: HSWA ss.61–74

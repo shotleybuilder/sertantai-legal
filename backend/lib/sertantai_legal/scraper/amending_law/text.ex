@@ -180,6 +180,15 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
           n -> n
         end
 
+      # a quoted EU Article: "<Part><Number>Article 53A</Number>" (SI
+      # 2019/720 Sch.2 para.53 on CLP; its paragraphs had read as Articles
+      # 1, 2: Amending-law reader: EU article naming, 2026-11-27)
+      {:xmlElement, :Number, _, _, _, _, _, _, _, _, _, _} = p ->
+        case Regex.run(~r/^\s*Article\s+(\d+[A-Z]*)\s*$/u, Doc.text(p)) do
+          [_, n] -> n
+          nil -> nil
+        end
+
       _ ->
         nil
     end)

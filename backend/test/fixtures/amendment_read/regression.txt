@@ -106,3 +106,8 @@ UK_uksi_2024_1303  # "in section 382(3) … as applied to LLPs by that regulatio
 UK_uksi_2015_1936  # "In regulation 4 (…), in the text of section 22 of the 2002 Act as it has effect as substituted by that regulation": words in reg.4 (Waste, Water and Climate 2026-11-27)
 UK_uksi_2012_2301  # reg.20 "in the text of section 479 of the 2006 Act as applied to LLPs": never the Companies Act; regs 4-19 amend it (Waste, Water and Climate 2026-11-27)
 UK_ukpga_1994_28  # "as respectively inserted and substituted by Part II of Schedule 4 to the 1988 Act" is an aside, never an insertion (Waste, Water and Climate 2026-11-27)
+UK_uksi_2020_1418  # EU spelling art.Article N; "in paragraph 1—" over a words change is Article N(1), words in Article N where its rows hold no paragraphs (EU article naming 2026-11-27)
+UK_uksi_2019_270  # Regulation (EU) 788/2014's title "… pursuant to Articles 6 and 7 of Regulation (EC) 391/2009" names 391/2009 as no law amended (EU article naming 2026-11-27)
+UK_uksi_2019_583  # an EU title's own citations name no law: 537/2011 "under Regulation (EC) No 1005/2009", 2015/2066-8 on 517/2014 (EU article naming 2026-11-27)
+UK_uksi_2022_1260  # 165/2014's title "… and amending Regulation (EC) No 561/2006": reg.2 on 561/2006, reg.3 on 165/2014 alone (EU article naming 2026-11-27)
+UK_uksi_2019_1340  # a quoted Article ("After Article 2 insert— Article 2A …") is Article 2A and its paragraphs, never Articles 1, 2 (EU article naming 2026-11-27)

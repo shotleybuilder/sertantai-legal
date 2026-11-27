@@ -70,7 +70,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
           })
 
         named = if c == first, do: own, else: Brackets.above(place, own) ++ own
-        named = placed_by(c, named, context) ++ named
+        named = placed_by(c, named, context, law.kind) ++ named
         named = if part, do: [], else: named
 
         {%{text: c, named: named, numbers: numbers, ours?: ours?, part: part}, {numbers, ours?}}
@@ -106,7 +106,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
   # with no subsection found: the last one named before it ("(a) in
   # paragraph (a) of subsection (3) …; (b) in paragraph (c)(ii) of that
   # subsection …" → (3))
-  defp placed_by(%Text{} = c, named, context) do
+  defp placed_by(%Text{} = c, named, context, kind) do
     held =
       Enum.map(c.parents, fn words ->
         Targets.brackets(%Text{
@@ -118,6 +118,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
             |> Clauses.unquote_words()
             |> Clauses.no_effect_asides()
             |> Clauses.no_captions()
+            |> Brackets.eu_paragraphs(kind)
             |> lead_in()
         })
       end)
@@ -223,6 +224,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
   """
   @spec law_spans(String.t(), map()) :: [{non_neg_integer(), non_neg_integer(), map()}]
   def law_spans(t, terms) do
+    t = EuCitation.untitled(t)
     lower = String.downcase(t)
 
     defined =
@@ -294,6 +296,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
   @aside_caption ~r/\((?:which|that|as|being|see|inserted|substituted|amended)\b(?:[^()]|\([^()]*\))*\)/iu
 
   defp laws(t, terms) do
+    t = EuCitation.untitled(t)
     lower = String.downcase(t)
 
     defined =

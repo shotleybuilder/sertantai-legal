@@ -49,7 +49,57 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.EuCitation do
   @doc "The citations' matches (`Regex.scan/3` with `opts`) where the text names them as the law amended; else none."
   @spec scan(String.t(), keyword()) :: [list()]
   def scan(text, opts \\ []),
-    do: if(naming?(text), do: Regex.scan(@pattern, text, opts), else: [])
+    do: if(naming?(text), do: Regex.scan(@pattern, untitled(text), opts), else: [])
+
+  # an EU law's title names other laws ("Regulation (EC) No 1272/2008 of
+  # the European Parliament … amending Regulation (EC) No 1907/2006 is
+  # amended …"; "Regulation (EC) No 340/2008 on the fees … pursuant to
+  # Regulation (EC) No 1907/2006 … (REACH) is amended"): none is a law
+  # named (SI 2019/720 Sch.2's CLP paragraphs had read for REACH too, SI
+  # 2019/453's tachograph ones for the drivers' hours Regulation, SI
+  # 2019/758 Sch.6's fees ones for REACH by its defined term: Amending-law
+  # reader: EU article naming, 2026-11-27)
+  @title_opener ~r/^,?\s*(?:of\s+the\s+(?:European|Council|Commission)|of\s+\d|on\s|laying\s+down|concerning|establishing|amending|repealing|supplementing|implementing|as\s+regards)/u
+  @title_end ~r/\b(?:is|are|shall\s+be)\s+(?:further\s+)?amended\b|[;—]|\.\s/u
+
+  @doc """
+  A naming text with each cited EU law's title blanked (spaces, its byte
+  offsets kept), so the laws its title names are no law named; any other
+  text as it is.
+  """
+  @spec untitled(String.t()) :: String.t()
+  def untitled(text) do
+    if naming?(text) do
+      @pattern
+      |> Regex.scan(text, return: :index)
+      |> Enum.reduce({text, 0}, &blank_title/2)
+      |> elem(0)
+    else
+      text
+    end
+  end
+
+  defp blank_title([{a, len} | _], {text, from}) when a < from, do: {text, max(from, a + len)}
+
+  defp blank_title([{a, len} | _], {text, _from}) do
+    start = a + len
+    rest = binary_part(text, start, byte_size(text) - start)
+
+    if rest =~ @title_opener do
+      stop =
+        case Regex.run(@title_end, rest, return: :index) do
+          [{e, _}] -> e
+          nil -> byte_size(rest)
+        end
+
+      blank = String.duplicate(" ", stop)
+
+      {binary_part(text, 0, start) <> blank <> binary_part(rest, stop, byte_size(rest) - stop),
+       start + stop}
+    else
+      {text, start}
+    end
+  end
 
   @doc "A citation's match (`pattern/0`'s groups, whole match first) as a law named; nil when not one."
   @spec ref([String.t()]) :: map() | nil

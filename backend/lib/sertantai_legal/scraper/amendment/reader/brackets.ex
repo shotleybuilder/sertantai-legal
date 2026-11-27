@@ -80,13 +80,16 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Brackets do
   An EU Article's paragraphs named by number, bracketed as its rows are:
   "In paragraph 36, at the end insert—" → "In paragraph (36) …"; "In
   paragraphs 11, 13 and 14" → "(11), (13) and (14)"; "omit paragraph 4a"
-  (SI 2019/758 on REACH Art 3, SI 2019/720 on CLP Art 29: CV-06 round 2).
+  (SI 2019/758 on REACH Art 3, SI 2019/720 on CLP Art 29: CV-06 round 2);
+  "In paragraph 5(a)—" → "(5)(a)" (SI 2019/453 reg.63(4) on the drivers'
+  hours Regulation's Article 10: its points had read as Article 10(a);
+  Amending-law reader: EU article naming, 2026-11-27).
   Any other law's text as it is: its "paragraph 3" is a Schedule's.
   """
   @spec eu_paragraphs(String.t(), atom()) :: String.t()
   def eu_paragraphs(text, :article) do
     Regex.replace(
-      ~r/\b(paragraphs?)\s+((?:\d+[a-z]?(?:\s*,\s*|\s+and\s+|\s+to\s+))*\d+[a-z]?)\b(?!\s*\()/,
+      ~r/\b(paragraphs?)\s+((?:\d+[a-z]?(?:\s*,\s*|\s+and\s+|\s+to\s+))*\d+[a-z]?)\b(?!\s+\()/,
       text,
       fn _, word, list ->
         word <> " " <> Regex.replace(~r/\d+[a-z]?/, list, &"(#{&1})")
