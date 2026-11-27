@@ -1,6 +1,8 @@
 ---
 session: 'Waste, Water and Climate: Amending-law reader'
-status: active
+status: suspended
+suspended: '2026-11-27'
+suspended_reason: 'For the three named sessions (EU article naming first, then amending Schedules and yield), on Jason''s go 2026-11-27; the Settle write (todo 7) follows them'
 opened: '2026-11-26'
 family: 'Waste, Water and Climate (round)'
 bugs:
@@ -183,7 +185,7 @@ bugs:
     status: open
 ---
 
-# Session: Waste, Water and Climate: Amending-law reader (ACTIVE)
+# Session: Waste, Water and Climate: Amending-law reader (SUSPENDED)
 
 ## Problem
 
@@ -198,7 +200,7 @@ Step 6 of the round. Each amending provision's own words must give the right ame
 - ✅ 2. Measure: write 1 (restore point and the index tar; `lat.reread --family "Waste, Water and Climate" --run`, 873 laws; Jason's go). Then FAILED lines, strata, yardstick, gate and golden
 - ✅ 3. Find: the fetch list (amending laws not held; repeals Schedules held only as enacted), fetched once on Jason's go
 - ✅ 4. Find: the 15 parked bugs' reach (round and corpus); review every L group not named, widest first; Decisions; `--write` names
-- 🔄 5. Fix: the gate's `fix:` classes and the 15 parked bugs, test first; field diff per fix; `--preview --all` after the last. Then suspend for the three named sessions
+- ✅ 5. Fix: the gate's `fix:` classes and the 15 parked bugs, test first; field diff per fix; `--preview --all` after the last (twice). Then suspend for the three named sessions (suspended 2026-11-27: EU article naming first)
 - ✅ 6. Fix: catalogue cold dry run to a scratch copy, held moves to Jason, `--accept` (two cold runs; five moves decided (a); `3b74c86d`)
 - ⬜ 7. Settle: the last write after the last reader commit (restore point); round and switched families rebuilt; golden 27/27; gates PASS; final yardstick; `mix test`, Credo diff, Dialyzer
 - ⬜ 8. Check and close: `mix lat.step_close`; RULES, WORKFLOW §6, the skill's history, gotchas; meta row; bugs updated; commits by path; step report; no push unless asked
