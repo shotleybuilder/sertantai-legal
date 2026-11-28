@@ -311,3 +311,7 @@ Sized on fresh-6 by law: SI 2015/1637 met (25 of 26); SI 1999/2024 now read (25 
 - **Aim:** `binds-on-date`.
 - **Options:** (a) close now: pass-rule item 1 not fully met; the unprobed groups and the NISR table form are parked as this step's open bugs with sizes, for the parent's Settle round or a follow-up session. (b) One more fix round in this session: probe the ~10 groups, fix those over the triage size, a targeted re-read; about half a day.
 - **Recommendation: (a).** The yield rose from 81.1% to 84.8% and the remaining groups are small and sized. Parking them keeps the parent's cold dry run (24 drifts) and Settle moving.
+
+## Step report
+
+Given to Jason in the terminal, 2026-11-28: PARTIAL. Round yield 81.1% → 84.8% (20,968 of 24,726 feed text changes); every family 74.6%; of Schedule-made changes with a rule, the provision agrees with the feed's affected provision for 31,609 and differs for 639; `mix test` only the 24 catalogue drifts. Decision 2 (a) closed with the remaining round groups parked by size. Jason asked what "targets" means: it is the feed's affected provision ("reg. 13(4)"), both measures being against the feed.
