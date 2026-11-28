@@ -1,0 +1,9 @@
+38965 Schedule-made text changes on held laws' bodies from 3298 amending laws
+  rule, target agrees                 31400 (80.6%) laws  678  top UK_uksi_2019_696:1472, UK_ukpga_2013_24:1226, UK_wsi_2013_755:972, UK_ukpga_2011_20:891, UK_asc_2026_7:774, UK_ukpga_2014_21:677
+  not read as amending                 3111 ( 8.0%) laws  215  top UK_uksi_2026_386:272, UK_uksi_2010_675:227, UK_ukpga_2010_4:186, UK_ukpga_1995_25:127, UK_ukpga_2005_15:116, UK_uksi_2007_3538:92
+  read, no rule                        3082 ( 7.9%) laws  338  top UK_ukpga_2009_10:149, UK_uksi_2020_1567:110, UK_uksi_2015_1682:96, UK_uksi_2020_1460:82, UK_ukpga_2008_9:81, UK_wsi_2013_755:71
+  rule, target differs                  678 ( 1.7%) laws  135  top UK_ukpga_2011_20:67, UK_ukpga_1995_25:53, UK_uksi_2015_1682:47, UK_wsi_2013_755:34, UK_asp_2012_8:29, UK_ukpga_1990_43:22
+  rule for another law only             525 ( 1.3%) laws   50  top UK_ukpga_2013_24:82, UK_asp_2003_3:67, UK_uksi_2014_892:60, UK_ukpga_2004_5:50, UK_uksi_2019_696:36, UK_asc_2026_7:35
+  rule; feed target not a provision      89 ( 0.2%) laws   47  top UK_uksi_2019_696:16, UK_ukpga_2026_23:5, UK_wsi_2013_755:4, UK_ukpga_2011_20:4, UK_uksi_2009_1885:3, UK_uksi_2019_539:3
+  rule, a parent's brackets lost         80 ( 0.2%) laws   35  top UK_ukpga_2013_24:13, UK_ukpga_2013_32:10, UK_uksi_2019_696:4, UK_ukpga_2022_30:4, UK_ukpga_2024_13:4, UK_wsi_2013_755:3
+examples → /var/home/jason/Desktop/sertantai-legal/backend/data/reports/amending-reader/schedules/check-targets-examples.txt

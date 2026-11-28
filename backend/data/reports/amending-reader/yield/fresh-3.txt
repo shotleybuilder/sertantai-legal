@@ -1,0 +1,356 @@
+
+== Round and switched families: 24726 text changes on held laws' bodies
+  rule for this law             20888 (84.5%)  amending laws  1272
+       e.g. UK_uksi_2003_771 reg. 2(2) → UK_uksi_2000_2687 reg. 2(1) [words added]
+       e.g. UK_uksi_2003_771 reg. 2(3)(a) → UK_uksi_2000_2687 reg. 6(1A) [inserted]
+       e.g. UK_uksi_2003_771 reg. 2(3)(b) → UK_uksi_2000_2687 reg. 6(2) [words inserted]
+  read, no rule                  1496 ( 6.1%)  amending laws   353
+       e.g. UK_uksi_2010_1075 Sch. 2 → UK_uksi_1990_660 reg. 3A [words substituted]
+       e.g. UK_uksi_2010_1075 Sch. 2 → UK_uksi_1998_1011 reg. 1(7)(b)(vi)-(vii) [substituted]
+       e.g. UK_uksi_2010_1075 Sch. 2 → UK_uksi_1998_2515 reg. 3A [substituted]
+  rules for another law only      191 ( 0.8%)  amending laws    28
+       e.g. UK_ssi_2006_181 Sch. Pt. 4 para. 4(2)(a) → UK_ukpga_1980_45 s. 17(1) [words omitted]
+       e.g. UK_ssi_2006_181 Sch. Pt. 4 para. 4(2)(b)(ii) → UK_ukpga_1980_45 s. 17(3) [words substituted]
+       e.g. UK_ssi_2006_181 Sch. Pt. 4 para. 4(2)(b)(i) → UK_ukpga_1980_45 s. 17(3)(a) and word [omitted]
+  amending words gone            1616 ( 6.5%)  amending laws   186
+       e.g. UK_wsi_2011_2555 reg. 5(a) → UK_uksi_2004_1490 reg. 6(1)(b)(c) [words substituted]
+       e.g. UK_wsi_2011_2555 reg. 7 → UK_uksi_2004_1490 reg. 8 [substituted]
+       e.g. UK_wsi_2011_2555 reg. 4 → UK_uksi_2004_1490 reg. 11 [words substituted]
+  amends an earlier amending law    240 ( 1.0%)  amending laws    18
+       e.g. UK_uksi_2020_1429 reg. 4(c) → UK_eur_2013_1257 Art. 8 [word omitted by virtue of S.I. 2019/277, reg. 6(8)(a) (as amended)]
+       e.g. UK_uksi_2020_1429 reg. 4(d) → UK_eur_2013_1257 Art. 12(1) [words omitted by virtue of S.I. 2019/277, reg. 6(11)(aa)(i) (as inserted)]
+       e.g. UK_uksi_2020_1429 reg. 4(d) → UK_eur_2013_1257 Art. 12(1) [words substituted by S.I. 2019/277, reg. 6(11)(aa)(ii) (as inserted)]
+  a modification                   90 ( 0.4%)  amending laws     9
+       e.g. UK_uksi_2020_1265 Sch. 5 para. 3 → UK_eur_2018_2067 Art. 1 [words substituted]
+       e.g. UK_uksi_2020_1265 Sch. 5 para. 4 → UK_eur_2018_2067 Art. 2 [words substituted]
+       e.g. UK_uksi_2020_1265 Sch. 5 para. 5(c) → UK_eur_2018_2067 Art. 3(2) [word substituted]
+  Schedules not held               20 ( 0.1%)  amending laws     4
+       e.g. UK_ukpga_2002_32 Sch. 21 para. 10 Sch. 22 Pt. 3 → UK_ukpga_1990_43 s. 98(2)(c)(ii) [repealed]
+       e.g. UK_ukpga_2002_32 Sch. 7 para. 2 → UK_ukpga_1990_43 s. 98(2)(e) [word substituted]
+       e.g. UK_ukpga_2010_4 Sch. 1 para. 298(a) → UK_ukpga_1998_17 s. 17E(7) [words substituted]
+  pointer not located              84 ( 0.3%)  amending laws    14
+       e.g. UK_nisi_1997_2778 Sch. 5 para. 4 → UK_ukpga_1990_43 s. 62(4) [words substituted]
+       e.g. UK_nisi_1997_2778 Sch. 5 para. 5 → UK_ukpga_1990_43 s. 141(7) [words substituted]
+       e.g. UK_uksi_1997_2703 reg. 3 → UK_ukpga_1987_12 s. 2(1)(a) [repealed in part]
+  no pointer parsed                31 ( 0.1%)  amending laws     7
+       e.g. UK_uksi_2010_991 reg, 4(2) → UK_uksi_2000_3184 reg. 18(1) [word inserted]
+       e.g. UK_uksi_1991_1333 None → UK_uksi_1990_119 reg. 3(2)(3)(c)(5) [amended]
+       e.g. UK_uksi_1991_1333 None → UK_uksi_1990_119 reg. 3(6)(7) [substituted]
+  amending law not held            28 ( 0.1%)  amending laws    15
+       e.g. UK_uksi_1997_3016 art. 2 → UK_ukpga_1995_21 s. 193-223 (Pt. 8) [amended (defn. of "a beacon")]
+       e.g. UK_uksi_1996_273 art. 5(1) Sch. 2 para. 26 → UK_ukpga_1991_52 s. 11 [amended]
+       e.g. UK_ukpga_1996_22 s. 50 → UK_ukpga_1875_17 s. 6 15 21 [amended]
+  amends itself                    42 ( 0.2%)  amending laws     6
+       e.g. UK_ukpga_2014_21 s. 83(1) → UK_ukpga_2014_21 s. 64-81 [repealed]
+       e.g. UK_ukpga_1990_43 Sch. 16 Pt. 2 → UK_ukpga_1990_43 s. 34(3)(b) [words repealed]
+       e.g. UK_ukpga_1990_43 Sch. 16 Pt. 2 → UK_ukpga_1990_43 s. 36(8) [repealed]
+
+== Other families: 64500 text changes on held laws' bodies
+  rule for this law             45447 (70.5%)  amending laws  1218
+       e.g. UK_uksi_2006_246 Sch. 2 para. 6(2)(a) → UK_ukpga_1991_46 s. 2(1) [words substituted]
+       e.g. UK_uksi_2006_246 Sch. 2 para. 6(2)(b) → UK_ukpga_1991_46 s. 2(1) [words substituted]
+       e.g. UK_uksi_2006_246 Sch. 2 para. 6(3) → UK_ukpga_1991_46 s. 2(2) [words substituted]
+  read, no rule                  4284 ( 6.6%)  amending laws   454
+       e.g. UK_uksi_2006_246 Sch. 2 para. 10(a) → UK_ukpga_1996_18 s. 47(1)(a) [words substituted]
+       e.g. UK_uksi_2006_246 Sch. 2 para. 10(a) → UK_ukpga_1996_18 s. 47(1A) [words substituted]
+       e.g. UK_uksi_2006_246 Sch. 2 para. 10(b) → UK_ukpga_1996_18 s. 61(1)(a) [words substituted]
+  rules for another law only      499 ( 0.8%)  amending laws    66
+       e.g. UK_ukpga_2014_26 s. 116(2) → UK_ukpga_1973_51 s. 50(2)(c)(ca) [substituted for s. 50(2)(c) and word]
+       e.g. UK_ukpga_2014_26 s. 116(3) → UK_ukpga_1973_51 s. 50(2)(d) [word substituted]
+       e.g. UK_ukpga_2014_26 s. 116(4) → UK_ukpga_1973_51 s. 50(2A)-(2D) [inserted]
+  amending words gone            2240 ( 3.5%)  amending laws   265
+       e.g. UK_asp_2009_12 s. 72 → UK_ukpga_1997_8 s. 3F [inserted]
+       e.g. UK_anaw_2015_4 Sch. 1 para. 3 → UK_ukpga_1972_70 s. 80(2AB) [inserted]
+       e.g. UK_anaw_2015_4 s. 19 → UK_ukpga_1990_8 s. 62D 62E and cross-heading [inserted]
+  amends an earlier amending law    222 ( 0.3%)  amending laws    22
+       e.g. UK_uksi_2020_1352 reg. 3(2) → UK_uksi_2012_1715 reg. 3(2) [substituted by S.I. 2019/74, reg. 5 (as substituted)]
+       e.g. UK_uksi_2009_1941 Sch. 1 para. 178(8)(d) → UK_ukpga_1986_45 s. 23 [substituted by 1999 c. 29 Sch. 1 para. 9 (as amended)]
+       e.g. UK_uksi_2009_1941 Sch. 1 para. 143(7)(d) → UK_ukpga_1986_45 s. 23(2A)(e) [substituted by 1993 c. 43 Sch. 6 para. 9 (as amended)]
+  a modification                   61 ( 0.1%)  amending laws    16
+       e.g. UK_uksi_1998_1188 reg. 7(3) → UK_uksi_1986_1078 reg. 13(2A) [inserted]
+       e.g. UK_uksi_1998_1188 reg. 8(3) → UK_uksi_1986_1078 reg. 13A(5)(6) [inserted]
+       e.g. UK_uksi_1998_1188 reg. 9(3) → UK_uksi_1986_1078 reg. 13B(5)(6) [inserted]
+  Schedules not held              356 ( 0.6%)  amending laws    12
+       e.g. UK_ukpga_2002_32 Sch. 21 para. 1 → UK_ukpga_1972_70 s. 177(1A) [substituted]
+       e.g. UK_ukpga_2002_32 Sch. 21 para. 4 → UK_ukpga_1981_14 s. 46(3) [words substituted]
+       e.g. UK_ukpga_2002_32 Sch. 21 para. 6 → UK_ukpga_1984_55 s. 4(1)(a)(ii) [substituted]
+  pointer not located             129 ( 0.2%)  amending laws    13
+       e.g. UK_wsi_2013_755 Sch. 2 para.072(3) → UK_ukpga_1967_10 s. 37 heading [words substituted]
+       e.g. UK_wsi_2013_755 Sch. 2 para.070(2) → UK_ukpga_1967_10 s. 32(1) [words substituted]
+       e.g. UK_wsi_2013_755 Sch. 2 para.070(3)(a) → UK_ukpga_1967_10 s. 32(3) [words inserted]
+  no pointer parsed                 6 ( 0.0%)  amending laws     4
+       e.g. UK_uksi_1986_1623 None → UK_uksi_1983_1182 art. 3 [amended]
+       e.g. UK_uksi_1986_1623 None → UK_uksi_1983_1182 art. 4 [amended]
+       e.g. UK_uksi_1990_2276 None → UK_uksi_1975_2116 reg. 4 [revoked]
+  amending law not held         11203 (17.4%)  amending laws  1488
+       e.g. UK_uksi_2023_328 reg. 2(2) → UK_uksi_2017_1206 reg. 6(3)(4) [inserted]
+       e.g. UK_uksi_2023_328 reg. 2(3)(a) → UK_uksi_2017_1206 reg. 41(5) [words inserted]
+       e.g. UK_uksi_2023_328 reg. 2(3)(b) → UK_uksi_2017_1206 reg. 41(6) [words inserted]
+  amends itself                    53 ( 0.1%)  amending laws    21
+       e.g. UK_ukpga_2018_12 Sch. 19 para. 227(2)(a) → UK_ukpga_2018_12 s. 204(1)(g) [words omitted]
+       e.g. UK_ukpga_2018_12 Sch. 19 para. 227(2)(b) → UK_ukpga_2018_12 s. 204(1)(g) [words omitted]
+       e.g. UK_ukpga_2018_12 Sch. 19 para. 227(3) → UK_ukpga_2018_12 s. 204(2)(a) [substituted]
+
+== Every family: 89226 text changes on held laws' bodies
+  rule for this law             66335 (74.3%)  amending laws  2060
+  read, no rule                  5780 ( 6.5%)  amending laws   730
+  rules for another law only      690 ( 0.8%)  amending laws    91
+  amending words gone            3856 ( 4.3%)  amending laws   402
+  amends an earlier amending law    462 ( 0.5%)  amending laws    33
+  a modification                  151 ( 0.2%)  amending laws    22
+  Schedules not held              376 ( 0.4%)  amending laws    12
+  pointer not located             213 ( 0.2%)  amending laws    26
+  no pointer parsed                37 ( 0.0%)  amending laws    11
+  amending law not held         11231 (12.6%)  amending laws  1501
+  amends itself                    95 ( 0.1%)  amending laws    27
+
+== Not located / not parsed, by the feed's affecting-provisions form (round, then other; top 40)
+  [round] pointer not located     39  art. N(N)
+         UK_uksi_2005_2900 art. 2(2) → UK_ukpga_1990_43 s. 34(2A) refs ['{:article, "2", ["2"]}']
+         UK_uksi_2005_2900 art. 2(3) → UK_ukpga_1990_43 s. 34(3) refs ['{:article, "2", ["3"]}']
+  [round] no pointer parsed       30  
+         UK_uksi_1991_1333 None → UK_uksi_1990_119 reg. 3(2)(3)(c)(5) refs []
+         UK_uksi_1991_1333 None → UK_uksi_1990_119 reg. 3(6)(7) refs []
+  [round] pointer not located      5  art. N(a)
+         UK_uksi_2024_1130 art. 4(a) → UK_uksi_2023_1394 art. 19(1) refs ['{:article, "4", ["a"]}']
+         UK_uksi_2024_1130 art. 5(a) → UK_uksi_2023_1394 art. 23(3) refs ['{:article, "5", ["a"]}']
+  [round] pointer not located      5  art. N(b)
+         UK_uksi_2024_1130 art. 4(b) → UK_uksi_2023_1394 art. 19(2) refs ['{:article, "4", ["b"]}']
+         UK_uksi_2024_1130 art. 5(b) → UK_uksi_2023_1394 art. 23(4) refs ['{:article, "5", ["b"]}']
+  [round] pointer not located      4  Sch. N para. N
+         UK_nisi_1997_2778 Sch. 5 para. 4 → UK_ukpga_1990_43 s. 62(4) refs ['{:schedule, "5", nil, "4", []}']
+         UK_nisi_1997_2778 Sch. 5 para. 5 → UK_ukpga_1990_43 s. 141(7) refs ['{:schedule, "5", nil, "5", []}']
+  [round] pointer not located      4  reg. N
+         UK_uksi_1997_2703 reg. 3 → UK_ukpga_1987_12 s. 2(1)(a) refs ['{:regulation, "3", []}']
+         UK_uksi_1997_651 reg. 2 → UK_ukpga_1990_43 s. 153(1)(ff) refs ['{:regulation, "2", []}']
+  [round] pointer not located      4  art. N
+         UK_ssi_2009_247 art. 5 → UK_ukpga_1995_25 s. 56(1)(ja) refs ['{:article, "5", []}']
+         UK_uksi_2024_1130 art. 8 → UK_uksi_2023_1394 art. 73(2) refs ['{:article, "8", []}']
+  [round] pointer not located      3  art. N(N)(a)
+         UK_uksi_2024_1130 art. 22(2)(a) → UK_eur_2011_725 Art. 12(2)(a) refs ['{:article, "22", ["2", "a"]}']
+         UK_uksi_2024_1130 art. 23(2)(a) → UK_eur_2014_427 Art. 12(2)(a) refs ['{:article, "23", ["2", "a"]}']
+  [round] pointer not located      3  art. N(N)(b)
+         UK_uksi_2024_1130 art. 22(2)(b) → UK_eur_2011_725 Art. 12(2)(b) refs ['{:article, "22", ["2", "b"]}']
+         UK_uksi_2024_1130 art. 23(2)(b) → UK_eur_2014_427 Art. 12(2)(b) refs ['{:article, "23", ["2", "b"]}']
+  [round] pointer not located      3  art. N(c)
+         UK_uksi_2024_1130 art. 4(c) → UK_uksi_2023_1394 art. 19(3) refs ['{:article, "4", ["c"]}']
+         UK_uksi_2024_1130 art. 5(c) → UK_uksi_2023_1394 art. 23(5) refs ['{:article, "5", ["c"]}']
+  [round] pointer not located      2  sch. N para. N(N)
+         UK_ssi_2005_344 sch. 1 para. 8(2) → UK_uksi_1989_1401 reg. 2 refs ['{:schedule, "1", nil, "8", ["2"]}']
+         UK_ssi_2005_344 sch. 1 para. 8(5) → UK_uksi_1989_1401 reg. 12(1)(1A)(2) refs ['{:schedule, "1", nil, "8", ["5"]}']
+  [round] pointer not located      2  sch. N para. N(N)(a)
+         UK_ssi_2005_344 sch. 1 para. 8(3)(a) → UK_uksi_1989_1401 reg. 5(3) refs ['{:schedule, "1", nil, "8", ["3", "a"]}']
+         UK_ssi_2005_344 sch. 1 para. 8(4)(a) → UK_uksi_1989_1401 reg. 9(2)(b) refs ['{:schedule, "1", nil, "8", ["4", "a"]}']
+  [round] pointer not located      2  sch. N para. N(N)(b)
+         UK_ssi_2005_344 sch. 1 para. 8(3)(b) → UK_uksi_1989_1401 reg. 5(7) refs ['{:schedule, "1", nil, "8", ["3", "b"]}']
+         UK_ssi_2005_344 sch. 1 para. 8(4)(b) → UK_uksi_1989_1401 reg. 9(2)(b) refs ['{:schedule, "1", nil, "8", ["4", "b"]}']
+  [round] pointer not located      2  Sch. para. N
+         UK_wsi_2011_971 Sch. para. 2 → UK_uksi_2005_1806 reg. 2 refs ['{:schedule, nil, nil, "2", []}']
+         UK_wsi_2011_971 Sch. para. 2 → UK_wsi_2005_1806 reg. 2 refs ['{:schedule, nil, nil, "2", []}']
+  [round] no pointer parsed        1  reg, N(N)
+         UK_uksi_2010_991 reg, 4(2) → UK_uksi_2000_3184 reg. 18(1) refs []
+  [round] pointer not located      1  sch. N para. N(N)(c)
+         UK_ssi_2005_344 sch. 1 para. 8(3)(c) → UK_uksi_1989_1401 reg. 5(8) refs ['{:schedule, "1", nil, "8", ["3", "c"]}']
+  [round] pointer not located      1  s. N(a)
+         UK_uksi_2005_894 s. 74(a) → UK_ukpga_1990_43 s. 75 heading refs ['{:section, "74", ["a"]}']
+  [round] pointer not located      1  s. N
+         UK_uksi_2005_894 s. 73 → UK_ukpga_1990_43 s. 63(2)(3) refs ['{:section, "73", []}']
+  [round] pointer not located      1  s. N(b)
+         UK_uksi_2005_894 s. 74(b) → UK_ukpga_1990_43 s. 75(8A)(8B) refs ['{:section, "74", ["b"]}']
+  [round] pointer not located      1  s. N(c)
+         UK_uksi_2005_894 s. 74(c) → UK_ukpga_1990_43 s. 75(9) refs ['{:section, "74", ["c"]}']
+  [round] pointer not located      1  art. N(N)(c)
+         UK_uksi_2024_1130 art. 3(1)(c) → UK_uksi_2023_1394 art. 3(1) refs ['{:article, "3", ["1", "c"]}']
+  [other] pointer not located     21  Sch. N para.N(N)
+         UK_wsi_2013_755 Sch. 2 para.072(3) → UK_ukpga_1967_10 s. 37 heading refs ['{:schedule, "2", nil, "072", ["3"]}']
+         UK_wsi_2013_755 Sch. 2 para.070(2) → UK_ukpga_1967_10 s. 32(1) refs ['{:schedule, "2", nil, "070", ["2"]}']
+  [other] pointer not located     21  Sch. N para. N
+         UK_wsi_2014_2773 Sch. 1 para. 25 → UK_ukpga_1990_10 s. 20(4B) refs ['{:schedule, "1", nil, "25", []}']
+         UK_wsi_2014_2773 Sch. 1 para. 26 → UK_ukpga_1990_10 s. 21(5B) refs ['{:schedule, "1", nil, "26", []}']
+  [other] pointer not located     20  s. N(N)
+         UK_ukpga_2009_10 s. 77(3) → UK_ukpga_1994_23 s. 39A refs ['{:section, "77", ["3"]}']
+         UK_ukpga_2009_10 s. 77(4) → UK_ukpga_1994_23 s. 83(1)(ha) refs ['{:section, "77", ["4"]}']
+  [other] pointer not located     12  Sch. N para. N(N)
+         UK_wsi_2014_2773 Sch. 1 para. 7(2) → UK_ukpga_1990_8 s. 196(1B) refs ['{:schedule, "1", nil, "7", ["2"]}']
+         UK_wsi_2014_2773 Sch. 1 para. 7(3) → UK_ukpga_1990_8 s. 196(2) refs ['{:schedule, "1", nil, "7", ["3"]}']
+  [other] pointer not located     11  s. N(N)(a)
+         UK_ukpga_2009_10 s. 77(2)(a) → UK_ukpga_1994_23 s. 39(3) refs ['{:section, "77", ["2", "a"]}']
+         UK_ukpga_2009_10 s. 126(5)(a) → UK_ukpga_2001_2 s. 70G(5) refs ['{:section, "126", ["5", "a"]}']
+  [other] pointer not located      7  Sch. N Pt. N
+         UK_uksi_2015_475 Sch. 1 Pt. 1 → UK_ukpga_1967_10 s. 32(1) refs ['{:schedule, "1", "1", nil, []}']
+         UK_uksi_2015_475 Sch. 1 Pt. 1 → UK_ukpga_1967_10 s. 37(1)(a) refs ['{:schedule, "1", "1", nil, []}']
+  [other] pointer not located      7  s. N(N)(b)
+         UK_ukpga_2009_10 s. 77(2)(b) → UK_ukpga_1994_23 s. 39(3)(b)(ii) refs ['{:section, "77", ["2", "b"]}']
+         UK_ukpga_2009_10 s. 77(2)(b) → UK_ukpga_1994_23 s. 39(3)(b)(ii) refs ['{:section, "77", ["2", "b"]}']
+  [other] pointer not located      4  Sch. N para.N(N)(a)
+         UK_wsi_2013_755 Sch. 2 para.070(3)(a) → UK_ukpga_1967_10 s. 32(3) refs ['{:schedule, "2", nil, "070", ["3", "a"]}']
+         UK_wsi_2013_755 Sch. 2 para.076(2)(a) → UK_ukpga_1967_10 s. 46(1) refs ['{:schedule, "2", nil, "076", ["2", "a"]}']
+  [other] pointer not located      4  Sch. N para.N(N)(b)
+         UK_wsi_2013_755 Sch. 2 para.070(3)(b) → UK_ukpga_1967_10 s. 32(3) refs ['{:schedule, "2", nil, "070", ["3", "b"]}']
+         UK_wsi_2013_755 Sch. 2 para.076(2)(b) → UK_ukpga_1967_10 s. 46(1) refs ['{:schedule, "2", nil, "076", ["2", "b"]}']
+  [other] no pointer parsed        4  
+         UK_uksi_1986_1623 None → UK_uksi_1983_1182 art. 3 refs []
+         UK_uksi_1986_1623 None → UK_uksi_1983_1182 art. 4 refs []
+  [other] pointer not located      3  s. N(N)(N)
+         UK_ukpga_1998_8 s. 24(1)(2) → UK_ukpga_1996_18 s. 203(3)(b) refs ['{:section, "24", ["1", "2"]}']
+         UK_ukpga_2009_10 s. 114(13)(14) → UK_ukpga_1997_16 s. 15(3) refs ['{:section, "114", ["13", "14"]}']
+  [other] pointer not located      2  Sch. N para.N(N)(c)
+         UK_wsi_2013_755 Sch. 2 para.070(3)(c) → UK_ukpga_1967_10 s. 32(3) refs ['{:schedule, "2", nil, "070", ["3", "c"]}']
+         UK_wsi_2013_755 Sch. 2 para.076(2)(c) → UK_ukpga_1967_10 s. 46(1) refs ['{:schedule, "2", nil, "076", ["2", "c"]}']
+  [other] pointer not located      2  Sch. N para. N(a)
+         UK_wsi_2014_2773 Sch. 1 para. 27(a) → UK_ukpga_1990_10 s. 25(1)(b)(v) refs ['{:schedule, "1", nil, "27", ["a"]}']
+         UK_wsi_2014_2773 Sch. 1 para. 19(a) → UK_ukpga_1990_9 s. 41(4) refs ['{:schedule, "1", nil, "19", ["a"]}']
+  [other] pointer not located      2  Sch. N para. N(b)
+         UK_wsi_2014_2773 Sch. 1 para. 27(b) → UK_ukpga_1990_10 s. 25(1)(c) refs ['{:schedule, "1", nil, "27", ["b"]}']
+         UK_wsi_2014_2773 Sch. 1 para. 19(b) → UK_ukpga_1990_9 s. 41(4) refs ['{:schedule, "1", nil, "19", ["b"]}']
+  [other] pointer not located      2  s. N
+         UK_ukpga_1998_30 s. 32 → UK_ukpga_1996_18 s. 63A refs ['{:section, "32", []}']
+         UK_ukpga_2009_10 s. 120 → UK_ukpga_1994_22 s. 22(1)(ha) refs ['{:section, "120", []}']
+  [other] pointer not located      2  art. N(N)
+         UK_uksi_2016_912 art. 20(2) → UK_uksi_2012_801 reg. 17(1)(b) refs ['{:article, "20", ["2"]}']
+         UK_uksi_2016_912 art. 20(3) → UK_uksi_2012_801 reg. 17(1)(b) refs ['{:article, "20", ["3"]}']
+  [other] pointer not located      2  s. N(N)(c)
+         UK_ukpga_2009_10 s. 77(2)(c) → UK_ukpga_1994_23 s. 39(3)(ba) refs ['{:section, "77", ["2", "c"]}']
+         UK_ukpga_2009_10 s. 126(6)(c) → UK_ukpga_2006_25 s. 84(4) refs ['{:section, "126", ["6", "c"]}']
+  [other] pointer not located      1  Sch. N para.N
+         UK_wsi_2013_755 Sch. 2 para.078 → UK_ukpga_1967_10 s. 49(1) refs ['{:schedule, "2", nil, "078", []}']
+  [other] pointer not located      1  reg.N(N)
+         UK_uksi_1992_2016 reg.005(2) → UK_uksi_1986_1078 reg. 76(2) refs ['{:regulation, "005", ["2"]}']
+  [other] pointer not located      1  Sch. para. N
+         UK_ukpga_1999_12 Sch. para. 3 → UK_ukpga_1988_52 s. 177 refs ['{:schedule, nil, nil, "3", []}']
+  [other] pointer not located      1  sch. N para. N
+         UK_ssi_2005_344 sch. 1 para. 31 → UK_ssi_2004_428 reg. 2(1) refs ['{:schedule, "1", nil, "31", []}']
+  [other] pointer not located      1  reg. N(d)
+         UK_nisr_2011_78 reg. 36(d) → UK_uksi_2005_2055 reg. 18(2) refs ['{:regulation, "36", ["d"]}']
+  [other] pointer not located      1  s. N(N)(d)
+         UK_ukpga_2009_10 s. 77(2)(d) → UK_ukpga_1994_23 s. 39(3)(c) refs ['{:section, "77", ["2", "d"]}']
+  [other] pointer not located      1  Sch. N para. Npara. N(N)(a)
+         UK_ukpga_2011_20 Sch. 7 para. 11para. 11(3)(a) → UK_ukpga_1992_14 s. 33(1) refs ['{:schedule, "7", nil, "11para", []}']
+  [other] no pointer parsed        1  Regulation
+         UK_eur_2014_379 Regulation → UK_eur_2012_965 Art. 10 P.3 refs []
+  [other] no pointer parsed        1  s. s. N(N)(a)
+         UK_ukpga_2025_34 s. s. 6(11)(a) → UK_ukpga_2009_23 s. 23(3) refs []
+
+== Read, no rule: by the provision's opening words (round; changes, amending laws)
+     45    1  provision | the amendments made by this   (every family 139)
+     43    3  provision | in the provisions listed in   (every family 177)
+     41    6  provision | schedule n amendments regulation n   (every family 44)
+     27    1  provision | parts i, ii and iia   (every family 27)
+     17   12  provision | in regulation n() of the   (every family 30)
+     17    1  provision | schedule n modifications to regulations   (every family 17)
+     14    5  provision | q;   (every family 33)
+     14    1  provision | schedule statutory instruments amended regulation   (every family 14)
+     14    1  provision | in regulation n();   (every family 14)
+     13   10  provision | the words from q to   (every family 50)
+     12    6  provision | for q substitute q ;   (every family 26)
+     12    2  provision | for the purpose of enabling   (every family 15)
+     11    1  provision | schedule article n table n   (every family 11)
+     10    1  provision | schedule n amendment of regulations   (every family 10)
+     10    1  provision | article n(), articles n, n,   (every family 10)
+     10    1  provision | the functions which are conferred   (every family 36)
+     10    1  provision | in these regulations, unless the   (every family 14)
+     10    1  provision | schedule article n () where   (every family 10)
+      9    6  provision | for the definition of q   (every family 12)
+      9    5  provision | the existing text becomes paragraph   (every family 17)
+      9    8  provision | in regulation n of the   (every family 12)
+      9    1  provision | schedule n revocations and amendments   (every family 10)
+      8    2  provision | regulation n()() and ();   (every family 8)
+      8    1  provision | in each place in which   (every family 8)
+      8    4  provision | regulation n;   (every family 9)
+      8    2  provision | in the following provisions, for   (every family 51)
+      8    3  provision | in paragraph () of regulation   (every family 9)
+      8    1  provision | in a provision listed in   (every family 57)
+      7    3  provision | for q there shall be   (every family 8)
+      7    2  provision | schedule n consequential amendments regulation   (every family 13)
+      7    3  provision | in paragraph ()() for q   (every family 9)
+      7    3  provision | the enactments listed in sub-paragraph   (every family 32)
+      6    1  provision | in paragraph n for q   (every family 6)
+      6    5  provision | in article n of the   (every family 10)
+      6    5  provision | in regulation n()() of the   (every family 8)
+      6    3  provision | in the definition of q   (every family 6)
+      6    6  provision | in each enactment specified in   (every family 6)
+      6    4  provision | at the end of sub-paragraph   (every family 6)
+      6    2  provision | regulations n, n to n   (every family 6)
+      6    2  provision | regulation n()(), ()() and ()   (every family 6)
+      6    1  provision | regulations n()(), ()() and ()   (every family 6)
+      6    1  provision | the amendments listed in schedule   (every family 6)
+      6    1  provision | schedule n (which contains amendments   (every family 6)
+      5    3  provision | in the words before point   (every family 5)
+      5    2  provision | in subparagraph (), for q   (every family 5)
+      5    2  provision | regulation n();   (every family 5)
+      5    3  provision | in paragraph (), for q   (every family 48)
+      5    2  provision | regulations n, n and n,   (every family 5)
+      5    4  provision | in section n of the   (every family 12)
+      5    4  provision | after regulation n of the   (every family 5)
+      5    2  provision | schedule n to this act   (every family 88)
+      5    3  provision | omit the definition of q;   (every family 10)
+      5    1  provision | for regulation n, substitute— section   (every family 5)
+      4    1  provision | omit the definition of q   (every family 5)
+      4    2  heading | in the heading to chapter   (every family 11)
+      4    2  provision | in regulations n and n   (every family 4)
+      4    1  provision | regulation n() and ();   (every family 4)
+      4    1  provision | regulation n()() and ()()();   (every family 4)
+      4    3  provision | regulation n()();   (every family 5)
+      4    1  provision | regulation n() and ()();   (every family 4)
+
+== Read, no rule: by the provision's opening words (every family; top 60)
+    177    3  provision | in the provisions listed in   (round 43)
+    139    1  provision | the amendments made by this   (round 45)
+     88   10  provision | schedule n to this act   (round 5)
+     65   13  provision | the enactments mentioned in schedule   (round 2)
+     57    1  provision | in a provision listed in   (round 8)
+     56   21  provision | in subsection (), for q   (round 2)
+     51    2  provision | in the following provisions, for   (round 8)
+     50   30  provision | the words from q to   (round 13)
+     48   21  provision | in paragraph (), for q   (round 5)
+     44    6  provision | schedule n amendments regulation n   (round 41)
+     36    1  provision | the functions which are conferred   (round 10)
+     33   10  provision | q;   (round 14)
+     33    1  provision | the enactments and instrument specified   (round 4)
+     32    3  provision | the enactments listed in sub-paragraph   (round 7)
+     31   19  provision | in the definition of q,   (round 4)
+     30   19  provision | in regulation n() of the   (round 17)
+     29    3  provision | schedule n (minor and consequential   (round 1)
+     28   12  provision | in subsection ()(), for q   (round 1)
+     27    2  provision | the regulations specified in column   (round 0)
+     27   16  provision | in subsection (), after q   (round 0)
+     27    2  provision | schedule n revocations article n   (round 0)
+     27    1  provision | parts i, ii and iia   (round 27)
+     26   17  provision | for q substitute q ;   (round 12)
+     24    2  provision | section n(), (), (), (),   (round 0)
+     24    1  provision | schedule changes in terminology or   (round 4)
+     23   16  provision | for q substitute q ,   (round 2)
+     21   14  provision | for q substitute q .   (round 2)
+     21    1  provision | the modifications mentioned in part   (round 0)
+     20    1  provision | the provisions of the n   (round 0)
+     19    2  provision | in each of the enactments   (round 3)
+     18    1  provision | the maximum fine for each   (round 0)
+     18    1  provision | schedule n increase in maximum   (round 0)
+     18    1  provision | schedule changes of terminology section   (round 0)
+     17    9  provision | the existing text becomes paragraph   (round 9)
+     17    1  provision | schedule n modifications to regulations   (round 17)
+     17    1  provision | this section applies, subject to   (round 0)
+     17    1  provision | the merchant shipping (oil pollution)   (round 0)
+     16    6  provision | after section n of the   (round 2)
+     16   13  provision | the existing text becomes subsection   (round 2)
+     16    7  provision | the enactments specified in schedule   (round 3)
+     16    1  provision | schedule n shall have effect—   (round 3)
+     15   12  provision | the existing provision becomes subsection   (round 4)
+     15    6  provision | paragraphs () and () of   (round 3)
+     15    6  provision | in section n of fa   (round 0)
+     15    4  provision | subsection ();   (round 0)
+     15    8  provision | in subsection (), for the   (round 1)
+     15   11  provision | in subsection (), after paragraph   (round 2)
+     15    2  provision | for the purpose of enabling   (round 12)
+     14    2  provision | schedule n makes minor and   (round 0)
+     14    1  provision | in these regulations, unless the   (round 10)
+     14    1  provision | schedule statutory instruments amended regulation   (round 14)
+     14    1  provision | in regulation n();   (round 14)
+     13    5  provision | section n()();   (round 0)
+     13    3  provision | in sub-paragraph (), for q   (round 2)
+     13   10  provision | in section n() of fa   (round 0)
+     13    2  provision | schedule n consequential amendments regulation   (round 7)
+     13   10  provision | in paragraph (), after q   (round 2)
+     13    7  provision | after subsection () insert— in   (round 0)
+     13    5  provision | the words q become paragraph   (round 1)
+     13    1  provision | for the words q wherever   (round 4)

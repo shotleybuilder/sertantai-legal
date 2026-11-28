@@ -1,0 +1,1200 @@
+
+== provision | in the provisions listed in: 177 changes, round 43
+   UK_uksi_2023_149 regulation-2-1 → UK_ukpga_1965_57 s. 1(10) [words substituted] «In the provisions listed in column 1 of the table in Part 1 of the Schedule, for the words in the corresponding entry in column 2 of that table substitute “the »
+   UK_uksi_2023_149 regulation-2-1 → UK_ukpga_1965_57 s. 4(13) [words substituted] «In the provisions listed in column 1 of the table in Part 1 of the Schedule, for the words in the corresponding entry in column 2 of that table substitute “the »
+   UK_uksi_2023_149 regulation-2-1 → UK_ukpga_1965_57 s. 5(13) [words substituted] «In the provisions listed in column 1 of the table in Part 1 of the Schedule, for the words in the corresponding entry in column 2 of that table substitute “the »
+   UK_uksi_2023_149 regulation-2-1 → UK_ukpga_1965_57 s. 22(6) [words substituted] «In the provisions listed in column 1 of the table in Part 1 of the Schedule, for the words in the corresponding entry in column 2 of that table substitute “the »
+
+== provision | the amendments made by this: 139 changes, round 45
+   UK_uksi_2011_1043 article-3 → UK_asp_2003_3 Blanket amendment [words substituted] «The amendments made by this Part apply to provisions contained in— an Act of Parliament, an Act of the Scottish Parliament, or an instrument made under an Act o»
+   UK_uksi_2011_1043 article-3 → UK_asp_2004_6 Blanket amendment [words substituted] «The amendments made by this Part apply to provisions contained in— an Act of Parliament, an Act of the Scottish Parliament, or an instrument made under an Act o»
+   UK_uksi_2011_1043 article-3 → UK_asp_2005_15 Blanket amendment [words substituted] «The amendments made by this Part apply to provisions contained in— an Act of Parliament, an Act of the Scottish Parliament, or an instrument made under an Act o»
+   UK_uksi_2011_1043 article-3 → UK_asp_2005_15 Blanket amendment [words substituted] «The amendments made by this Part apply to provisions contained in— an Act of Parliament, an Act of the Scottish Parliament, or an instrument made under an Act o»
+
+== provision | schedule n to this act: 88 changes, round 5
+   UK_ukpga_1998_43 section-1-2 → UK_ukpga_1993_11 s. 30(4) [amended] «Schedule 2 to this Act shall have effect.»
+   UK_ukpga_1995_40 section-3 → UK_ukpga_1947_41 s. 14(5) [amended (1.4.1996) (S)] «Schedule 1 to this Act shall have effect for the purpose of setting or altering or enabling the Secretary of State to set or alter the penalties or maximum pena»
+   UK_ukpga_1995_40 section-3 → UK_ukpga_1947_41 s. 30(2) [amended (1.4.1996) (S)] «Schedule 1 to this Act shall have effect for the purpose of setting or altering or enabling the Secretary of State to set or alter the penalties or maximum pena»
+   UK_ukpga_1995_40 section-3 → UK_ukpga_1967_10 s. 24(4) [amended (1.4.1996) (S)] «Schedule 1 to this Act shall have effect for the purpose of setting or altering or enabling the Secretary of State to set or alter the penalties or maximum pena»
+
+== provision | the enactments mentioned in schedule: 65 changes, round 2
+   UK_ukpga_1994_20 section-9-2 → UK_ukpga_1986_31 s. 70 [repealed (EW)] «The enactments mentioned in Schedule 5 to this Act are hereby repealed to the extent specified in the third column of that Schedule.»
+   UK_ukpga_1995_20 section-117 → UK_ukpga_1991_40 s. 37 [repealed (prosp.)] «The enactments mentioned in Schedule 6 to this Act shall have effect subject to the amendments there specified, being minor amendments and amendments consequent»
+   UK_ukpga_1998_43 section-1-1 → UK_ukpga_1991_56 s. 97(6) [repealed] «The enactments mentioned in Schedule 1 to this Act are repealed, and the instruments mentioned there are revoked, to the extent specified in the third column of»
+   UK_ukpga_1998_43 section-1-1 → UK_ukpga_1993_11 s. 30(4) [repealed in part] «The enactments mentioned in Schedule 1 to this Act are repealed, and the instruments mentioned there are revoked, to the extent specified in the third column of»
+
+== provision | in a provision listed in: 57 changes, round 8
+   UK_uksi_2022_500 regulation-5-1 → UK_ukpga_1965_57 s. 1(10) [words substituted] «In a provision listed in column 1 of the table in Part 1 of the Schedule, for the words in the corresponding entry in column 2 of the table substitute “2 May 20»
+   UK_uksi_2022_500 regulation-5-1 → UK_ukpga_1965_57 s. 4(13) [words substituted] «In a provision listed in column 1 of the table in Part 1 of the Schedule, for the words in the corresponding entry in column 2 of the table substitute “2 May 20»
+   UK_uksi_2022_500 regulation-5-1 → UK_ukpga_1965_57 s. 5(13) [words substituted] «In a provision listed in column 1 of the table in Part 1 of the Schedule, for the words in the corresponding entry in column 2 of the table substitute “2 May 20»
+   UK_uksi_2022_500 regulation-5-1 → UK_ukpga_1965_57 s. 22(6) [words substituted] «In a provision listed in column 1 of the table in Part 1 of the Schedule, for the words in the corresponding entry in column 2 of the table substitute “2 May 20»
+
+== provision | in subsection (), for q: 52 changes, round 2
+   UK_ukpga_2022_35 section-14-4 → UK_ukpga_1993_12 s. 34A(2) [words substituted] «In subsection (2), for “the reference in subsection (1)” substitute “a reference in any of subsections (1) to (1C) ” .»
+   UK_ukpga_2025_18 schedule-11-paragraph-19-4 → UK_ukpga_2018_12 s. 125(9) [words substituted] «In subsection (9), for “subsections (2) and (5)” substitute “subsection (5)” .»
+   UK_ukpga_2010_33 schedule-13-paragraph-16-3 → UK_ukpga_1979_2 s. 161A(3) [words substituted] «In subsection (3), for “subsections (1) and (2)” substitute “ subsections (1), (2) and (2A) ” .»
+   UK_asp_2003_3 schedule-4-paragraph-3-2 → UK_ukpga_1980_45 s. 24(1) [words substituted] «In subsection (1), for “the water authority providing the supply” substitute “ Scottish Water ” .»
+
+== provision | in the following provisions, for: 51 changes, round 8
+   UK_wsi_2013_755 schedule-5-paragraph-30 → UK_uksi_2005_1806 reg. 55 [words substituted] «In the following provisions, for “Agency”, in each place where it occurs, substitute “ NRBW ” regulation 21(1) and (2); regulations 23 to 28; regulation 33(1); »
+   UK_wsi_2013_755 schedule-5-paragraph-30 → UK_wsi_2005_1806 reg. 55 [words substituted] «In the following provisions, for “Agency”, in each place where it occurs, substitute “ NRBW ” regulation 21(1) and (2); regulations 23 to 28; regulation 33(1); »
+   UK_ukpga_2020_17 schedule-24-paragraph-443-1 → UK_ukpga_1965_57 s. 1(10) [words substituted] «In the following provisions, for “section 154(1) of the Criminal Justice Act 2003” or “section 154(1) of the Criminal Justice Act 2003 (c. 44)” substitute “ par»
+   UK_ukpga_2020_17 schedule-24-paragraph-443-1 → UK_ukpga_1965_57 s. 4(13) [words substituted] «In the following provisions, for “section 154(1) of the Criminal Justice Act 2003” or “section 154(1) of the Criminal Justice Act 2003 (c. 44)” substitute “ par»
+
+== provision | the words from q to: 50 changes, round 13
+   UK_ukpga_2008_26 section-116-2-a → UK_ukpga_2000_38 s. 176(2)(a) [words in s. 176(2) renumbered as s. 176(2)(a)] «the words from “approve standards for equipment” to the end of the subsection become paragraph (a) of that subsection;»
+   UK_ukpga_2008_26 section-116-3-a → UK_ukpga_2000_38 s. 176(3)(a) [words in s. 176(3) renumbered as s. 176(3)(a)] «the words from “installed for or in connection with” to the end of the subsection become paragraph (a) of that subsection;»
+   UK_asc_2024_2 section-24-2-a-i → UK_ukpga_1995_25 s. 87(2)(o)(i) [words in s. 87(2)(o) renumbered as s. 87(2)(o)(i)] «the words from “by payment of” to the end become sub-paragraph (i);»
+   UK_uksi_2021_898 regulation-2-6-b-i → UK_eur_2019_631 Art. 8(5)(a) [words in Art. 8(5) renumbered as Art. 8(5)(a)] «the words from “in relation to England and Wales” to the end become point (a);»
+
+== provision | schedule n amendments regulation n: 44 changes, round 41
+   UK_nisr_2016_146 schedule-6 → UK_nisr_1993_37 reg. 3(1)(b) [words substituted] «SCHEDULE 6 AMENDMENTS Regulation 38 Column 1 Title Column 2 Reference Column 3 Extent of amendment Factories Act (Northern Ireland) 1965 1965 c.20 In section 17»
+   UK_nisr_2016_146 schedule-6 → UK_nisr_1997_455 reg. 2(1) [words substituted] «SCHEDULE 6 AMENDMENTS Regulation 38 Column 1 Title Column 2 Reference Column 3 Extent of amendment Factories Act (Northern Ireland) 1965 1965 c.20 In section 17»
+   UK_nisr_2016_146 schedule-6 → UK_nisr_1999_305 reg. 6(5)(e) [words substituted] «SCHEDULE 6 AMENDMENTS Regulation 38 Column 1 Title Column 2 Reference Column 3 Extent of amendment Factories Act (Northern Ireland) 1965 1965 c.20 In section 17»
+   UK_nisr_2016_146 schedule-6 → UK_nisr_1999_90 reg. 2(1) [words substituted] «SCHEDULE 6 AMENDMENTS Regulation 38 Column 1 Title Column 2 Reference Column 3 Extent of amendment Factories Act (Northern Ireland) 1965 1965 c.20 In section 17»
+
+== provision | in paragraph (), for q: 44 changes, round 5
+   UK_uksi_2026_392 schedule-2-paragraph-6-2 → UK_uksi_2020_1265 art. 19(b) [sum substituted] «In paragraph (b), for “302,924,924” substitute “312,248,470” .»
+   UK_uksi_2026_392 schedule-2-paragraph-10-4 → UK_uksi_2020_1265 art. 35(3) [words substituted] «In paragraph (3), for “or aircraft operator” substitute “, aircraft operator or maritime operator” .»
+   UK_uksi_2026_392 schedule-2-paragraph-14-3 → UK_uksi_2020_1265 art. 52(2) [words substituted] «In paragraph (2), for “or the aircraft operator” substitute “, the aircraft operator, or the maritime operator” .»
+   UK_ukpga_2011_5 schedule-12-paragraph-177-3-b → UK_ukpga_2007_17 s. 15(1)(a) [words substituted] «in paragraph (a), for “a condition of a licence under Part 2 of the Postal Services Act 2000” substitute “ a regulatory condition imposed under Part 3 of the Po»
+
+== provision | the functions which are conferred: 36 changes, round 10
+   UK_uksi_1999_1750 article-4 → UK_ukpga_1965_57 s. 1 [amended (S)] «The functions which are conferred on a Minister of the Crown by the enactments specified in column 1 of Schedule 3 to this Order shall– so far as they are exerc»
+   UK_uksi_1999_1750 article-4 → UK_ukpga_1965_57 s. 16 [amended (S)] «The functions which are conferred on a Minister of the Crown by the enactments specified in column 1 of Schedule 3 to this Order shall– so far as they are exerc»
+   UK_uksi_1999_1750 article-4 → UK_ukpga_1965_57 s. 18 [amended (S)] «The functions which are conferred on a Minister of the Crown by the enactments specified in column 1 of Schedule 3 to this Order shall– so far as they are exerc»
+   UK_uksi_1999_1750 article-4 → UK_ukpga_1965_57 s. 21 [amended (S)] «The functions which are conferred on a Minister of the Crown by the enactments specified in column 1 of Schedule 3 to this Order shall– so far as they are exerc»
+
+== provision | q;: 33 changes, round 14
+   UK_nisr_2018_206 regulation-5-2-a-i → UK_nisr_2015_425 reg. 3(1) [words omitted] «“Commission Regulation 1494/2007 ”;»
+   UK_nisr_2018_206 regulation-5-2-a-ii → UK_nisr_2015_425 reg. 3(1) [words omitted] «“Commission Regulation 303/2008 ”;»
+   UK_nisr_2018_206 regulation-5-2-a-iv → UK_nisr_2015_425 reg. 3(1) [words omitted] «“Commission Regulation 308/2008 ”;»
+   UK_ukpga_2014_21 schedule-5-paragraph-50-a → UK_ukpga_1991_56 s. 158(7)(a) [words repealed] «“or (b)(i)”;»
+
+== provision | the enactments and instrument specified: 33 changes, round 4
+   UK_ukpga_1995_45 section-16-1 → UK_ukpga_1936_49 Act [amended (prosp.)] «The enactments and instrument specified in Schedule 4 to this Act shall have effect subject to the amendments there specified (being minor amendments or amendme»
+   UK_ukpga_1995_45 section-16-1 → UK_ukpga_1961_64 s. 17(10) [amended (prosp.)] «The enactments and instrument specified in Schedule 4 to this Act shall have effect subject to the amendments there specified (being minor amendments or amendme»
+   UK_ukpga_1995_45 section-16-1 → UK_ukpga_1962_58 Act [amended (prosp.)] «The enactments and instrument specified in Schedule 4 to this Act shall have effect subject to the amendments there specified (being minor amendments or amendme»
+   UK_ukpga_1995_45 section-16-1 → UK_ukpga_1966_4 s. 7A(4)(b)(ii) [amended (prosp.)] «The enactments and instrument specified in Schedule 4 to this Act shall have effect subject to the amendments there specified (being minor amendments or amendme»
+
+== provision | the enactments listed in sub-paragraph: 32 changes, round 7
+   UK_ukpga_2022_31 schedule-1-paragraph-1-1 → UK_ukpga_1969_57 s. 3 [words substituted] «The enactments listed in sub-paragraph (2) are amended in accordance with the table. For the following expression wherever it occurs in those enactments (unless»
+   UK_ukpga_2022_31 schedule-1-paragraph-1-1 → UK_ukpga_1972_70 s. 113 [words substituted] «The enactments listed in sub-paragraph (2) are amended in accordance with the table. For the following expression wherever it occurs in those enactments (unless»
+   UK_ukpga_2022_31 schedule-1-paragraph-1-1 → UK_ukpga_1974_37 s. 60 [words substituted] «The enactments listed in sub-paragraph (2) are amended in accordance with the table. For the following expression wherever it occurs in those enactments (unless»
+   UK_ukpga_2022_31 schedule-1-paragraph-1-1 → UK_ukpga_1994_23 s. 41 [words substituted] «The enactments listed in sub-paragraph (2) are amended in accordance with the table. For the following expression wherever it occurs in those enactments (unless»
+
+== provision | in regulation n() of the: 30 changes, round 17
+   UK_uksi_2016_912 regulation-18 → UK_ssi_2011_24 reg. 1(3) [words substituted] «In regulation 1(3) of the Storage of Carbon Dioxide (Licensing etc.) (Scotland) Regulations 2011 (interpretation) , in the definition of “general exploration li»
+   UK_uksi_2008_1482 regulation-8 → UK_uksi_1996_1527 reg. 13(4) [words inserted] «In regulation 13(4) of the LT Regulations as amended by regulations 5(2) to 5(4), regulation 28(4A) of the CCL Regulations inserted by regulation 6(2), and regu»
+   UK_uksi_2008_1482 regulation-8 → UK_uksi_2001_838 reg. 28(4) [words inserted] «In regulation 13(4) of the LT Regulations as amended by regulations 5(2) to 5(4), regulation 28(4A) of the CCL Regulations inserted by regulation 6(2), and regu»
+   UK_uksi_2008_1482 regulation-8 → UK_uksi_2002_761 reg. 29(6) [words inserted] «In regulation 13(4) of the LT Regulations as amended by regulations 5(2) to 5(4), regulation 28(4A) of the CCL Regulations inserted by regulation 6(2), and regu»
+
+== provision | in the definition of q,: 29 changes, round 4
+   UK_uksi_1987_1133 regulation-6-e-i → UK_uksi_1986_1078 reg. 47(8) [word omitted] «in the definition of “body-restraining seat belt”, the word “seat” shall be omitted where it forms part of the expression “body-restraining seat belt”;»
+   UK_uksi_1987_1133 regulation-6-e-iii → UK_uksi_1986_1078 reg. 47(8) [words added] «in the definition of “lap belt”, at the end there shall be added the words “and which is designed for use by an adult”; and»
+   UK_uksi_2016_912 regulation-19-2-b → UK_uksi_2011_1483 reg. 3 [word substituted] «in the definition of “authority”, for “Secretary of State” substitute “OGA”;»
+   UK_ukpga_2011_5 schedule-12-paragraph-182-3 → UK_ukpga_2007_17 s. 41 [words substituted] «In the definition of “postal services”, for “Postal Services Act 2000 (see section 125(1) of that Act)” substitute “ Part 3 of the Postal Services Act 2011 (see»
+
+== provision | schedule n (minor and consequential: 29 changes, round 1
+   UK_ukpga_1999_28 section-40-1 → UK_ukpga_1990_16 s. 1 [amended] «Schedule 5 (minor and consequential amendments) has effect.»
+   UK_ukpga_1999_28 section-40-1 → UK_ukpga_1990_16 s. 2 [amended] «Schedule 5 (minor and consequential amendments) has effect.»
+   UK_ukpga_1999_28 section-40-1 → UK_ukpga_1990_16 s. 5 [amended] «Schedule 5 (minor and consequential amendments) has effect.»
+   UK_ukpga_1999_28 section-40-1 → UK_ukpga_1990_16 s. 6 [amended] «Schedule 5 (minor and consequential amendments) has effect.»
+
+== provision | in subsection ()(), for q: 28 changes, round 1
+   UK_ukpga_2010_33 schedule-13-paragraph-1-2 → UK_ukpga_1979_2 s. 118A(1)(b) [words substituted] «In subsection (1)(b), for “require” substitute “ specify in writing (and different lesser periods may be specified for different cases) ” .»
+   UK_ukpga_2026_23 schedule-16-paragraph-11-b → UK_ukpga_1990_8 s. 322B(1)(a) [words substituted] «in subsection (1)(a), for “London borough” substitute “relevant area” ;»
+   UK_ukpga_2026_23 schedule-16-paragraph-11-c → UK_ukpga_1990_8 s. 322B(1)(b) [words substituted] «in subsection (1)(b), for “Mayor of London” substitute “relevant mayor” ;»
+   UK_uksi_2019_145 schedule-3-paragraph-15-a-i → UK_uksi_2008_1911 reg. 9 [words substituted] «in subsection (1)(c), for “an EEA State” substitute “ any part of the United Kingdom ” ;»
+
+== provision | the regulations specified in column: 27 changes, round 0
+   UK_uksi_1987_491 regulation-19-1 → UK_uksi_1979_628 reg. 16A(3)(b) [words revoked] «The regulations specified in column (1) of Part I of the Schedule to these regulations are revoked to the extent mentioned in column (2) of the Schedule.»
+   UK_uksi_1987_491 regulation-19-1 → UK_uksi_1979_628 reg. 16A(8)-(9) [revoked] «The regulations specified in column (1) of Part I of the Schedule to these regulations are revoked to the extent mentioned in column (2) of the Schedule.»
+   UK_uksi_1987_1968 regulation-48 → UK_uksi_1979_628 reg. 11(1)-(6) [revoked] «The regulations specified in column (1) of Schedule 10 to these regulations are hereby revoked to the extent mentioned in column (2) of that Schedule, in exerci»
+   UK_uksi_1987_1968 regulation-48 → UK_uksi_1979_628 reg. 12 [revoked] «The regulations specified in column (1) of Schedule 10 to these regulations are hereby revoked to the extent mentioned in column (2) of that Schedule, in exerci»
+
+== provision | in subsection (), after q: 27 changes, round 0
+   UK_ukpga_2025_18 schedule-11-paragraph-19-3 → UK_ukpga_2018_12 s. 125(8) [words inserted] «In subsection (8), after “any” insert “whole days that fall within a” .»
+   UK_ukpga_2011_5 schedule-12-paragraph-184-3 → UK_ukpga_2007_17 s. 45(2) [words inserted] «In subsection (2), after “providers” insert “ or postal operators ” .»
+   UK_ukpga_2014_15 schedule-paragraph-8-a → UK_ukpga_1981_53 s. 8(1) [words inserted] «in subsection (1), after “State” insert “ or, as the case may be, the Scottish Ministers ” ,»
+   UK_ukpga_2014_15 schedule-paragraph-8-c → UK_ukpga_1981_53 s. 8(4) [words inserted] «in subsection (4), after “State” insert “ or, as the case may be, the Scottish Ministers ” .»
+
+== provision | schedule n revocations article n: 27 changes, round 0
+   UK_uksi_2004_693 schedule-2 → UK_uksi_1990_161 reg. 8(1) [words revoked] «SCHEDULE 2 REVOCATIONS Article 3 Revocations Household Appliances (Noise Emission) Regulations 1990 In Regulation 8 , in paragraph 1, the reference to section 3»
+   UK_uksi_2004_693 schedule-2 → UK_uksi_1990_161 reg. 8(1)(e) [revoked] «SCHEDULE 2 REVOCATIONS Article 3 Revocations Household Appliances (Noise Emission) Regulations 1990 In Regulation 8 , in paragraph 1, the reference to section 3»
+   UK_uksi_2015_307 schedule-2 → UK_uksi_1970_1667 Order [revoked] «SCHEDULE 2 Revocations Article 3 PART 1 The Smoke Control Areas (Exempted Fireplaces) (England) Order 2001 The Smoke Control Areas (Exempted Fireplaces) (Englan»
+   UK_uksi_2015_307 schedule-2 → UK_uksi_1970_615 Order [revoked] «SCHEDULE 2 Revocations Article 3 PART 1 The Smoke Control Areas (Exempted Fireplaces) (England) Order 2001 The Smoke Control Areas (Exempted Fireplaces) (Englan»
+
+== provision | parts i, ii and iia: 27 changes, round 27
+   UK_ukpga_1995_25 section-5-5-e → UK_ukpga_1990_43 Pt. 2A [amended] «Parts I, II and IIA of the 1990 Act (integrated pollution control etc , waste on land and contaminated land);»
+   UK_ukpga_1995_25 section-5-5-e → UK_ukpga_1990_43 Pt. 1 [amended] «Parts I, II and IIA of the 1990 Act (integrated pollution control etc , waste on land and contaminated land);»
+   UK_ukpga_1995_25 section-5-5-e → UK_ukpga_1990_43 Pt. 2 [amended] «Parts I, II and IIA of the 1990 Act (integrated pollution control etc , waste on land and contaminated land);»
+   UK_ukpga_1995_25 section-5-5-e → UK_ukpga_1990_43 s. 78A [amended] «Parts I, II and IIA of the 1990 Act (integrated pollution control etc , waste on land and contaminated land);»
+
+== provision | for q substitute q ;: 26 changes, round 12
+   UK_uksi_2026_392 schedule-2-paragraph-7-2-a → UK_uksi_2020_1265 art. 22 Table B [sum substituted] «for “79,059,690” substitute “80,063,992” ;»
+   UK_uksi_2026_392 schedule-2-paragraph-7-2-b → UK_uksi_2020_1265 art. 22 Table B [sum substituted] «for “70,127,996” substitute “72,317,337” ;»
+   UK_uksi_2026_392 schedule-2-paragraph-7-2-c → UK_uksi_2020_1265 art. 22 Table B [sum substituted] «for “53,498,502” substitute “55,618,096” ;»
+   UK_uksi_2026_392 schedule-2-paragraph-7-2-d → UK_uksi_2020_1265 art. 22 Table B [sum substituted] «for “50,918,572” substitute “52,964,678” ;»
+
+== provision | section n(), (), (), (),: 24 changes, round 0
+   UK_ukpga_2006_16 schedule-11-paragraph-164-a → UK_ukpga_2000_37 s. 83(1) [words substituted] «section 83(1), (2), (3), (5), (8) and (9);»
+   UK_ukpga_2006_16 schedule-11-paragraph-164-a → UK_ukpga_2000_37 s. 83(2) [words substituted] «section 83(1), (2), (3), (5), (8) and (9);»
+   UK_ukpga_2006_16 schedule-11-paragraph-164-a → UK_ukpga_2000_37 s. 83(3) [words substituted] «section 83(1), (2), (3), (5), (8) and (9);»
+   UK_ukpga_2006_16 schedule-11-paragraph-164-a → UK_ukpga_2000_37 s. 83(5) [words substituted] «section 83(1), (2), (3), (5), (8) and (9);»
+
+== provision | schedule changes in terminology or: 24 changes, round 4
+   UK_uksi_2012_1809 schedule → UK_ukpga_1972_70 s. 79(2A) [words substituted] «SCHEDULE Changes in Terminology or Numbering Article 3 PART 1 Acts of Parliament 1 1972 c.70; section 79(2A) was amended by the Electoral Administration Act 200»
+   UK_uksi_2012_1809 schedule → UK_ukpga_1979_2 s. 52(2) [words substituted] «SCHEDULE Changes in Terminology or Numbering Article 3 PART 1 Acts of Parliament 1 1972 c.70; section 79(2A) was amended by the Electoral Administration Act 200»
+   UK_uksi_2012_1809 schedule → UK_ukpga_1989_29 s. 43(3)(c) [words substituted] «SCHEDULE Changes in Terminology or Numbering Article 3 PART 1 Acts of Parliament 1 1972 c.70; section 79(2A) was amended by the Electoral Administration Act 200»
+   UK_uksi_2012_1809 schedule → UK_ukpga_1989_29 s. 43(3)(d) [words substituted] «SCHEDULE Changes in Terminology or Numbering Article 3 PART 1 Acts of Parliament 1 1972 c.70; section 79(2A) was amended by the Electoral Administration Act 200»
+
+== provision | for q substitute q ,: 23 changes, round 2
+   UK_ukpga_2014_26 section-100-3-a → UK_ukpga_1996_8 s. 42(2) [sum substituted] «for “£80” substitute “ £82.60 ” , and»
+   UK_asp_2003_3 schedule-4-paragraph-3-5-b → UK_ukpga_1980_45 s. 24(3) [words substituted] «for “the water authority and the authority” substitute “ Scottish Water and Scottish Water ” ,»
+   UK_asp_2003_3 schedule-4-paragraph-3-6-a → UK_ukpga_1980_45 s. 24(4) [words substituted] «for “the water authority” substitute “ Scottish Water ” ,»
+   UK_ukpga_2014_15 schedule-paragraph-6-b-i → UK_ukpga_1981_53 s. 5(2) [words substituted] «for “section 2(3)” substitute “ section 2(3A) ” ,»
+
+== provision | for q substitute q .: 21 changes, round 2
+   UK_ukpga_2014_26 section-100-3-b → UK_ukpga_1996_8 s. 42(2) [sum substituted] «for “£2.50” substitute “ £2.60 ” .»
+   UK_uksi_2026_392 schedule-2-paragraph-7-2-e → UK_uksi_2020_1265 art. 22 Table B [sum substituted] «for “49,320,164” substitute “51,284,366” .»
+   UK_ukpga_2014_15 schedule-paragraph-11-b-ii → UK_ukpga_1981_53 s. 11(2) [words substituted] «for “may determine with the approval” substitute “ or, as the case may be, the Scottish Ministers, may determine with the approval (in the case of an appointmen»
+   UK_ukpga_2023_30 schedule-13-paragraph-4-3-b → UK_ukpga_1979_2 s. 114(3) [words substituted] «for “substance or liquid” substitute “substance, product or liquid” .»
+
+== provision | the modifications mentioned in part: 21 changes, round 0
+   UK_uksi_1999_1747 article-3 → UK_ukpga_1967_10 s. 1 [amended] «The modifications mentioned in Part II of each of Schedules 2 to 23 to this Order and the provisions set out in Parts III and IV of Schedule 16 to this Order, w»
+   UK_uksi_1999_1747 article-3 → UK_ukpga_1967_10 s. 3 5 [amended] «The modifications mentioned in Part II of each of Schedules 2 to 23 to this Order and the provisions set out in Parts III and IV of Schedule 16 to this Order, w»
+   UK_uksi_1999_1747 article-3 → UK_ukpga_1967_10 s. 6 8 [amended] «The modifications mentioned in Part II of each of Schedules 2 to 23 to this Order and the provisions set out in Parts III and IV of Schedule 16 to this Order, w»
+   UK_uksi_1999_1747 article-3 → UK_ukpga_1967_10 s. 10 [amended] «The modifications mentioned in Part II of each of Schedules 2 to 23 to this Order and the provisions set out in Parts III and IV of Schedule 16 to this Order, w»
+
+== provision | the provisions of the n: 20 changes, round 0
+   UK_uksi_1999_2024 regulation-47-1 → UK_ukpga_1954_70 s. 1 [repealed] «The provisions of the 1954 Act specified in column 1 of Part 1 of Schedule 2 are repealed to the extent specified in the corresponding entry in column 3 of that»
+   UK_uksi_1999_2024 regulation-47-1 → UK_ukpga_1954_70 s. 98 - 103 105 107 108 - 111 113 115 [repealed] «The provisions of the 1954 Act specified in column 1 of Part 1 of Schedule 2 are repealed to the extent specified in the corresponding entry in column 3 of that»
+   UK_uksi_1999_2024 regulation-47-1 → UK_ukpga_1954_70 s. 123 [repealed in part] «The provisions of the 1954 Act specified in column 1 of Part 1 of Schedule 2 are repealed to the extent specified in the corresponding entry in column 3 of that»
+   UK_uksi_1999_2024 regulation-47-1 → UK_ukpga_1954_70 s. 123 [repealed in part] «The provisions of the 1954 Act specified in column 1 of Part 1 of Schedule 2 are repealed to the extent specified in the corresponding entry in column 3 of that»
+
+== provision | in each of the enactments: 19 changes, round 3
+   UK_ukpga_2005_4 schedule-11-paragraph-4 → UK_ukpga_1954_70 Act [words substituted] «In each of the enactments listed in sub-paragraph (3) for “Supreme Court” or “Supreme Court of Judicature” in each place substitute “Senior Courts” . This parag»
+   UK_ukpga_2005_4 schedule-11-paragraph-4 → UK_ukpga_1966_4 Act [words substituted] «In each of the enactments listed in sub-paragraph (3) for “Supreme Court” or “Supreme Court of Judicature” in each place substitute “Senior Courts” . This parag»
+   UK_ukpga_2005_4 schedule-11-paragraph-4 → UK_ukpga_1972_70 Act [words substituted] «In each of the enactments listed in sub-paragraph (3) for “Supreme Court” or “Supreme Court of Judicature” in each place substitute “Senior Courts” . This parag»
+   UK_ukpga_2005_4 schedule-11-paragraph-4 → UK_ukpga_1988_52 Act [words substituted] «In each of the enactments listed in sub-paragraph (3) for “Supreme Court” or “Supreme Court of Judicature” in each place substitute “Senior Courts” . This parag»
+
+== provision | the maximum fine for each: 18 changes, round 0
+   UK_ukpga_2004_18 section-40-1 → UK_ukpga_1991_22 s. 51(2) [words substituted] «The maximum fine for each offence under a provision of the New Roads and Street Works Act 1991 (c. 22) (in this Part referred to as “ the 1991 Act ”) listed in »
+   UK_ukpga_2004_18 section-40-1 → UK_ukpga_1991_22 s. 54(5) [words substituted] «The maximum fine for each offence under a provision of the New Roads and Street Works Act 1991 (c. 22) (in this Part referred to as “ the 1991 Act ”) listed in »
+   UK_ukpga_2004_18 section-40-1 → UK_ukpga_1991_22 s. 55(5) [words substituted] «The maximum fine for each offence under a provision of the New Roads and Street Works Act 1991 (c. 22) (in this Part referred to as “ the 1991 Act ”) listed in »
+   UK_ukpga_2004_18 section-40-1 → UK_ukpga_1991_22 s. 56(3) [words substituted] «The maximum fine for each offence under a provision of the New Roads and Street Works Act 1991 (c. 22) (in this Part referred to as “ the 1991 Act ”) listed in »
+
+== provision | schedule n increase in maximum: 18 changes, round 0
+   UK_asp_2005_12 schedule-3 → UK_ukpga_1991_22 s. 110(2) [words substituted] «SCHEDULE 3 Increase in maximum fines for certain summary offences under the 1991 Act (introduced by section 33) Provision specifying fine Brief description of o»
+   UK_asp_2005_12 schedule-3 → UK_ukpga_1991_22 s. 113(5) [words substituted] «SCHEDULE 3 Increase in maximum fines for certain summary offences under the 1991 Act (introduced by section 33) Provision specifying fine Brief description of o»
+   UK_asp_2005_12 schedule-3 → UK_ukpga_1991_22 s. 114(5) [words substituted] «SCHEDULE 3 Increase in maximum fines for certain summary offences under the 1991 Act (introduced by section 33) Provision specifying fine Brief description of o»
+   UK_asp_2005_12 schedule-3 → UK_ukpga_1991_22 s. 115(3) [words substituted] «SCHEDULE 3 Increase in maximum fines for certain summary offences under the 1991 Act (introduced by section 33) Provision specifying fine Brief description of o»
+
+== provision | schedule changes of terminology section: 18 changes, round 0
+   UK_ukpga_2008_7 schedule → UK_ukpga_1972_68 s. 1(2) [words substituted] «SCHEDULE Changes of Terminology Section 3 Part 1 European Communities Act 1972 Provision of the European Communities Act 1972 (c. 68) Existing expression Substi»
+   UK_ukpga_2008_7 schedule → UK_ukpga_1972_68 s. 1(3) [words substituted] «SCHEDULE Changes of Terminology Section 3 Part 1 European Communities Act 1972 Provision of the European Communities Act 1972 (c. 68) Existing expression Substi»
+   UK_ukpga_2008_7 schedule → UK_ukpga_1972_68 s. 2(1) [words substituted] «SCHEDULE Changes of Terminology Section 3 Part 1 European Communities Act 1972 Provision of the European Communities Act 1972 (c. 68) Existing expression Substi»
+   UK_ukpga_2008_7 schedule → UK_ukpga_1972_68 s. 2(2) [words substituted] «SCHEDULE Changes of Terminology Section 3 Part 1 European Communities Act 1972 Provision of the European Communities Act 1972 (c. 68) Existing expression Substi»
+
+== provision | the existing text becomes paragraph: 17 changes, round 9
+   UK_uksi_2022_41 regulation-6-4-a → UK_uksi_2015_508 reg. 11(1) [reg. 11 renumbered as reg. 11(1)] «the existing text becomes paragraph (1);»
+   UK_ssi_2019_26 regulation-16-2-a → UK_ssi_2008_170 reg. 2(1) [reg. 2 renumbered as reg. 2(1)] «the existing text becomes paragraph (1),»
+   UK_uksi_2016_248 regulation-20-2 → UK_uksi_2006_1937 reg. 2(1) [reg. 2 renumbered as reg. 2(1)] «The existing text becomes paragraph (1).»
+   UK_uksi_2019_35 schedule-2-paragraph-2-2 → UK_ssi_2009_140 art. 22B(1) [art. 22B renumbered as art. 22B(1)] «The existing text becomes paragraph (1).»
+
+== provision | schedule n modifications to regulations: 17 changes, round 17
+   UK_uksi_1993_1897 schedule-6 → UK_uksi_1956_1943 reg. 3(b)(vi) [words substituted] «SCHEDULE 6 MODIFICATIONS TO REGULATIONS RELATING TO DEPUTIES Regulation 43(2) Column 1 Column 2 Provision Extent of modification The Coal and Other Mines (Venti»
+   UK_uksi_1993_1897 schedule-6 → UK_uksi_1956_1943 reg. 10(4) [words substituted] «SCHEDULE 6 MODIFICATIONS TO REGULATIONS RELATING TO DEPUTIES Regulation 43(2) Column 1 Column 2 Provision Extent of modification The Coal and Other Mines (Venti»
+   UK_uksi_1993_1897 schedule-6 → UK_uksi_1956_1943 reg. 11(9) [words substituted] «SCHEDULE 6 MODIFICATIONS TO REGULATIONS RELATING TO DEPUTIES Regulation 43(2) Column 1 Column 2 Provision Extent of modification The Coal and Other Mines (Venti»
+   UK_uksi_1993_1897 schedule-6 → UK_uksi_1956_1943 reg. 16(1) [words substituted] «SCHEDULE 6 MODIFICATIONS TO REGULATIONS RELATING TO DEPUTIES Regulation 43(2) Column 1 Column 2 Provision Extent of modification The Coal and Other Mines (Venti»
+
+== provision | this section applies, subject to: 17 changes, round 0
+   UK_ukpga_1994_9 section-9 → UK_ukpga_1979_2 s. 92(6) [amended] «This section applies, subject to section 10 below, to any conduct in relation to which any enactment (including an enactment contained in this Act or in any Act»
+   UK_ukpga_1994_9 section-9 → UK_ukpga_1979_2 s. 92(8) [substituted] «This section applies, subject to section 10 below, to any conduct in relation to which any enactment (including an enactment contained in this Act or in any Act»
+   UK_ukpga_1994_9 section-9 → UK_ukpga_1979_2 s. 93(6) [amended] «This section applies, subject to section 10 below, to any conduct in relation to which any enactment (including an enactment contained in this Act or in any Act»
+   UK_ukpga_1994_9 section-9 → UK_ukpga_1979_2 s. 100J [amended] «This section applies, subject to section 10 below, to any conduct in relation to which any enactment (including an enactment contained in this Act or in any Act»
+
+== provision | the merchant shipping (oil pollution): 17 changes, round 0
+   UK_ukpga_1994_28 section-6 → UK_ukpga_1971_59 s. 1(2) [amended (prosp.)] «The Merchant Shipping (Oil Pollution) Act 1971 shall be amended as provided in Schedule 3 (amendments imposing on other ships liability for oil pollution corres»
+   UK_ukpga_1994_28 section-6 → UK_ukpga_1971_59 s. 1A [added (1.10.1994) and substituted (prosp.)] «The Merchant Shipping (Oil Pollution) Act 1971 shall be amended as provided in Schedule 3 (amendments imposing on other ships liability for oil pollution corres»
+   UK_ukpga_1994_28 section-6 → UK_ukpga_1971_59 s. 2 [amended (prosp.)] «The Merchant Shipping (Oil Pollution) Act 1971 shall be amended as provided in Schedule 3 (amendments imposing on other ships liability for oil pollution corres»
+   UK_ukpga_1994_28 section-6 → UK_ukpga_1971_59 s. 2A [added (1.10.1994) and repealed (prosp.)] «The Merchant Shipping (Oil Pollution) Act 1971 shall be amended as provided in Schedule 3 (amendments imposing on other ships liability for oil pollution corres»
+
+== provision | after section n of the: 16 changes, round 2
+   UK_wsi_2014_2773 article-2-1 → UK_ukpga_1990_8 s. 319B [inserted] «After section 319A of the Town and Country Planning 1990 Act (the title of which becomes “Determination of procedure for certain proceedings: England”) insert— »
+   UK_ukpga_2005_14 section-20 → UK_ukpga_1993_43 s. 76A [inserted] «After section 76 of the 1993 Act (functions of Rail Passengers' Council)— Delegation of duties under section 76(7A) The Rail Passengers' Council and any other p»
+   UK_asp_2009_6 section-89 → UK_ukpga_1975_23 s. 12C [inserted] «After section 12B of the 1975 Act, insert— Flood plans: Scotland The Scottish Ministers may by regulations made by statutory instrument provide that a flood pla»
+   UK_asp_2009_6 section-88 → UK_ukpga_1975_23 s. 12ZA [inserted] «After section 12 of the 1975 Act, insert— Incident reporting: Scotland The Scottish Ministers may by regulations made by statutory instrument make provision for»
+
+== provision | the existing text becomes subsection: 16 changes, round 2
+   UK_ukpga_2014_26 section-67-4-a → UK_ukpga_2001_2 s. 160(1) [s. 160 renumbered as s. 160(1)] «the existing text becomes subsection (1), and»
+   UK_ukpga_2018_12 schedule-19-paragraph-210-2 → UK_ukpga_2017_3 s. 50(1) [s. 50 renumbered as s. 50(1)] «The existing text becomes subsection (1).»
+   UK_ukpga_2013_24 schedule-2-paragraph-7-2 → UK_ukpga_1992_52 s. 145C(1) [s. 145C renumbered as s. 145C(1)] «The existing text becomes subsection (1).»
+   UK_ukpga_2013_24 schedule-2-paragraph-9-2 → UK_ukpga_1992_52 s. 171(1) [s. 171 renumbered as s. 171(1)] «The existing text becomes subsection (1).»
+
+== provision | the enactments specified in schedule: 16 changes, round 3
+   UK_ukpga_1996_56 section-582-1 → UK_ukpga_1993_38 s. 6(1)(l) [amended] «The enactments specified in Schedule 37 are amended in accordance with that Schedule, the amendments being consequential on the provisions of this Act.»
+   UK_ukpga_1995_38 section-15-2 → UK_ukpga_1979_2 s. 75A(6)(a) [repealed (prosp.)] «The enactments specified in Schedule 2 are repealed to the extent specified.»
+   UK_ukpga_1995_38 section-15-2 → UK_ukpga_1979_2 s. 118A(6)(a) [repealed (prosp.)] «The enactments specified in Schedule 2 are repealed to the extent specified.»
+   UK_ukpga_1995_38 section-15-1 → UK_ukpga_1994_23 s. 96(1) (defns. of "document" and "copy") [added] «The enactments specified in Schedule 1 are amended in accordance with that Schedule, the amendments being consequential on the provisions of this Act.»
+
+== provision | schedule n shall have effect—: 16 changes, round 3
+   UK_ukpga_1994_19 section-20-4 → UK_ukpga_1983_35 s. 10 (defn. of "Park board") [added] «Schedule 6 shall have effect— Part I making minor and consequential amendments to the 1972 Act in relation to National Parks and countryside functions, and Part»
+   UK_ukpga_1994_19 section-20-4 → UK_ukpga_1983_35 s. 10 (defn. of "Park board") para. (b) [amended (prosp.)] «Schedule 6 shall have effect— Part I making minor and consequential amendments to the 1972 Act in relation to National Parks and countryside functions, and Part»
+   UK_ukpga_1994_19 section-20-4 → UK_ukpga_1990_43 s. 88(10) [words added] «Schedule 6 shall have effect— Part I making minor and consequential amendments to the 1972 Act in relation to National Parks and countryside functions, and Part»
+   UK_ukpga_1994_19 section-20-4 → UK_ukpga_1990_8 s. 4(1)-(3) [amended] «Schedule 6 shall have effect— Part I making minor and consequential amendments to the 1972 Act in relation to National Parks and countryside functions, and Part»
+
+== provision | the existing provision becomes subsection: 15 changes, round 4
+   UK_anaw_2015_4 schedule-2-paragraph-6-2 → UK_ukpga_1981_69 s. 27AA(1) [s. 27AA renumbered as s. 27AA(1)] «The existing provision becomes subsection (1).»
+   UK_anaw_2015_4 section-42-2 → UK_ukpga_1990_8 s. 9(1) [s. 9 renumbered as s. 9(1)] «The existing provision becomes subsection (1) of that section.»
+   UK_ukpga_2022_30 schedule-5-paragraph-58-2 → UK_ukpga_1984_55 s. 94(1) [s. 94 renumbered as s. 94(1)] «The existing provision becomes subsection (1) of that section.»
+   UK_ukpga_2022_30 schedule-5-paragraph-72-2 → UK_ukpga_1984_55 s. 112(1) [s. 112 renumbered as s. 112(1)] «The existing provision becomes subsection (1) of that section.»
+
+== provision | paragraphs () and () of: 15 changes, round 3
+   UK_wsi_2004_3156 article-5-a → UK_ukpga_1990_8 s. 171C(3)(c) [word inserted] «paragraphs (c) and (e) of subsection (3) of section 171C (power to require information about activities on land); and»
+   UK_wsi_2004_3156 article-5-a → UK_ukpga_1990_8 s. 171C(3)(e) [word inserted] «paragraphs (c) and (e) of subsection (3) of section 171C (power to require information about activities on land); and»
+   UK_wsi_2004_3156 article-5-b → UK_ukpga_1990_8 s. 330(2)(b) [word inserted] «paragraphs (b) and (e) of subsection (2) of section 330 (power to require information as to interests in land),»
+   UK_wsi_2004_3156 article-5-b → UK_ukpga_1990_8 s. 330(2)(e) [word inserted] «paragraphs (b) and (e) of subsection (2) of section 330 (power to require information as to interests in land),»
+
+== provision | in section n of fa: 15 changes, round 0
+   UK_ukpga_2010_33 section-24-1 → UK_ukpga_1996_8 s. 42(4)-(6) [substituted for s. 42(4)] «In section 42 of FA 1996 (amount of landfill tax), for subsection (4) substitute— The Treasury must— set criteria to be considered in determining from time to t»
+   UK_ukpga_2023_30 section-332-1 → UK_ukpga_2003_14 s. 61A(3) [words substituted] «In section 61A of FA 2003 (relief from stamp duty land tax in case of transactions relating to land in designated sites), in subsection (3), for “30 September 2»
+   UK_ukpga_2023_30 section-314-1 → UK_ukpga_2003_14 s. 71(5) [inserted] «In section 71 of FA 2003 (certain acquisitions by registered social landlord), after subsection (4) insert— In this section “public subsidy” also means any gran»
+   UK_ukpga_2012_14 schedule-24-paragraph-48 → UK_ukpga_1997_16 s. 10(3AA) [substituted] «In section 10 of FA 1997 (gaming duty), for subsection (3AA) substitute— This section does not apply to the playing of a game in respect of which— bingo duty or»
+
+== provision | subsection ();: 15 changes, round 0
+   UK_ukpga_2012_10 schedule-10-paragraph-3-b → UK_ukpga_1968_27 s. 21(2B) [omitted] «subsection (2B);»
+   UK_ukpga_2024_13 schedule-27-paragraph-8-6-b → UK_ukpga_2010_15 s. 140AA(3) [words substituted] «subsection (3);»
+   UK_ukpga_2024_13 schedule-27-paragraph-8-4-b → UK_ukpga_2010_15 s. 140AA(5) [words substituted] «subsection (5);»
+   UK_ukpga_2024_13 schedule-27-paragraph-8-4-c → UK_ukpga_2010_15 s. 140AA(6) [words substituted] «subsection (6);»
+
+== provision | in subsection (), for the: 15 changes, round 1
+   UK_ukpga_1982_49 section-17-1-b → UK_ukpga_1988_52 s. 57(2)(a) [words substituted] «in subsection (6), for the word “he” there shall be substituted the words “the Secretary of State or that authority”.»
+   UK_ukpga_2023_30 schedule-13-paragraph-23-2 → UK_ukpga_1979_2 s. 112(3) [words substituted] «In subsection (3), for the words from “distiller” to “occupier” substitute “a person who produces alcoholic products or an occupier” .»
+   UK_ukpga_2023_30 schedule-13-paragraph-26-2 → UK_ukpga_1979_2 s. 160(2) [words substituted] «In subsection (2), for the words from “any of the following” to “cider” substitute “a revenue trader to whom this subsection applies” .»
+   UK_ukpga_2023_30 schedule-23-paragraph-2-c → UK_ukpga_2003_14 s. 61A(6) [words substituted] «in subsection (6), for the words from ““freeport tax site”” to the end substitute ““ special tax site ” means an area for the time being designated under sectio»
+
+== provision | in subsection (), after paragraph: 15 changes, round 2
+   UK_ukpga_2025_36 schedule-2-paragraph-24-2 → UK_ukpga_1996_18 s. 202(2)(aa) [inserted] «In subsection (2), after paragraph (a) insert— Chapters 2 to 6 of Part 2A (including Schedule A1), .»
+   UK_ukpga_2025_36 schedule-2-paragraph-26-2 → UK_ukpga_1996_18 s. 206(2)(aa) [inserted] «In subsection (2), after paragraph (a) insert— Chapters 2 to 6 of Part 2A (including Schedule A1), .»
+   UK_ukpga_2023_56 section-82-2-a → UK_ukpga_2006_46 s. 1084(1) [words inserted] «in subsection (1), after paragraph (c) insert— and a reference in this section to “the relevant date” is to the date on which the company was dissolved, the ove»
+   UK_ukpga_2026_11 schedule-14-paragraph-3 → UK_ukpga_2001_9 s. 17(2)(ca)(cb) [inserted] «In subsection (2), after paragraph (c) insert— it has on or after the day appointed under section 18(4) of the Scotland Act 2016 (and prior to being moved to En»
+
+== provision | for the purpose of enabling: 15 changes, round 12
+   UK_ukpga_1994_28 section-5-1 → UK_ukpga_1971_59 s. 19(1) (defn. of "the Convention") [amended (prosp.)] «For the purpose of enabling effect to be given to the 1992 Protocols, the Merchant Shipping (Oil Pollution) Act 1971 and the Merchant Shipping Act 1974 shall ha»
+   UK_ukpga_1994_28 section-5-1 → UK_ukpga_1974_43 s. 1(1) (defns. of "Liability Convention" and "Fund Convention") [amended (prosp.)] «For the purpose of enabling effect to be given to the 1992 Protocols, the Merchant Shipping (Oil Pollution) Act 1971 and the Merchant Shipping Act 1974 shall ha»
+   UK_uksi_1999_1756 article-2 → UK_ukpga_1962_58 s. 1 [amended] «For the purpose of enabling or otherwise facilitating the transfer of a function to the Scottish Ministers by virtue of section 53 or 63 of the 1998 Act, the en»
+   UK_uksi_1999_1756 article-2 → UK_ukpga_1962_58 s. 4 [amended] «For the purpose of enabling or otherwise facilitating the transfer of a function to the Scottish Ministers by virtue of section 53 or 63 of the 1998 Act, the en»
+
+== provision | schedule n makes minor and: 14 changes, round 0
+   UK_ukpga_1994_19 section-66-5 → UK_ukpga_1972_70 s. 101(7A) [added] «Schedule 15 makes minor and consequential amendments of the 1972 Act.»
+   UK_ukpga_1994_19 section-66-5 → UK_ukpga_1972_70 s. 101(10A) [added] «Schedule 15 makes minor and consequential amendments of the 1972 Act.»
+   UK_ukpga_1994_19 section-66-5 → UK_ukpga_1972_70 s. 137(4C) [added] «Schedule 15 makes minor and consequential amendments of the 1972 Act.»
+   UK_ukpga_1994_19 section-38-11 → UK_ukpga_1992_14 s. 32(8A)(8B) [added (prosp.)] «Schedule 12 makes minor and consequential amendments with respect to funds.»
+
+== provision | in these regulations, unless the: 14 changes, round 10
+   UK_uksi_1994_1056 regulation-1-3 → UK_ukpga_1972_52 Act [amended] «In these Regulations, unless the context otherwise requires— “the 1990 Act ” means the Environmental Protection Act 1990; “the 1991 Regulations ” means the Envi»
+   UK_uksi_1994_1056 regulation-1-3 → UK_ukpga_1974_40 s. 31-56 (Pt. 2) [amended] «In these Regulations, unless the context otherwise requires— “the 1990 Act ” means the Environmental Protection Act 1990; “the 1991 Regulations ” means the Envi»
+   UK_uksi_1994_1056 regulation-1-3 → UK_ukpga_1974_40 s. 1-30 (Pt. 1) [amended] «In these Regulations, unless the context otherwise requires— “the 1990 Act ” means the Environmental Protection Act 1990; “the 1991 Regulations ” means the Envi»
+   UK_uksi_1994_1056 regulation-1-3 → UK_ukpga_1990_43 Pt. 2 [amended] «In these Regulations, unless the context otherwise requires— “the 1990 Act ” means the Environmental Protection Act 1990; “the 1991 Regulations ” means the Envi»
+
+== provision | schedule statutory instruments amended regulation: 14 changes, round 14
+   UK_uksi_2010_680 schedule → UK_uksi_1990_660 reg. 3 [words inserted] «SCHEDULE Statutory instruments amended Regulation 24 Column 1 Column 2 The Merchant Shipping (Emergency Information for Passengers) Regulations 1990 In regulati»
+   UK_uksi_2010_680 schedule → UK_uksi_1990_660 reg. 3A [inserted] «SCHEDULE Statutory instruments amended Regulation 24 Column 1 Column 2 The Merchant Shipping (Emergency Information for Passengers) Regulations 1990 In regulati»
+   UK_uksi_2010_680 schedule → UK_uksi_1998_1011 reg. 1(7)(b)(vi) [inserted] «SCHEDULE Statutory instruments amended Regulation 24 Column 1 Column 2 The Merchant Shipping (Emergency Information for Passengers) Regulations 1990 In regulati»
+   UK_uksi_2010_680 schedule → UK_uksi_1998_2515 reg. 3A [words inserted] «SCHEDULE Statutory instruments amended Regulation 24 Column 1 Column 2 The Merchant Shipping (Emergency Information for Passengers) Regulations 1990 In regulati»
+
+== provision | in regulation n();: 14 changes, round 14
+   UK_uksi_2025_82 schedule-15-paragraph-44-a → UK_uksi_2019_1350 reg. 9(1) [word substituted] «in regulation 9(1);»
+   UK_uksi_2025_82 schedule-15-paragraph-44-b → UK_uksi_2019_1350 reg. 27(1) [word substituted] «in regulation 27(1);»
+   UK_uksi_2025_82 schedule-15-paragraph-44-c → UK_uksi_2019_1350 reg. 28(1) [word substituted] «in regulation 28(1);»
+   UK_uksi_2025_82 schedule-15-paragraph-44-e → UK_uksi_2019_1350 reg. 30(1) [word substituted] «in regulation 30(1);»
+
+== provision | section n()();: 13 changes, round 0
+   UK_uksi_2006_246 schedule-2-paragraph-10-b → UK_ukpga_1996_18 s. 61(1)(a) [words substituted] «section 61(1)(a);»
+   UK_ukpga_2006_16 schedule-11-paragraph-164-c → UK_ukpga_2000_37 s. 86(6)(a) [words substituted] «section 86(6)(a);»
+   UK_ukpga_2014_6 section-132-5-a → UK_ukpga_1996_18 s. 47E(1)(b) [repealed] «section 47E(1)(b);»
+   UK_ukpga_2023_55 section-130-8-a → UK_ukpga_1990_10 s. 21A(9)(a) [omitted] «section 21A(9)(a);»
+
+== provision | in sub-paragraph (), for q: 13 changes, round 2
+   UK_wsi_2013_755 schedule-4-paragraph-250-3 → UK_uksi_2006_641 rule 7(8)(e) [words substituted] «In sub-paragraph (e), for “the Countryside Council for Wales” substitute “ the Natural Resources Body for Wales ” .»
+   UK_wsi_2013_755 schedule-4-paragraph-251-3 → UK_uksi_2006_641 rule 8(4)(e) [words substituted] «In sub-paragraph (e), for “the Countryside Council for Wales” substitute “ the Natural Resources Body for Wales ” .»
+   UK_uksi_2019_145 schedule-3-paragraph-16-c-iii-bb → UK_uksi_2008_1911 reg. 10 [words substituted] «in sub-paragraph (ii), for “so drawn up” substitute “ drawn up in accordance with the requirements of this Part of this Act ” ;»
+   UK_wsi_2024_924 regulation-97-d-i → UK_uksi_2017_544 reg. 3(1) [words substituted] «in sub-paragraph (a), for “section 12 or 19 of the Listed Buildings Act” substitute “section 94 or 99 of the 2023 Act” ;»
+
+== provision | in section n() of fa: 13 changes, round 0
+   UK_ukpga_2014_26 section-121-1 → UK_ukpga_1997_16 s. 11(2) table [substituted] «In section 11(2) of FA 1997 (rates of gaming duty) for the table substitute— TABLE Part of gross gaming yield Rate The first £2,302,000 15 per cent The next £1,»
+   UK_ukpga_2013_29 section-183-1 → UK_ukpga_1997_16 s. 11(2) table [substituted] «In section 11(2) of FA 1997 (rates of gaming duty), for the table substitute— TABLE Part of gross gaming yield Rate The first £2,242,500 15 per cent The next £1»
+   UK_ukpga_2008_9 schedule-32-paragraph-19 → UK_ukpga_1990_29 s. 108(1) [words inserted] «In section 108(1) of FA 1990 (abolition of stamp duty on transfer of securities), insert at the end “ or section 67(3) or 70(3) of the Finance Act 1986 (stamp d»
+   UK_ukpga_2023_30 section-329-1 → UK_ukpga_2021_26 s. 45(1) [sum substituted] «In section 45(1) of FA 2021 (rate of plastic packaging tax), for “£200” substitute “£210.82” .»
+
+== provision | schedule n consequential amendments regulation: 13 changes, round 7
+   UK_uksi_1999_3242 schedule-2 → UK_uksi_1977_500 reg. 4A(1)(b) [words substituted] «SCHEDULE 2 CONSEQUENTIAL AMENDMENTS Regulation 29 Column 1 Column 2 Column 3 Description of Instrument References Extent of Modification The Safety Representati»
+   UK_uksi_1999_3242 schedule-2 → UK_uksi_1989_971 reg. 23(4) [words substituted] «SCHEDULE 2 CONSEQUENTIAL AMENDMENTS Regulation 29 Column 1 Column 2 Column 3 Description of Instrument References Extent of Modification The Safety Representati»
+   UK_uksi_1999_3242 schedule-2 → UK_uksi_1995_2038 reg. 7(5) [words substituted] «SCHEDULE 2 CONSEQUENTIAL AMENDMENTS Regulation 29 Column 1 Column 2 Column 3 Description of Instrument References Extent of Modification The Safety Representati»
+   UK_uksi_1999_3242 schedule-2 → UK_uksi_1996_1513 reg. 3(b) [words substituted] «SCHEDULE 2 CONSEQUENTIAL AMENDMENTS Regulation 29 Column 1 Column 2 Column 3 Description of Instrument References Extent of Modification The Safety Representati»
+
+== provision | after subsection () insert— in: 13 changes, round 0
+   UK_uksi_2026_881 article-7-16-b → UK_ukpga_1992_52 s. 233(5) [inserted] «after subsection (4) insert— In this section “ voting materials ” means such of the following as are relevant— voting papers; electronic voting forms. .»
+   UK_ukpga_2026_23 schedule-16-paragraph-11-f → UK_ukpga_1990_8 s. 322B(6A) [inserted] «After subsection (6) insert— In this section— “ relevant area ” means a London borough or the area (or part of the area) of a mayoral combined authority or mayo»
+   UK_ukpga_2009_10 schedule-11-paragraph-14-9 → UK_ukpga_2001_2 s. 45D(11) [inserted] «After subsection (10) insert— In this section— “applicable CO 2 emissions figure” and “qualifying emissions certificate” have the meanings given in section 268C»
+   UK_ukpga_2009_10 schedule-32-paragraph-1-3 → UK_ukpga_2001_2 s. 61(5A) [inserted] «After subsection (5) insert— In item 5A of the Table “ qualifying lease payments ” means the minimum payments under the lease (including any initial payment), e»
+
+== provision | the words q become paragraph: 13 changes, round 1
+   UK_asp_2011_3 section-30-2-a → UK_ukpga_1997_9 s. 82(2)(a) [words in s. 82(2) renumbered as s. 82(2)(a)] «the words “shall be exercisable by statutory instrument” become paragraph (a) of that subsection,»
+   UK_asp_2011_3 section-30-5-a → UK_ukpga_1997_9 s. 82(4)(a) [words in s. 82(4) renumbered as s. 82(4)(a)] «the words “shall be exercisable by statutory instrument” become paragraph (a) of that subsection,»
+   UK_ukpga_2024_13 schedule-9-paragraph-8-3-a → UK_ukpga_2002_40 s. 167A(1)(a) [words in s. 167A(1) renumbered as s. 167A(1)(a)] «the words “an enforcement undertaking or enforcement order” become paragraph (a);»
+   UK_asp_2024_15 section-5-2-c → UK_asp_2009_12 s. 35(5)(a) [words renumbered as s. 35(5)(a)] «the words “each of the sectors mentioned in subsection (3)” become paragraph (a),»
+
+== provision | for the words q wherever: 13 changes, round 4
+   UK_ukpga_2005_4 schedule-11-paragraph-1-2 → UK_ukpga_1933_13 Blanket Amendment [words substituted] «For the words “Supreme Court Act 1981” wherever they occur in any enactment substitute “Senior Courts Act 1981” .»
+   UK_ukpga_2005_4 schedule-11-paragraph-1-2 → UK_ukpga_1968_72 Blanket Amendment [words substituted] «For the words “Supreme Court Act 1981” wherever they occur in any enactment substitute “Senior Courts Act 1981” .»
+   UK_ukpga_2005_4 schedule-11-paragraph-1-2 → UK_ukpga_1982_16 Blanket Amendment [words substituted] «For the words “Supreme Court Act 1981” wherever they occur in any enactment substitute “Senior Courts Act 1981” .»
+   UK_ukpga_2005_4 schedule-11-paragraph-1-2 → UK_ukpga_1984_55 Blanket Amendment [words substituted] «For the words “Supreme Court Act 1981” wherever they occur in any enactment substitute “Senior Courts Act 1981” .»
+
+== provision | for the words in the: 13 changes, round 1
+   UK_ukpga_2005_4 schedule-11-paragraph-5 → UK_ukpga_1986_14 Blanket Amendment [words substituted] «For the words in the first column wherever they occur in any enactment substitute the words in the second column— Old reference New reference “solicitor of the »
+   UK_ukpga_2005_4 schedule-11-paragraph-5 → UK_ukpga_1995_21 Blanket Amendment [words substituted] «For the words in the first column wherever they occur in any enactment substitute the words in the second column— Old reference New reference “solicitor of the »
+   UK_ukpga_2005_4 schedule-11-paragraph-5 → UK_ukpga_2000_23 Blanket Amendment [words substituted] «For the words in the first column wherever they occur in any enactment substitute the words in the second column— Old reference New reference “solicitor of the »
+   UK_ukpga_2005_4 schedule-11-paragraph-5 → UK_ukpga_2002_40 Blanket Amendment [words substituted] «For the words in the first column wherever they occur in any enactment substitute the words in the second column— Old reference New reference “solicitor of the »
+
+== provision | omit subsections () and ().: 13 changes, round 0
+   UK_ukpga_2009_10 schedule-11-paragraph-14-6 → UK_ukpga_2001_2 s. 45D(5)(6) [omitted] «Omit subsections (5) and (6).»
+   UK_ukpga_2009_10 schedule-11-paragraph-14-8 → UK_ukpga_2001_2 s. 45D(9)(10) [omitted] «Omit subsections (9) and (10).»
+   UK_ukpga_2025_36 schedule-2-paragraph-9-c → UK_ukpga_1996_18 s. 27B(7) [omitted] «omit subsections (7) and (8).»
+   UK_ukpga_2025_36 schedule-2-paragraph-9-c → UK_ukpga_1996_18 s. 27B(8) [omitted] «omit subsections (7) and (8).»
+
+== provision | in each of the provisions: 13 changes, round 0
+   UK_ukpga_2017_3 schedule-14-paragraph-6 → UK_ukpga_1968_27 s. 42B(2)(b) [words substituted] «In each of the provisions listed in paragraph 7 for “the Association of Chief Police Officers” substitute “the National Police Chiefs' Council”.»
+   UK_ukpga_2017_3 schedule-14-paragraph-6 → UK_ukpga_2002_30 s. 22(3)(b) [words substituted] «In each of the provisions listed in paragraph 7 for “the Association of Chief Police Officers” substitute “the National Police Chiefs' Council”.»
+   UK_ukpga_2017_3 schedule-14-paragraph-6 → UK_ukpga_2002_30 s. 24(c) [words substituted] «In each of the provisions listed in paragraph 7 for “the Association of Chief Police Officers” substitute “the National Police Chiefs' Council”.»
+   UK_ukpga_2017_3 schedule-14-paragraph-6 → UK_ukpga_2002_30 s. 38A(3)(b) [words substituted] «In each of the provisions listed in paragraph 7 for “the Association of Chief Police Officers” substitute “the National Police Chiefs' Council”.»
+
+== provision | for the definition of q: 12 changes, round 9
+   UK_uksi_1993_1746 regulation-21-11-a-i → UK_uksi_1990_304 reg. 2(1) [words substituted] «for the definition of “the 1984 Regulations” there shall be substituted the following definition— ‘ “the 1993 Regulations” means the Chemicals (Hazard Informati»
+   UK_uksi_2019_145 schedule-3-paragraph-21-a-ii → UK_uksi_2008_1911 reg. 55 [words substituted] «for the definition of “regulated market” substitute— “ regulated market ” has the meaning given in Article 2.1.13 of Regulation (EU) No. 600/2014 of the Europea»
+   UK_uksi_1991_1526 regulation-3 → UK_uksi_1986_1078 reg. 3(2) Table [words substituted] «For the definition of “converter dolly” in the Table in regulation 3(2) there shall be substituted— a trailer which is— equipped with 2 or more wheels, designed»
+   UK_nisr_2003_493 regulation-25-6-a → UK_nisr_1999_362 reg. 2(2) [words inserted] «for the definition of “animal by-products” there shall be substituted – “animal by-products” has the meaning given by Article 2 of the Community Regulation; ; a»
+
+== provision | in section n of the: 12 changes, round 5
+   UK_ukpga_2016_11 section-56-2 → UK_ukpga_1995_21 s. 292(3)(4) [inserted] «In section 292 of the Merchant Shipping Act 1995 (general functions of the Secretary of State) after subsection (2) insert—»
+   UK_uksi_1999_1148 regulation-8 → UK_ukpga_1991_56 s. 73 [amended] «In section 73 of the Act (offences of contaminating, wasting and misusing water etc.), after subsection (1) there shall be inserted:– In any proceedings under s»
+   UK_uksi_2017_80 schedule-paragraph-28 → UK_uksi_2008_1911 reg. 24(4)(e) [words inserted] «In section 461 of the Companies Act 2006 , as modified and applied to LLPs by regulation 24 of the Limited Liability Partnerships (Accounts and Audit) (Applicat»
+   UK_uksi_1998_1833 regulation-32-3 → UK_ukpga_1996_18 s. 105(4A) [added] «In section 105 of the 1996 Act (redundancy as unfair dismissal), after subsection (4) there shall be inserted the following subsection— This subsection applies »
+
+== provision | in subsection (), omit q.: 12 changes, round 0
+   UK_ukpga_2008_9 schedule-30-paragraph-4-3 → UK_ukpga_2003_14 s. 103(5) [words omitted] «In subsection (5), omit “or self-certificate”.»
+   UK_ukpga_2009_10 schedule-36-paragraph-3-2 → UK_ukpga_1994_23 s. 7(1) [words omitted] «In subsection (1), omit “or services”.»
+   UK_ukpga_2009_10 schedule-36-paragraph-8-3 → UK_ukpga_1994_23 s. 96(8) [words omitted] «In subsection (8), omit “(subject to any provision made under section 8(6))”.»
+   UK_uksi_2019_530 regulation-18-4 → UK_ukpga_1986_44 s. 8K(5) [word omitted] «In subsection (5), omit “also”.»
+
+== provision | after paragraph () insert q: 12 changes, round 0
+   UK_ukpga_2018_16 schedule-3-paragraph-9-2-a → UK_ukpga_1998_46 s. 12A(2)(a) [word inserted] «after paragraph (a) insert “ and ” , and»
+   UK_asc_2026_7 schedule-1-paragraph-27-b-i → UK_ukpga_1990_8 s. 62A(3) [word inserted] «after paragraph (c) insert “and” ;»
+   UK_asc_2026_7 schedule-1-paragraph-33-b-i → UK_ukpga_1990_8 s. 70A(4B) [word inserted] «after paragraph (a) insert “and” ;»
+   UK_uksi_2019_530 regulation-15-3-b → UK_ukpga_1986_44 s. 8F(4)(a) [word inserted] «after paragraph (a) insert “ and ” ;»
+
+== provision | the enactments mentioned in the: 12 changes, round 3
+   UK_ukpga_1995_22 section-8 → UK_ukpga_1974_43 s. 14 15 [repealed (1.1.1996)] «The enactments mentioned in the Schedule to this Act are hereby repealed to the extent specified in the third column of that Schedule.»
+   UK_ukpga_1995_22 section-8 → UK_ukpga_1979_39 s. 40(1)(b) [repealed (1.1.1996)] «The enactments mentioned in the Schedule to this Act are hereby repealed to the extent specified in the third column of that Schedule.»
+   UK_uksi_1997_2971 article-6-1 → UK_ukpga_1984_27 s. 7(6) [amended (26.1.1998)] «The enactments mentioned in the Schedule to this Order shall have effect with the amendments specified in that Schedule.»
+   UK_uksi_1997_2971 article-6-1 → UK_ukpga_1990_8 s. 228 [amended (26.1.1998)] «The enactments mentioned in the Schedule to this Order shall have effect with the amendments specified in that Schedule.»
+
+== provision | in the enactments specified in: 12 changes, round 3
+   UK_uksi_2002_2469 regulation-7 → UK_uksi_2000_3184 reg. 2(1) [words inserted] «In the enactments specified in column 1 of Schedule 4, in the provisions specified in column 2, there is inserted, in the appropriate alphabetical position— “St»
+   UK_uksi_2002_2469 regulation-11 → UK_uksi_2000_3184 reg. 2(1) [words inserted] «In the enactments specified in column 1 of Schedule 8, in the provisions specified in column 2, there is inserted, in the appropriate alphabetical position— “Pr»
+   UK_uksi_2004_696 article-3-9 → UK_uksi_1991_1325 art. 2(1)(j)(xii) [words added] «In the enactments specified in column 1 of Schedule 9, in the provisions specified in column 2, after “1978” there is added— “or an NHS foundation trust” within»
+   UK_ukpga_2003_20 schedule-5-paragraph-4 → UK_ukpga_1968_27 s. 54 [amended] «In the enactments specified in sub-paragraph (2) and, in so far as necessary in consequence of Part 3 of this Act, in any other enactment, legislative or other »
+
+== heading | in the heading to chapter: 11 changes, round 4
+   UK_wsi_2013_755 schedule-2-paragraph-277 → UK_ukpga_1991_57 Pt. 7 Ch. 1 heading [words substituted] «In the heading to Chapter 1 of Part 7, for “Agency” substitute “ appropriate agency ” .»
+   UK_wsi_2013_755 schedule-2-paragraph-370 → UK_ukpga_1995_25 Pt. 1 Ch. 3 heading [words inserted] «In the heading to Chapter 3 of Part 1, after “the New Agencies” insert “ and the Natural Resources Body for Wales ” .»
+   UK_uksi_2019_970 regulation-5 → UK_ukpga_2006_46 Pt. 10 Ch. 4A heading [words inserted] «In the heading to Chapter 4A , after “companies” insert “and traded companies”.»
+   UK_uksi_2019_970 regulation-11 → UK_ukpga_2006_46 Pt. 15 Ch. 6 heading [words inserted] «In the heading to Chapter 6 (quoted companies: directors’ remuneration report), after “companies” insert “and traded companies”.»
+
+== provision | after subsection () insert— where: 11 changes, round 0
+   UK_ukpga_2022_35 section-14-3 → UK_ukpga_1993_12 s. 34A(1A)-(1C) [inserted] «After subsection (1) insert— Where a child or young person (C) is charged with an offence, the court— may in any case; and must in a case where C is under the a»
+   UK_ukpga_2013_29 schedule-40-paragraph-3-2 → UK_ukpga_2003_14 s. 81(1A)(1B) [inserted] «After subsection (1) insert— Where relief is withdrawn to any extent under any of paragraphs 5G to 5K of Schedule 4A (higher rate for certain transactions) the »
+   UK_ukpga_2009_10 schedule-4-paragraph-4-3 → UK_ukpga_1994_22 s. 62(1B)(1C) [inserted] «After subsection (1A) insert— Where a vehicle is first registered under this Act on the issue of a temporary licence, the “ first vehicle licence ” in relation »
+   UK_ukpga_2025_36 schedule-2-paragraph-13-3 → UK_ukpga_1996_18 s. 49(1B) [inserted] «After subsection (1A) insert— Where an employment tribunal finds a complaint under section 48(1BB) well-founded, the tribunal— must make a declaration to that e»
+
+== provision | omit subsection ().: 11 changes, round 0
+   UK_ukpga_2025_18 schedule-11-paragraph-19-2 → UK_ukpga_2018_12 s. 125(2) [omitted] «Omit subsection (2).»
+   UK_uksi_2019_145 schedule-3-paragraph-21-b → UK_uksi_2008_1911 reg. 55 [words omitted] «omit subsection (2).»
+   UK_ukpga_2014_15 schedule-paragraph-3-5 → UK_ukpga_1981_53 s. 2(4) [omitted] «Omit subsection (4).»
+   UK_ukpga_2009_10 schedule-4-paragraph-3-3 → UK_ukpga_1994_22 s. 19(2) [omitted] «Omit subsection (2).»
+
+== provision | in paragraph (), after q: 11 changes, round 0
+   UK_ukpga_2006_16 schedule-11-paragraph-95-2-b → UK_ukpga_1981_69 s. 51(1)(h) [words inserted] «in paragraph (h), after “terms of” in the first place where it occurs,»
+   UK_uksi_2025_1043 regulation-3-2-a → UK_uksi_2020_312 reg. 1(1) [words inserted] «in paragraph (1), after “Private Rented Sector” insert “and Social Rented Sector” ;»
+   UK_uksi_2025_1043 regulation-10-a → UK_uksi_2020_312 reg. 11(1) [words inserted] «in paragraph (1), after “regulation 3” insert “, 3B, 3C or 3D” ;»
+   UK_ukpga_2009_10 schedule-11-paragraph-7-2-a → UK_ukpga_2001_2 s. 104A(1)(a) [word inserted] «in paragraph (a), after “the” insert “ first ” ,»
+
+== provision | after subsection () insert— the: 11 changes, round 0
+   UK_uksi_2026_881 article-7-13-b → UK_ukpga_1992_52 s. 231B(1A) [inserted] «after subsection (1) insert— The scrutineer’s report must also include, so far as relevant— the means of voting by which votes have been cast in the ballot, the»
+   UK_ukpga_2010_33 schedule-13-paragraph-16-2 → UK_ukpga_1979_2 s. 161A(2A) [inserted] «After subsection (2) insert— The power in subsection (2)(a) includes power to search for and remove documents relating to any such thing (including documents ab»
+   UK_ukpga_2013_29 schedule-40-paragraph-3-5 → UK_ukpga_2003_14 s. 81(5) [inserted] «After subsection (4) insert— The provisions of Schedule 10 apply to a return under subsection (1A) as they apply to a return under section 76, but with the adap»
+   UK_ukpga_2023_30 schedule-13-paragraph-26-3 → UK_ukpga_1979_2 s. 160(2A) [inserted] «After subsection (2) insert— The revenue traders to whom subsection (2) applies are persons who produce alcoholic products.»
+
+== provision | . . . . .: 11 changes, round 2
+   UK_nisi_2006_1254 schedule-3-paragraph-24 → UK_ukpga_2001_2 s. 29(2)-(6) [repealed] «. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .»
+   UK_ukpga_1998_36 section-82-1 → UK_ukpga_1996_8 s. 83(3)(4) [substituted (retrosp.)] «. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .»
+   UK_ukpga_1999_16 section-8-4 → UK_ukpga_1994_22 s. 13 [amended] «. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .»
+   UK_ukpga_1999_16 section-8-4 → UK_ukpga_1994_22 s. 35A 36 [amended] «. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .»
+
+== provision | schedule increase of limits article: 11 changes, round 0
+   UK_uksi_2026_310 schedule → UK_ukpga_1992_52 s. 145E(3) [sum substituted] «Schedule Increase of limits Article 3 Column 1 Column 2 Column 3 Column 4 Relevant statutory provision Subject of provision Old limit New Limit Section 145E(3) »
+   UK_uksi_2026_310 schedule → UK_ukpga_1992_52 s. 156(1) [sum substituted] «Schedule Increase of limits Article 3 Column 1 Column 2 Column 3 Column 4 Relevant statutory provision Subject of provision Old limit New Limit Section 145E(3) »
+   UK_uksi_2026_310 schedule → UK_ukpga_1992_52 s. 176(6A) [sum substituted] «Schedule Increase of limits Article 3 Column 1 Column 2 Column 3 Column 4 Relevant statutory provision Subject of provision Old limit New Limit Section 145E(3) »
+   UK_uksi_2026_310 schedule → UK_ukpga_1996_18 s. 27M(1) [sum substituted] «Schedule Increase of limits Article 3 Column 1 Column 2 Column 3 Column 4 Relevant statutory provision Subject of provision Old limit New Limit Section 145E(3) »
+
+== provision | in regulation n of the: 11 changes, round 9
+   UK_uksi_2022_1219 schedule-paragraph-14 → UK_uksi_2010_737 reg. 2 [words substituted] «In regulation 2 of the Merchant Shipping (Maritime Labour Convention) (Medical Certification) Regulations 2010 , in the definition of “sea-going”, in sub-paragr»
+   UK_ukpga_2025_36 schedule-12-paragraph-19 → UK_uksi_2018_58 reg. 26(6) [word substituted] «In regulation 26 of the Merchant Shipping (Maritime Labour Convention) (Hours of Work) Regulations 2018 ( S.I. 2018/58 ) (rights of seafarers to leave), in para»
+   UK_uksi_2025_412 regulation-7 → UK_uksi_2012_605 reg. 14(1)(a)(vii) [words inserted] «In regulation 14 of the Town and Country Planning (Tree Preservation) (England) Regulations 2012 (exceptions), in paragraph (1)(a)(vii), after “(control over de»
+   UK_uksi_2011_3056 schedule-paragraph-6 → UK_uksi_2010_680 reg. 2(1) [words substituted] «In regulation 2 of the Merchant Shipping (Passenger Ships) (Safety Code for UK Categorised Waters) Regulations 2010 , in the definition of “certifying authority»
+
+== provision | schedule article n table n: 11 changes, round 11
+   UK_uksi_2015_723 schedule → UK_uksi_2014_2384 Order [words substituted] «SCHEDULE Article 2 Table 1 Generic correction Provision Erroneous text Correction Wherever the erroneous text appears in the Thames Water Utilities Limited (Tha»
+   UK_uksi_2015_723 schedule → UK_uksi_2014_2384 art. 2(1) [words inserted] «SCHEDULE Article 2 Table 1 Generic correction Provision Erroneous text Correction Wherever the erroneous text appears in the Thames Water Utilities Limited (Tha»
+   UK_uksi_2015_723 schedule → UK_uksi_2014_2384 art. 2(1) [words substituted] «SCHEDULE Article 2 Table 1 Generic correction Provision Erroneous text Correction Wherever the erroneous text appears in the Thames Water Utilities Limited (Tha»
+   UK_uksi_2015_723 schedule → UK_uksi_2014_2384 art. 10(1)(2) [words omitted] «SCHEDULE Article 2 Table 1 Generic correction Provision Erroneous text Correction Wherever the erroneous text appears in the Thames Water Utilities Limited (Tha»
+
+== provision | in fa n, section n,: 11 changes, round 0
+   UK_ukpga_2008_9 section-66-4-b → UK_ukpga_1990_29 s. 53 [omitted] «in FA 1990, section 53,»
+   UK_ukpga_2008_9 section-66-3-a → UK_ukpga_1997_16 s. 73 [omitted] «in FA 1997, section 73, and»
+   UK_ukpga_2008_9 section-66-4-h → UK_ukpga_1997_16 s. 77 [omitted] «in FA 1997, section 77,»
+   UK_ukpga_2008_9 schedule-14-paragraph-17-f → UK_ukpga_1997_16 s. 79 [omitted] «in FA 1997, section 79,»
+
+== provision | schedule n amendment of regulations: 10 changes, round 10
+   UK_uksi_2010_1075 schedule-2 → UK_uksi_1990_660 reg. 3A [words substituted] «SCHEDULE 2 Amendment of Regulations Regulation 14 Column 1 Column 2 The Merchant Shipping (Emergency Information for Passengers) Regulations 1990 In regulation »
+   UK_uksi_2010_1075 schedule-2 → UK_uksi_1998_1011 reg. 1(7)(b)(vi)-(vii) [substituted] «SCHEDULE 2 Amendment of Regulations Regulation 14 Column 1 Column 2 The Merchant Shipping (Emergency Information for Passengers) Regulations 1990 In regulation »
+   UK_uksi_2010_1075 schedule-2 → UK_uksi_1998_2515 reg. 3A [substituted] «SCHEDULE 2 Amendment of Regulations Regulation 14 Column 1 Column 2 The Merchant Shipping (Emergency Information for Passengers) Regulations 1990 In regulation »
+   UK_uksi_2010_1075 schedule-2 → UK_uksi_1999_1869 reg. 4(2)(d)-(e) [words substituted] «SCHEDULE 2 Amendment of Regulations Regulation 14 Column 1 Column 2 The Merchant Shipping (Emergency Information for Passengers) Regulations 1990 In regulation »
+
+== provision | after the entry relating to: 10 changes, round 0
+   UK_anaw_2015_4 schedule-5-paragraph-25-2-b → UK_ukpga_1990_10 s. 37(2) [words inserted] «after the entry relating to section 322A, insert— “ section 322C (costs: Wales) ” ;»
+   UK_anaw_2015_4 schedule-5-paragraph-25-2-d → UK_ukpga_1990_10 s. 37(2) [words inserted] «after the entry relating to section 323, insert— “ section 323A (procedure for certain proceedings: Wales) ” .»
+   UK_ukpga_2006_25 schedule-8-paragraph-4-2-b → UK_ukpga_2001_2 s. 46(2) [words inserted] «after the entry relating to section 13 insert— “ section 13A (use for other purposes of plant or machinery provided for long funding leasing); ” .»
+   UK_ukpga_2004_5 schedule-3-paragraph-21-2 → UK_ukpga_1990_10 s. 37(2) [words inserted] «After the entry relating to section 329 there is inserted— “ section 329A(1) and (2) (service of notices on the Crown) ” .»
+
+== provision | in article n of the: 10 changes, round 6
+   UK_wsi_2013_755 schedule-4-paragraph-87 → UK_uksi_1999_915 art. 3 [words substituted] «In article 3 of the Water Protection Zone (River Dee Catchment) (Designation) Order 1999 , for “the Environment Agency at Chester Road, Buckley, Clwyd” substitu»
+   UK_uksi_2015_664 schedule-4-paragraph-58 → UK_uksi_1999_915 reg. 5(2)(a) [words substituted] «In article 5 of The Water Protection Zone (River Dee Catchment) Designation Order 1999 (contravention of protection zone control), in paragraph (2)(a), for “a f»
+   UK_uksi_2015_664 schedule-4-paragraph-76 → UK_uksi_2009_1927 reg. 9(4)(a) [words substituted] «In article 9 of the Major Accident Off-Site Emergency Plan (Management of Waste from Extractive Industries) (England and Wales) Regulations 2009 (enforcement), »
+   UK_ssi_2017_348 article-2 → UK_ssi_2014_3 art. 2 [words substituted] «In article 2 of the Water and Sewerage Services to Dwellings (Collection of Unmetered Charges by Local Authority) (Scotland) Order 2014 , in the definition of “»
+
+== provision | in paragraph (), for the: 10 changes, round 2
+   UK_uksi_1987_1133 regulation-6-b → UK_uksi_1986_1078 reg. 47(3) [words substituted] «in paragraph (3), for the words “paragraph (2)(b) or (c)” there shall be substituted the words “paragraph (2)(b), (c), (d) or (e)”;»
+   UK_uksi_1990_880 regulation-2-6-c → UK_uksi_1989_1263 reg. 8(4) [words substituted] «in paragraph (4), for the words from the beginning to the end of sub-paragraph (b), substitute— “Where the actual concentration exceeds (or if sludge were used »
+   UK_uksi_2019_145 schedule-3-paragraph-13-e → UK_uksi_2008_1911 reg. 5A [words substituted] «in paragraph (d), for the words from “other than one” to the end substitute “ which is a CRR firm within the meaning of Article 4(1)(2A) of that Regulation, ” ;»
+   UK_uksi_2019_145 schedule-3-paragraph-16-a-i-bb → UK_uksi_2008_1911 reg. 10 [words substituted] «in paragraph (b), for the words from “Directive 2013/34/EU” to the end substitute “ the requirements of this Part of this Act ” ;»
+
+== provision | article n(), articles n, n,: 10 changes, round 10
+   UK_uksi_2023_1394 article-110-1 → UK_eur_2019_631 Art. 2(4) [revoked] «Article 2(4), Articles 4, 5, 6, 7, 7a, 8, 9, 10, and 14 of, and Annexes 1 to 5 to, Regulation (EU) 2019/631 are revoked in relation to Great Britain, subject to»
+   UK_uksi_2023_1394 article-110-1 → UK_eur_2019_631 Art. 4 [revoked] «Article 2(4), Articles 4, 5, 6, 7, 7a, 8, 9, 10, and 14 of, and Annexes 1 to 5 to, Regulation (EU) 2019/631 are revoked in relation to Great Britain, subject to»
+   UK_uksi_2023_1394 article-110-1 → UK_eur_2019_631 Art. 5 [revoked] «Article 2(4), Articles 4, 5, 6, 7, 7a, 8, 9, 10, and 14 of, and Annexes 1 to 5 to, Regulation (EU) 2019/631 are revoked in relation to Great Britain, subject to»
+   UK_uksi_2023_1394 article-110-1 → UK_eur_2019_631 Art. 6 [revoked] «Article 2(4), Articles 4, 5, 6, 7, 7a, 8, 9, 10, and 14 of, and Annexes 1 to 5 to, Regulation (EU) 2019/631 are revoked in relation to Great Britain, subject to»
+
+== provision | in subsections () and (),: 10 changes, round 0
+   UK_ukpga_2006_16 schedule-11-paragraph-158-a → UK_ukpga_2000_37 s. 33(1) [words substituted] «in subsections (1) and (3), for “The Countryside Agency”, and»
+   UK_ukpga_2006_16 schedule-11-paragraph-158-a → UK_ukpga_2000_37 s. 33(3) [words substituted] «in subsections (1) and (3), for “The Countryside Agency”, and»
+   UK_ukpga_2023_30 schedule-13-paragraph-4-2 → UK_ukpga_1979_2 s. 114(1) [words substituted] «In subsections (1) and (2), for “or liquor”, in each place it occurs, substitute “, product or liquid” .»
+   UK_ukpga_2023_30 schedule-13-paragraph-4-2 → UK_ukpga_1979_2 s. 114(2) [words substituted] «In subsections (1) and (2), for “or liquor”, in each place it occurs, substitute “, product or liquid” .»
+
+== provision | in section n of that: 10 changes, round 0
+   UK_ukpga_2000_37 schedule-5-paragraph-5 → UK_ukpga_1981_69 s. 55(7) (8) [inserted] «In section 55 of that Act (no further surveys or reviews under the National Parks and Access to the Countryside Act 1949), after subsection (6) there is inserte»
+   UK_ukpga_1982_49 section-17-4 → UK_ukpga_1988_52 s. 61(1A) [inserted] «In section 50 of that Act (regulations for the purposes of sections 47 to 49A and supplementary provisions), the following subsection shall be inserted after su»
+   UK_asp_2005_12 section-38-2 → UK_ukpga_1991_22 s. 143(2)(b)(i) [words inserted] «In section 143 of that Act (which includes provision as to regulations under the Act), in subsection (2)(b)(i) after “17” there is inserted “ or 130B ” .»
+   UK_ukpga_2007_11 section-75-2 → UK_ukpga_2003_14 s. 48(3A) [inserted] «In section 48 of that Act (stamp duty land tax: exempt interests), after subsection (3) insert— Section 73B makes additional provision about exempt interests in»
+
+== provision | section n() and () (notices: 10 changes, round 0
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-f → UK_ukpga_1990_8 s. 273(7) [words substituted] «section 273(7) and (8) (notices given to developing authority);»
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-f → UK_ukpga_1990_8 s. 273(7) [words substituted] «section 273(7) and (8) (notices given to developing authority);»
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-f → UK_ukpga_1990_8 s. 273(7) [words substituted] «section 273(7) and (8) (notices given to developing authority);»
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-f → UK_ukpga_1990_8 s. 273(7) [words substituted] «section 273(7) and (8) (notices given to developing authority);»
+
+== provision | schedule n (consequential amendments) shall: 10 changes, round 0
+   UK_ukpga_1996_14 section-131-1 → UK_ukpga_1989_6 s. 12(1)(d) [amended (prosp.)] «Schedule 10 (consequential amendments) shall have effect.»
+   UK_ukpga_1996_14 section-131-1 → UK_ukpga_1992_52 s. 274(2) [amended] «Schedule 10 (consequential amendments) shall have effect.»
+   UK_ukpga_1998_17 section-50 → UK_ukpga_1986_44 s. 62(6) (defn. of "petroleum production licence") [amended (prosp.)] «Schedule 4 (consequential amendments) shall have effect.»
+   UK_ukpga_1998_40 section-9-1 → UK_ukpga_1990_18 s. 8(2) [repealed] «Schedule 1 (consequential amendments) shall have effect.»
+
+== provision | in fa n, section n(),: 10 changes, round 0
+   UK_uksi_2009_1890 article-10 → UK_ukpga_1996_8 s. 186(2) [word substituted] «In FA 1996, section 186(2), fifth indent (meaning for “the relevant regulations”) (stamp duty: transfers of securities to members of electronic transfer systems»
+   UK_ukpga_2008_9 schedule-6-paragraph-8-b → UK_ukpga_1990_29 s. 3(5) [omitted] «in FA 1990, section 3(5), and»
+   UK_ukpga_2008_9 section-13-11-c → UK_ukpga_2000_17 s. 5(3) [omitted] «in FA 2000, section 5(3),»
+   UK_ukpga_2008_9 section-13-11-d → UK_ukpga_2001_9 s. 2(1) [omitted] «in FA 2001, section 2(1), and»
+
+== provision | in subsection () after q: 10 changes, round 0
+   UK_ukpga_2017_20 section-2-11 → UK_ukpga_1990_8 s. 62C(2) [words inserted] «In subsection (2) after “paragraph 8(1)” insert “ or (3B) ” .»
+   UK_ukpga_2017_20 section-2-12 → UK_ukpga_1990_8 s. 62C(3) [words inserted] «In subsection (3) after “Schedule 1” insert “or notifications received by the authority under paragraph 8(3C) or (3D) of that Schedule.»
+   UK_ukpga_2026_11 schedule-15-paragraph-3-c-i → UK_ukpga_1979_2 s. 112(3) [words inserted] «in subsection (3) after “alcoholic products” insert “or vaping products,” ;»
+   UK_ukpga_2026_11 schedule-15-paragraph-3-c-ii → UK_ukpga_1979_2 s. 112(5) [words inserted] «in subsection (5) after “tobacco products” insert “or vaping products” ;»
+
+== provision | schedule article n () where: 10 changes, round 10
+   UK_uksi_2024_1384 schedule → UK_uksi_2024_174 art. 2 [word substituted] «SCHEDULE Article 2 (1) Where the correction is to be made (2) How the correction is to be made (3) Text to be substituted, inserted or omitted (if any) Article »
+   UK_uksi_2024_1384 schedule → UK_uksi_2024_174 art. 2 [words omitted] «SCHEDULE Article 2 (1) Where the correction is to be made (2) How the correction is to be made (3) Text to be substituted, inserted or omitted (if any) Article »
+   UK_uksi_2024_1384 schedule → UK_uksi_2024_174 art. 2 [word inserted] «SCHEDULE Article 2 (1) Where the correction is to be made (2) How the correction is to be made (3) Text to be substituted, inserted or omitted (if any) Article »
+   UK_uksi_2024_1384 schedule → UK_uksi_2024_174 art. 3(1)(a) [word inserted] «SCHEDULE Article 2 (1) Where the correction is to be made (2) How the correction is to be made (3) Text to be substituted, inserted or omitted (if any) Article »
+
+== provision | schedule n revocations and amendments: 10 changes, round 9
+   UK_nisr_2006_205 schedule-2 → UK_nisr_1993_37 reg. 2(1) [words substituted] «SCHEDULE 2 REVOCATIONS AND AMENDMENTS Regulation 42(1) PART I REVOCATIONS Column 1 Title Column 2 Reference Quarries (Safety, Health, Equipment and Explosives) »
+   UK_nisr_2006_205 schedule-2 → UK_nisr_1997_455 reg. 2(1) [words substituted] «SCHEDULE 2 REVOCATIONS AND AMENDMENTS Regulation 42(1) PART I REVOCATIONS Column 1 Title Column 2 Reference Quarries (Safety, Health, Equipment and Explosives) »
+   UK_nisr_2006_205 schedule-2 → UK_nisr_1997_455 reg. 2(1) [words inserted] «SCHEDULE 2 REVOCATIONS AND AMENDMENTS Regulation 42(1) PART I REVOCATIONS Column 1 Title Column 2 Reference Quarries (Safety, Health, Equipment and Explosives) »
+   UK_nisr_2006_205 schedule-2 → UK_nisr_1997_455 reg. 2(1)(a)(ii) [words substituted] «SCHEDULE 2 REVOCATIONS AND AMENDMENTS Regulation 42(1) PART I REVOCATIONS Column 1 Title Column 2 Reference Quarries (Safety, Health, Equipment and Explosives) »
+
+== provision | regulation n;: 9 changes, round 8
+   UK_wsi_2013_755 schedule-5-paragraph-30-h → UK_uksi_2005_1806 reg. 53 [words substituted] «regulation 53;»
+   UK_wsi_2013_755 schedule-5-paragraph-32-a → UK_uksi_2005_1806 reg. 56 [word substituted] «regulation 56;»
+   UK_wsi_2013_755 schedule-5-paragraph-30-h → UK_wsi_2005_1806 reg. 53 [words substituted] «regulation 53;»
+   UK_wsi_2013_755 schedule-5-paragraph-32-a → UK_wsi_2005_1806 reg. 56 [word substituted] «regulation 56;»
+
+== heading | in consequence of the amendments: 9 changes, round 0
+   UK_ukpga_2008_26 schedule-4-paragraph-2-9 → UK_ukpga_1968_73 s. 9 heading [substituted] «In consequence of the amendments made by this Part, the heading to that section becomes “ Areas, Authorities and Executives ” .»
+   UK_ukpga_2008_26 schedule-4-paragraph-3-3 → UK_ukpga_1968_73 s. 9A heading [substituted] «In consequence of the amendments made by this Part, the heading to that section becomes “ General functions of Authorities and Executives ” .»
+   UK_ukpga_2008_26 section-64-11 → UK_ukpga_2000_38 s. 155 heading [substituted] «In consequence of the amendments made by this section, the heading to section 155 becomes “ Sanctions ” .»
+   UK_ukpga_2008_26 schedule-4-paragraph-45-2 → UK_ukpga_2000_38 s. 157 heading [substituted] «In consequence of the amendments made by this Part, the heading to section 157 becomes “ Grants to Integrated Transport Authorities ” .»
+
+== provision | in paragraph ()() for q: 9 changes, round 7
+   UK_uksi_2018_390 schedule-5-paragraph-5-a → UK_nisr_2003_34 reg. 7(9)(a) [words substituted] «in paragraph (9)(a) for “provision in the Personal Protective Equipment Regulations 2002” substitute “ legal requirement ” ; and»
+   UK_uksi_1998_1188 regulation-4-5 → UK_uksi_1986_1078 reg. 7(5A)(b) [word substituted] «In paragraph (5A)(b) for “16 m” there shall be substituted “16.4 m”.»
+   UK_uksi_1990_1981 regulation-9-3 → UK_uksi_1986_1078 reg. 27(6)(b) [words substituted] «In paragraph (6)(b) for “paragraph (1)(g)(i)” there shall be substituted “this regulation”.»
+   UK_nisr_2022_127 regulation-2-2-a → UK_nisr_1999_362 reg. 4(8)(a) [sum substituted] «In paragraph (8)(a) for “£155” substitute “£159” ;»
+
+== provision | omit the definition of q;: 9 changes, round 5
+   UK_uksi_2019_145 schedule-3-paragraph-21-a-i → UK_uksi_2008_1911 reg. 55 [words omitted] «omit the definition of “EEA undertaking”;»
+   UK_uksi_2025_1043 regulation-4-b → UK_uksi_2020_312 reg. 2 [words omitted] «omit the definition of “existing specified tenancy”;»
+   UK_uksi_2025_1043 regulation-4-c → UK_uksi_2020_312 reg. 2 [words omitted] «omit the definition of “new specified tenancy”;»
+   UK_uksi_2025_1043 regulation-4-d → UK_uksi_2020_312 reg. 2 [words omitted] «omit the definition of “qualified person”;»
+
+== provision | in section n of caa: 9 changes, round 0
+   UK_ukpga_2023_30 section-9 → UK_ukpga_2001_2 s. 45EA(3)(a) [word substituted] «In section 45EA of CAA 2001 (expenditure on plant or machinery for electric vehicle charging point), in subsection (3) (the relevant period), in paragraphs (a) »
+   UK_ukpga_2023_30 section-9 → UK_ukpga_2001_2 s. 45EA(3)(b) [word substituted] «In section 45EA of CAA 2001 (expenditure on plant or machinery for electric vehicle charging point), in subsection (3) (the relevant period), in paragraphs (a) »
+   UK_ukpga_2023_30 section-332-2 → UK_ukpga_2001_2 s. 45O(5) [words substituted] «In section 45O of CAA 2001 (enhanced capital allowances in case of expenditure on plant or machinery for use in designated sites), in subsection (5), for “30 Se»
+   UK_ukpga_2023_30 section-8-2-a → UK_ukpga_2001_2 s. 51A(5) [sum substituted] «in section 51A of CAA 2001, for the amount specified in subsection (5) as the maximum allowance (which in the absence of this section would be £200,000 in relat»
+
+== provision | for q there shall be: 8 changes, round 7
+   UK_uksi_1999_3206 regulation-27-a → UK_uksi_1997_1510 reg. 2(1) [words substituted] «for “must be fixed in place” there shall be substituted “is fixed in place”; and»
+   UK_uksi_1998_1915 regulation-4-ii → UK_uksi_1993_3138 reg. 29(1) [words substituted] «for “tonnage regulations made under the Merchant Shipping Act 1965” there shall be submitted “Tonnage Regulations”.»
+   UK_uksi_1994_541 regulation-3-a → UK_uksi_1993_3138 reg. 7(2) [words substituted] «for “of a British ship” there shall be substituted “of a ship registered on Part I of the Register”; and»
+   UK_uksi_1994_541 regulation-4-a-i → UK_uksi_1993_3138 reg. 8(1) [words substituted] «for “(3) and (4)” there shall be substituted “(3), (4) and (5)”;»
+
+== provision | regulation n()() and ();: 8 changes, round 8
+   UK_wsi_2012_65 regulation-7-a → UK_uksi_2004_1490 reg. 6(1)(b) [words substituted] «regulation 6(1)(b) and (c);»
+   UK_wsi_2012_65 regulation-7-a → UK_uksi_2004_1490 reg. 6(1)(c) [words substituted] «regulation 6(1)(b) and (c);»
+   UK_wsi_2012_65 regulation-7-a → UK_wsi_2004_1490 reg. 6(1)(b) [words substituted] «regulation 6(1)(b) and (c);»
+   UK_wsi_2012_65 regulation-7-a → UK_wsi_2004_1490 reg. 6(1)(c) [words substituted] «regulation 6(1)(b) and (c);»
+
+== provision | in each place in which: 8 changes, round 8
+   UK_wsi_2012_65 regulation-6 → UK_uksi_2004_1490 reg. 11 [words substituted] «In each place in which it occurs in regulations 2, 11, 15 and 16 for “the Assembly” substitute “the Welsh Ministers”.»
+   UK_wsi_2012_65 regulation-6 → UK_uksi_2004_1490 reg. 15 [words substituted] «In each place in which it occurs in regulations 2, 11, 15 and 16 for “the Assembly” substitute “the Welsh Ministers”.»
+   UK_wsi_2012_65 regulation-6 → UK_uksi_2004_1490 reg. 16 [words substituted] «In each place in which it occurs in regulations 2, 11, 15 and 16 for “the Assembly” substitute “the Welsh Ministers”.»
+   UK_wsi_2012_65 regulation-6 → UK_uksi_2004_1490 reg. 2 [words substituted] «In each place in which it occurs in regulations 2, 11, 15 and 16 for “the Assembly” substitute “the Welsh Ministers”.»
+
+== provision | in regulation n()() of the: 8 changes, round 6
+   UK_wsi_2013_755 schedule-5-paragraph-38 → UK_uksi_2006_2988 reg. 18(2)(a) [words inserted] «In regulation 18(2)(a) of the Radioactive Contaminated Land (Modification of Enactments) (Wales) Regulations 2006 , after “the Agency” insert “ , the Natural Re»
+   UK_uksi_2008_1482 regulation-5-2-a → UK_uksi_1996_1527 reg. 13(4)(a) [words inserted] «in regulation 13(4)(a) of the LT Regulations after “more”;»
+   UK_uksi_2008_1482 regulation-5-2-b → UK_uksi_1996_1527 reg. 13(4)(b) [words inserted] «in regulation 13(4)(b) of the LT Regulations, in each place, after “those”;»
+   UK_nisr_2019_185 schedule-9-paragraph-6 → UK_uksi_2018_482 reg. 4(2)(b) [words substituted] «In regulation 4(2)(b) of the Ionising Radiation (Basic Safety Standards) (Miscellaneous Provisions) Regulations 2018 for “paragraph (2) of regulation 13 (implem»
+
+== provision | after the definition of q: 8 changes, round 3
+   UK_uksi_2016_912 regulation-19-2-a → UK_uksi_2011_1483 reg. 3 [words inserted] «after the definition of “applicant” insert— “appropriate Minister” means either— the Secretary of State, where the OGA is the licensing authority in accordance »
+   UK_uksi_2019_145 schedule-3-paragraph-21-a-iii → UK_uksi_2008_1911 reg. 55 [words inserted] «after the definition of “the competent authority” insert— “ EU regulated market ” has the meaning given in Article 2.1.13B of Regulation (EU) No. 600/2014 of th»
+   UK_uksi_2019_145 schedule-3-paragraph-21-a-iv → UK_uksi_2008_1911 reg. 55 [words inserted] «after the definition of “transferable securities” insert— “ UK regulated market ” has the meaning given in Article 2.1.13A of Regulation (EU) No. 600/2014 of th»
+   UK_uksi_2025_1043 regulation-4-a → UK_uksi_2020_312 reg. 2 [words inserted] «after the definition of “authorised person” insert— “ electrical equipment ” means those electrical fixtures, fittings and appliances that are not electrical in»
+
+== provision | after paragraph () insert— in: 8 changes, round 1
+   UK_uksi_2018_390 schedule-5-paragraph-5-b → UK_nisr_2003_34 reg. 7(12) [inserted] «after paragraph (11) insert— In paragraph (9)(a), “ legal requirement ” means any requirement of the Personal Protective Equipment Regulations 2002 or Regulatio»
+   UK_ukpga_2013_29 schedule-41-paragraph-4-a → UK_ukpga_2003_14 s. 87(3)(aaa) [inserted] «after paragraph (aa) insert— in the case of an amount payable under paragraph 3(3) of Schedule 17A (leases that continue after a fixed term) by reason of the co»
+   UK_asc_2026_7 schedule-2-paragraph-404-b-ii → UK_ukpga_2009_23 s. 322(2) [words inserted] «after paragraph (b) insert— in relation to Wales, Part 12 of the Planning (Wales) Act 2026; .»
+   UK_ukpga_2021_26 schedule-17-paragraph-6-b → UK_ukpga_2003_14 s. 87(3)(zb) [inserted] «after paragraph (za) insert— in the case of an amount payable because relief is withdrawn under any of paragraphs 6D, 6F, 6G, 6H and 6I of Schedule 4A, the date»
+
+== provision | in paragraph (), after q,: 8 changes, round 3
+   UK_uksi_2026_392 schedule-2-paragraph-10-2 → UK_uksi_2020_1265 art. 35(1) [words inserted] «In paragraph (1), after “aircraft operator”, insert “, maritime operator” .»
+   UK_uksi_2026_392 schedule-2-paragraph-18-4 → UK_uksi_2020_1265 art. 72(4) [words inserted] «In paragraph (4), after “article 28(1)”, insert “or paragraph 9(1) of Schedule 2A” .»
+   UK_uksi_2026_392 schedule-2-paragraph-18-5 → UK_uksi_2020_1265 art. 72(5) [words inserted] «In paragraph (5), after “article 45(5)”, insert “, or the determination of maritime emissions or emissions figure for surrender under articles 45A(4) or 45B(3),»
+   UK_ukpga_2006_16 schedule-11-paragraph-95-2-a → UK_ukpga_1981_69 s. 51(1)(c) [words inserted] «in paragraph (c), after “enter into”, and»
+
+== provision | in section n() of the: 8 changes, round 0
+   UK_uksi_2007_2194 schedule-4-paragraph-73 → UK_ukpga_1992_52 s. 117(4) [words inserted] «In section 117(4) of the Trade Union and Labour Relations (Consolidation) Act 1974 (special register bodies: auditors), after “Chapter 5 of Part 11 of that Act”»
+   UK_ukpga_2024_13 schedule-13-paragraph-5 → UK_ukpga_2003_21 s. 371(3) [words inserted] «In section 371(3) of the Communications Act 2002 (functions of OFCOM under CA 1998), in the words before paragraph (a), after “Part 1 of the Competition Act 199»
+   UK_ukpga_1994_19 section-35-6 → UK_ukpga_1992_14 s. 39(1)(a) [amended (prosp.)] «In section 39(1) of the Act of 1992 (precepting authorities), in paragraph (a) at the end add “in England”.»
+   UK_nisr_2011_290 regulation-5-1 → UK_ukpga_1993_12 s. 47(1) [words inserted] «In section 47(1) of the Act insert, at the appropriate place in alphabetical order, the following definitions— “m”, where it appears after a radionuclide, means»
+
+== provision | schedule n (which contains provisions: 8 changes, round 0
+   UK_ukpga_1999_28 section-18 → UK_ukpga_1985_48 s. 2 [amended (prosp.)] «Schedule 3 (which contains provisions conferring functions under certain enactments on the Agency) has effect. Any amendment made by Schedule 3 which extends to»
+   UK_ukpga_1999_28 section-18 → UK_ukpga_1990_16 s. 13 [amended] «Schedule 3 (which contains provisions conferring functions under certain enactments on the Agency) has effect. Any amendment made by Schedule 3 which extends to»
+   UK_ukpga_1999_28 section-18 → UK_ukpga_1990_16 s. 40 [amended] «Schedule 3 (which contains provisions conferring functions under certain enactments on the Agency) has effect. Any amendment made by Schedule 3 which extends to»
+   UK_ukpga_1999_28 section-18 → UK_ukpga_1990_16 s. 41 [amended] «Schedule 3 (which contains provisions conferring functions under certain enactments on the Agency) has effect. Any amendment made by Schedule 3 which extends to»
+
+== provision | in section n (power to: 8 changes, round 1
+   UK_asp_2003_3 schedule-4-paragraph-2 → UK_ukpga_1980_45 s. 23(2A) (2B) [inserted] «In section 23 (power to lay mains etc.), after subsection (2) insert— In relation to a main not vested in Scottish Water, Scottish Water may recover from the pe»
+   UK_ukpga_2023_30 schedule-13-paragraph-24 → UK_ukpga_1979_2 s. 113(6) [words substituted] «In section 113 (power to search for concealed pipes etc), in subsection (6), for the words for the words from “distillers” to “cider” substitute “persons who pr»
+   UK_ukpga_2023_30 schedule-13-paragraph-5 → UK_ukpga_1979_2 s. 163A(2) [words substituted] «In section 163A (power to search articles), in subsection (2), in the words before paragraph (a), for “dutiable alcoholic liquor” substitute “alcoholic products»
+   UK_ukpga_2025_26 section-94-4 → UK_ukpga_2016_22 s. 30(8)(9) [inserted] «In section 30 (power to include person convicted of banning order offence), after subsection (7) — In this section, references to a “banning order offence” are »
+
+== provision | after q insert q ,: 8 changes, round 0
+   UK_ukpga_2014_15 schedule-paragraph-6-a-iii → UK_ukpga_1981_53 s. 5(1) [words inserted] «after “him” insert “ (or them) ” , and»
+   UK_ukpga_2014_15 schedule-paragraph-6-b-ii → UK_ukpga_1981_53 s. 5(2) [words inserted] «after “State” insert “ or the Scottish Ministers ” , and»
+   UK_ukpga_2014_15 schedule-paragraph-8-b-ii → UK_ukpga_1981_53 s. 8(2) [words inserted] «after “considers” insert “ (or they consider) ” , and»
+   UK_ukpga_2014_15 schedule-paragraph-11-a-i → UK_ukpga_1981_53 s. 11(1) [words inserted] «after “State” insert “ or the Scottish Ministers ” ,»
+
+== provision | section n, and: 8 changes, round 0
+   UK_ukpga_2008_9 schedule-41-paragraph-25-h-i → UK_ukpga_1996_8 s. 37 [omitted] «section 37, and»
+   UK_ukpga_2008_9 schedule-2-paragraph-55-b-i → UK_ukpga_1999_16 s. 72 [omitted] «section 72, and»
+   UK_ukpga_2008_9 schedule-2-paragraph-55-d-i → UK_ukpga_2001_9 s. 78 [omitted] «section 78, and»
+   UK_ukpga_2008_9 schedule-2-paragraph-55-f-i → UK_ukpga_2003_14 s. 160 [omitted] «section 160, and»
+
+== provision | sections n and n of: 8 changes, round 0
+   UK_ukpga_2008_9 schedule-2-paragraph-55-c → UK_ukpga_2000_17 s. 66 [omitted] «sections 66 and 67 of FA 2000,»
+   UK_ukpga_2008_9 schedule-2-paragraph-55-c → UK_ukpga_2000_17 s. 67 [omitted] «sections 66 and 67 of FA 2000,»
+   UK_ukpga_2008_9 section-76-6-b → UK_ukpga_2003_14 s. 165 [omitted] «sections 165 and 166 of FA 2003, and»
+   UK_ukpga_2008_9 section-76-6-b → UK_ukpga_2003_14 s. 166 [omitted] «sections 165 and 166 of FA 2003, and»
+
+== provision | schedule n revocations and modifications: 8 changes, round 4
+   UK_uksi_1999_2024 schedule-5 → UK_uksi_1977_500 reg. 5(4) [words inserted] «SCHEDULE 5 REVOCATIONS AND MODIFICATIONS OF INSTRUMENTS Regulation 48(1) PART I REVOCATIONS Column 1 Column 2 Column 3 Description of Instrument Extent of revoc»
+   UK_uksi_1999_2024 schedule-5 → UK_uksi_1989_635 reg. 3(1)(b) [substituted] «SCHEDULE 5 REVOCATIONS AND MODIFICATIONS OF INSTRUMENTS Regulation 48(1) PART I REVOCATIONS Column 1 Column 2 Column 3 Description of Instrument Extent of revoc»
+   UK_uksi_1999_2024 schedule-5 → UK_uksi_1992_3004 reg. 2(1) [words substituted] «SCHEDULE 5 REVOCATIONS AND MODIFICATIONS OF INSTRUMENTS Regulation 48(1) PART I REVOCATIONS Column 1 Column 2 Column 3 Description of Instrument Extent of revoc»
+   UK_uksi_1999_2024 schedule-5 → UK_uksi_1997_553 reg. 2(1) [words omitted] «SCHEDULE 5 REVOCATIONS AND MODIFICATIONS OF INSTRUMENTS Regulation 48(1) PART I REVOCATIONS Column 1 Column 2 Column 3 Description of Instrument Extent of revoc»
+
+== provision | the town and country planning: 8 changes, round 0
+   UK_ukpga_1999_29 schedule-22-paragraph-2 → UK_ukpga_1990_8 s. 247 [amended] «The Town and Country Planning Act 1990 shall be amended as follows.»
+   UK_ukpga_1999_29 schedule-22-paragraph-2 → UK_ukpga_1990_8 s. 248 [amended] «The Town and Country Planning Act 1990 shall be amended as follows.»
+   UK_ukpga_1999_29 schedule-22-paragraph-2 → UK_ukpga_1990_8 s. 249 [amended] «The Town and Country Planning Act 1990 shall be amended as follows.»
+   UK_ukpga_1999_29 schedule-22-paragraph-2 → UK_ukpga_1990_8 s. 250 [amended] «The Town and Country Planning Act 1990 shall be amended as follows.»
+
+== provision | the n act has effect: 8 changes, round 0
+   UK_ukpga_2020_7 schedule-7-paragraph-9 → UK_ukpga_1996_18 s. 47H [inserted] «The 1996 Act has effect as if after section 47G there were inserted— Emergency volunteering leave A worker has the right not to be subjected to a detriment by a»
+   UK_ukpga_2020_7 schedule-7-paragraph-12 → UK_ukpga_1996_18 s. 88(1)(c) [words inserted] «The 1996 Act has effect as if in section 88 (pay during period of notice: employments with normal working hours), in subsection (1)(c), after “paternity leave” »
+   UK_ukpga_2020_7 schedule-7-paragraph-13 → UK_ukpga_1996_18 s. 89(3)(b) [words inserted] «The 1996 Act has effect as if in section 89 (pay during period of notice: employments without normal working hours), in subsection (3)(b), after “paternity leav»
+   UK_ukpga_2020_7 schedule-7-paragraph-14 → UK_ukpga_1996_18 s. 104H [inserted] «The 1996 Act has effect as if after section 104G there were inserted— Emergency volunteering leave An employee who is dismissed is to be regarded for the purpos»
+
+== provision | schedule n (which makes modifications: 8 changes, round 0
+   UK_ukpga_1998_46 section-125 → UK_ukpga_1986_45 s. 53(1) 54(3) 61(6) 62(5) 67(1) 69(2) 84(3) [amended (19.11.1998) (1.7.1999)] «Schedule 8 (which makes modifications of enactments) shall have effect. The enactments mentioned in Schedule 9 are repealed to the extent specified in that Sche»
+   UK_ukpga_1998_46 section-125 → UK_ukpga_1986_45 s. 89(3) [amended (1.7.1999)] «Schedule 8 (which makes modifications of enactments) shall have effect. The enactments mentioned in Schedule 9 are repealed to the extent specified in that Sche»
+   UK_ukpga_1998_46 section-125 → UK_ukpga_1986_45 s. 94(3) 106(3)(5) [amended (19.11.1998) (1.7.1999)] «Schedule 8 (which makes modifications of enactments) shall have effect. The enactments mentioned in Schedule 9 are repealed to the extent specified in that Sche»
+   UK_ukpga_1998_46 section-125 → UK_ukpga_1986_45 s. 109(1) [amended (1.7.1999)] «Schedule 8 (which makes modifications of enactments) shall have effect. The enactments mentioned in Schedule 9 are repealed to the extent specified in that Sche»
+
+== provision | q () has the meaning: 8 changes, round 0
+   UK_wsi_2017_567 schedule-9-paragraph-1-2-b-i → UK_uksi_2012_801 art. 2(1) [words inserted] «“ any other information ” (“ unrhyw wybodaeth arall ”) has the meaning in the EIA Regulations;»
+   UK_wsi_2017_567 schedule-9-paragraph-1-2-b-ii → UK_uksi_2012_801 art. 2(1) [words inserted] «“ EIA application ” (“ cais AEA ”) has the meaning in the EIA Regulations;»
+   UK_wsi_2017_567 schedule-9-paragraph-1-2-b-iii → UK_uksi_2012_801 art. 2(1) [words inserted] «“ EIA development ” (“ datblygiad AEA ”) has the meaning in the EIA Regulations;»
+   UK_wsi_2017_567 schedule-9-paragraph-1-2-b-ix → UK_uksi_2012_801 art. 2(1) [words inserted] «“ scoping opinion ” (“ barn gwmpasu ”) has the meaning in the EIA Regulations; and»
+
+== provision | section n();: 7 changes, round 1
+   UK_wsi_2013_755 schedule-2-paragraph-274-c → UK_ukpga_1991_57 s. 113(4) [words substituted] «section 113(4);»
+   UK_uksi_2012_3006 article-48-e → UK_ukpga_2006_47 s. 47(7) [words substituted] «section 47(7);»
+   UK_ukpga_2017_3 schedule-17-paragraph-6-b → UK_ukpga_1994_33 s. 137(2A) [words substituted] «section 137(2A);»
+   UK_ukpga_2017_3 schedule-12-paragraph-15-b → UK_ukpga_2003_38 s. 46(1) [omitted] «section 46(1);»
+
+== provision | in subsection ()() (standard rate),: 7 changes, round 0
+   UK_ukpga_2014_26 section-100-2 → UK_ukpga_1996_8 s. 42(1)(a) [sum substituted] «In subsection (1)(a) (standard rate), for “£80” substitute “ £82.60 ” .»
+   UK_ukpga_2026_11 section-101-2 → UK_ukpga_1996_8 s. 42(1)(a) [sum substituted] «In subsection (1)(a) (standard rate), for “£126.15” substitute “£130.75” .»
+   UK_ukpga_2020_14 section-94-2 → UK_ukpga_1996_8 s. 42(1)(a) [sum substituted] «In subsection (1)(a) (standard rate), for “£91.35” substitute “ £94.15 ” .»
+   UK_ukpga_2021_26 section-111-2 → UK_ukpga_1996_8 s. 42(1)(a) [sum substituted] «In subsection (1)(a) (standard rate), for “£94.15” substitute “ £96.70 ” .»
+
+== provision | after q insert q ;: 7 changes, round 1
+   UK_uksi_2026_881 article-7-16-a-ii → UK_ukpga_1992_52 s. 233(1)(a) [words inserted] «after “section 229(3)” insert “or paragraph 3(4) or 16(2) of Schedule A1A” ;»
+   UK_ukpga_2025_36 schedule-2-paragraph-23-a → UK_ukpga_1996_18 s. 200(1) [words inserted] «after “8 to 10,” insert “Chapters 2 to 4 of Part 2A,” ;»
+   UK_ukpga_2025_36 schedule-2-paragraph-30-a → UK_ukpga_1996_18 s. 236(3) [words inserted] «after “27B,” insert “27BA(3)(a)(ii) or (d), (6) or (16), 27BB(2), (5) or (9)(c), 27BD(6), 27BJ(1)(b), (2)(a) or (4), 27BK(3), 27BP(1), (2)(c), (3)(a), (6) or (9»
+   UK_ukpga_2021_26 section-32-1-a → UK_ukpga_2020_14 s. 106(3) [words inserted] «after “provision about” insert “ (including provision modifying) ” ;»
+
+== provision | in the following provisions (which: 7 changes, round 0
+   UK_ukpga_2011_5 schedule-12-paragraph-176 → UK_ukpga_2007_17 s. 2(1)(c)(ii) [words substituted] «In the following provisions (which relate to postal services in Northern Ireland), for “relevant postal services” substitute “ postal services ” section 2(1)(c)»
+   UK_ukpga_2011_5 schedule-12-paragraph-176 → UK_ukpga_2007_17 s. 3(2)(b) [words substituted] «In the following provisions (which relate to postal services in Northern Ireland), for “relevant postal services” substitute “ postal services ” section 2(1)(c)»
+   UK_ukpga_2011_5 schedule-12-paragraph-176 → UK_ukpga_2007_17 s. 3(4)(a) [words substituted] «In the following provisions (which relate to postal services in Northern Ireland), for “relevant postal services” substitute “ postal services ” section 2(1)(c)»
+   UK_ukpga_2011_5 schedule-12-paragraph-176 → UK_ukpga_2007_17 s. 4(1)(b) [words substituted] «In the following provisions (which relate to postal services in Northern Ireland), for “relevant postal services” substitute “ postal services ” section 2(1)(c)»
+
+== provision | omit q;: 7 changes, round 2
+   UK_uksi_2014_1614 regulation-4-2-b-ii → UK_uksi_1972_1698 reg. 2(1) [word omitted] «omit “either”;»
+   UK_uksi_2019_530 regulation-18-2-a → UK_ukpga_1986_44 s. 8K(2) [words omitted] «omit “on or after 3 March 2013,”;»
+   UK_uksi_2019_530 regulation-49-2-a → UK_ukpga_1989_29 s. 10I(2) [words omitted] «omit “on or after 3 March 2013,”;»
+   UK_wsi_2024_924 regulation-97-g-i → UK_uksi_2017_544 reg. 3(1) [words omitted] «omit “Listed Buildings Act,”;»
+
+== provision | at the beginning insert q: 7 changes, round 1
+   UK_asp_2003_3 schedule-4-paragraph-3-5-a → UK_ukpga_1980_45 s. 24(3) [words inserted] «at the beginning insert “ Subject to section 23A, ” ,»
+   UK_uksi_2019_145 schedule-3-paragraph-13-c-i → UK_uksi_2008_1911 reg. 5A [words inserted] «at the beginning insert “ would have been ” ;»
+   UK_uksi_2019_145 schedule-3-paragraph-13-d-i → UK_uksi_2008_1911 reg. 5A [words inserted] «at the beginning insert “ would have been ” ;»
+   UK_uksi_2019_145 schedule-3-paragraph-13-f-i → UK_uksi_2008_1911 reg. 5A [words inserted] «at the beginning insert “ would have been ” ; and»
+
+== provision | in paragraph () for q: 7 changes, round 1
+   UK_uksi_1994_541 regulation-4-c → UK_uksi_1993_3138 reg. 8(4) [word substituted] «in paragraph (4) for “Where entitlement to be registered arises by virtue of the fact that” there shall be substituted “Where”;»
+   UK_ukpga_2026_23 schedule-16-paragraph-12-a-iv → UK_ukpga_1990_8 s. 324(1B)(b) [words substituted] «in paragraph (b) for “Mayor of London” substitute “the relevant mayor” ;»
+   UK_ukpga_2016_11 section-13-10-b → UK_ukpga_1998_46 s. 80G(1)(a) [words substituted] «in paragraph (a) for “the rates provided for under the section” substitute “Scottish rates” .»
+   UK_uksi_1998_1188 regulation-7-4 → UK_uksi_1986_1078 reg. 13(3) [word substituted] «In paragraph (3) for “12 m” there shall be substituted “12.5 m”.»
+
+== provision | in regulation n, for q: 7 changes, round 1
+   UK_uksi_1994_541 regulation-11 → UK_uksi_1993_3138 reg. 65 [word substituted] «In regulation 65, for “22(2)” there shall be substituted “22(1)”.»
+   UK_wsi_2024_924 regulation-104 → UK_uksi_2017_544 reg. 28 [words substituted] «In regulation 28, for “paragraph 6 of Schedule 3 to the Listed Buildings Act” substitute “paragraph 3(2) of Schedule 12 to the 2023 Act” .»
+   UK_wsi_2024_924 regulation-105 → UK_uksi_2017_544 reg. 37 [words substituted] «In regulation 37, for “paragraph 6 of Schedule 3 to the Listed Buildings Act” substitute “paragraph 3(2) of Schedule 12 to the 2023 Act” .»
+   UK_wsi_2024_924 regulation-107 → UK_uksi_2017_544 reg. 52 [words substituted] «In regulation 52, for “section 46 of the Listed Buildings Act” substitute “section 134 of the 2023 Act” .»
+
+== provision | subsection ()();: 7 changes, round 1
+   UK_ukpga_2026_23 schedule-18-paragraph-31-2-a → UK_ukpga_1990_8 s. 275(1)(a) [words substituted] «subsection (1)(a);»
+   UK_ukpga_2012_10 schedule-10-paragraph-3-a → UK_ukpga_1968_27 s. 21(2A)(d) [omitted] «subsection (2A)(d);»
+   UK_anaw_2016_3 schedule-2-paragraph-12-2-a → UK_ukpga_2008_27 s. 77(3)(b) [omitted] «subsection (3)(b);»
+   UK_ukpga_2024_13 schedule-27-paragraph-8-5-a → UK_ukpga_2010_15 s. 140AA(2)(b) [word substituted] «subsection (2)(b);»
+
+== provision | subsection ().: 7 changes, round 0
+   UK_ukpga_2026_23 schedule-18-paragraph-34-2-e → UK_ukpga_1990_8 s. 306(4) [words substituted] «subsection (4).»
+   UK_ukpga_2013_29 section-68-4-b → UK_ukpga_2008_9 s. 77(3) [omitted] «subsection (3).»
+   UK_ukpga_2016_11 section-42-11-d → UK_ukpga_1984_27 s. 85(5A) [words substituted] «subsection (5A).»
+   UK_ukpga_2024_13 schedule-27-paragraph-8-4-e → UK_ukpga_2010_15 s. 140AA(9) [words substituted] «subsection (9).»
+
+== provision | after paragraph () there shall: 7 changes, round 0
+   UK_uksi_1991_1526 regulation-5-3 → UK_uksi_1986_1078 reg. 61(3B)(3C) [inserted] «After paragraph (3A) there shall be inserted the following paragraphs— Instead of complying with paragraph (1) a vehicle may comply with a relevant instrument. »
+   UK_uksi_1991_1526 regulation-5-5 → UK_uksi_1986_1078 reg. 61(10A)(10B) [inserted] «After paragraph (10) there shall be inserted the following paragraphs— Without prejudice to paragraphs (1) and (7) no person shall use, or cause or permit to be»
+   UK_uksi_1998_1188 regulation-4-3 → UK_uksi_1986_1078 reg. 7(3C) [inserted] «After paragraph (3B) there shall be inserted the following paragraph— Item 1A and the words “(other than a motor vehicle such as is mentioned in item 1A)” in it»
+   UK_uksi_1998_1188 regulation-4-4 → UK_uksi_1986_1078 reg. 7(5XA) [inserted] «After paragraph (5) there shall be inserted the following paragraph— A motor vehicle drawing a trailer which is not a semi-trailer shall (unless it is a vehicle»
+
+== provision | subsection (),: 7 changes, round 1
+   UK_ukpga_2016_11 section-42-11-a → UK_ukpga_1984_27 s. 85(1) [words substituted] «subsection (1),»
+   UK_ukpga_2008_9 schedule-27-paragraph-8-a → UK_ukpga_2001_2 s. 537(1) [words omitted] «subsection (1),»
+   UK_ukpga_2009_10 schedule-5-paragraph-6-b-ii → UK_ukpga_2000_17 s. 18(7) [omitted] «subsection (7),»
+   UK_ukpga_2014_21 schedule-5-paragraph-39-2-c → UK_ukpga_1991_56 s. 95ZA(2) [word substituted] «subsection (2),»
+
+== provision | in section n (meanings of: 7 changes, round 0
+   UK_ukpga_2023_30 section-330-2 → UK_ukpga_2001_9 s. 17(3)(b) [omitted] «In section 17 (meanings of “aggregate” and “taxable aggregate”)— in subsection (3)— omit paragraphs (b), (d) and (da); omit the “or” at the end of paragraph (e)»
+   UK_ukpga_2023_30 section-330-2 → UK_ukpga_2001_9 s. 17(3)(d) [omitted] «In section 17 (meanings of “aggregate” and “taxable aggregate”)— in subsection (3)— omit paragraphs (b), (d) and (da); omit the “or” at the end of paragraph (e)»
+   UK_ukpga_2023_30 section-330-2 → UK_ukpga_2001_9 s. 17(3)(da) [omitted] «In section 17 (meanings of “aggregate” and “taxable aggregate”)— in subsection (3)— omit paragraphs (b), (d) and (da); omit the “or” at the end of paragraph (e)»
+   UK_ukpga_2023_30 section-330-2 → UK_ukpga_2001_9 s. 17(3)(e) [word omitted] «In section 17 (meanings of “aggregate” and “taxable aggregate”)— in subsection (3)— omit paragraphs (b), (d) and (da); omit the “or” at the end of paragraph (e)»
+
+== provision | in section n() of caa: 7 changes, round 0
+   UK_ukpga_2009_10 schedule-32-paragraph-12 → UK_ukpga_2001_2 s. 51A(10) [words inserted] «In section 51A(10) of CAA 2001 (annual investment allowances), insert at the appropriate place— “ section 70DA(2) (transfer and long funding leaseback: no annua»
+   UK_ukpga_2009_10 schedule-32-paragraph-18 → UK_ukpga_2001_2 s. 51A(10) [words inserted] «In section 51A(10) of CAA 2001 (annual investment allowances), after “218A” insert “ , 229A(2) ” .»
+   UK_ukpga_2009_10 schedule-32-paragraph-13 → UK_ukpga_2001_2 s. 52(5) [words inserted] «In section 52(5) of CAA 2001 (first-year allowances), insert at the appropriate place— “ section 70DA(2) (transfer and long funding leaseback: no first-year all»
+   UK_ukpga_2009_10 schedule-32-paragraph-19 → UK_ukpga_2001_2 s. 52(5) [words inserted] «In section 52(5) of CAA 2001 (first-year allowances), after “217” insert “ , 229A(2) ” .»
+
+== provision | the provisions of the schedule: 7 changes, round 0
+   UK_uksi_1996_420 article-2 → UK_ukpga_1968_73 s. 116(8)(9)(10)(11) [added] «The provisions of the Schedule hereto shall have effect.»
+   UK_uksi_1996_420 article-2 → UK_ukpga_1968_73 s. 117(1A)(1B) [added] «The provisions of the Schedule hereto shall have effect.»
+   UK_uksi_1996_420 article-2 → UK_ukpga_1968_73 s. 118(1A) [added] «The provisions of the Schedule hereto shall have effect.»
+   UK_uksi_1996_420 article-2 → UK_ukpga_1968_73 s. 119(3)(4) [added] «The provisions of the Schedule hereto shall have effect.»
+
+== provision | in the provisions set out: 7 changes, round 1
+   UK_uksi_2009_3348 article-23 → UK_uksi_1998_1833 reg. 35(6)(a) [words substituted] «In the provisions set out in the table in Schedule 2 to this Order, for “a barrister”, where it first occurs, to “the Courts and Legal Services Act 1990)” subst»
+   UK_uksi_2009_3348 article-22 → UK_uksi_1998_1833 reg. 35(6A) [words substituted] «In the provisions set out in the table in Schedule 1 to this Order, for “employed by a solicitors’ practice” (in each place) substitute “practising in a solicit»
+   UK_uksi_2009_3348 article-23 → UK_uksi_1999_3323 reg. 41(7)(a) [words substituted] «In the provisions set out in the table in Schedule 2 to this Order, for “a barrister”, where it first occurs, to “the Courts and Legal Services Act 1990)” subst»
+   UK_uksi_2009_3348 article-22 → UK_uksi_1999_3323 reg. 41(7A) [words substituted] «In the provisions set out in the table in Schedule 1 to this Order, for “employed by a solicitors’ practice” (in each place) substitute “practising in a solicit»
+
+== provision | the schedule to this act: 7 changes, round 0
+   UK_ukpga_1994_11 section-3-1 → UK_ukpga_1984_27 s. 68(1)(a) [amended] «The Schedule to this Act (which contains consequential amendments) shall have effect.»
+   UK_ukpga_1994_11 section-3-1 → UK_ukpga_1984_27 s. 124(2) [amended] «The Schedule to this Act (which contains consequential amendments) shall have effect.»
+   UK_ukpga_1994_11 section-3-1 → UK_ukpga_1984_27 s. 130(2)(a) [amended] «The Schedule to this Act (which contains consequential amendments) shall have effect.»
+   UK_ukpga_1994_11 section-3-1 → UK_ukpga_1984_27 s. 141A(2) [amended] «The Schedule to this Act (which contains consequential amendments) shall have effect.»
+
+== provision | in paragraph n for q: 6 changes, round 6
+   UK_uksi_2020_1265 schedule-5-paragraph-8-a → UK_eur_2018_2067 Art. 7(3) [word substituted] «in paragraph 3 for “competent authorities responsible for Directive 2003/87/EC ” there were substituted “ regulator ” ;»
+   UK_uksi_2020_1265 schedule-5-paragraph-15-a → UK_eur_2018_2067 Art. 38 [words substituted] «in paragraph 4 for “or new entrant data report” there were substituted “ , new entrant data report or annual activity level report ” ;»
+   UK_uksi_2020_1265 schedule-5-paragraph-15-b → UK_eur_2018_2067 Art. 38(1) [word substituted] «in paragraph 5 for “or new entrant data report” there were substituted “ , new entrant data report or annual activity level report ” .»
+   UK_uksi_2020_1265 schedule-5-paragraph-25-b → UK_eur_2018_2067 Art. 71(3) [word substituted] «in paragraph 6 for “an” there were substituted “ a ” .»
+
+== provision | in the provisions of the: 6 changes, round 0
+   UK_uksi_2013_496 schedule-11-paragraph-2-1 → UK_ukpga_1986_45 s. 124(4AA) [words substituted] «In the provisions of the Insolvency Act 1986 listed in sub-paragraph (2), for “Financial Services Authority” substitute “Financial Conduct Authority”.»
+   UK_uksi_2013_496 schedule-11-paragraph-2-1 → UK_ukpga_1986_45 s. 124C(1)(b) [words substituted] «In the provisions of the Insolvency Act 1986 listed in sub-paragraph (2), for “Financial Services Authority” substitute “Financial Conduct Authority”.»
+   UK_uksi_2013_496 schedule-11-paragraph-2-1 → UK_ukpga_1986_45 s. 124C(2)(b) [words substituted] «In the provisions of the Insolvency Act 1986 listed in sub-paragraph (2), for “Financial Services Authority” substitute “Financial Conduct Authority”.»
+   UK_ukpga_1998_36 section-46-3 → UK_ukpga_1990_29 s. 126(2) [amended] «In the provisions of the Tax Acts which refer to the subject of the charge under Case I or II of Schedule D as “ profits or gains ” or “profits and gains" of a »
+
+== provision | sections n to n of: 6 changes, round 1
+   UK_wsi_2013_755 article-8-2-a → UK_ukpga_1990_43 s. 128-134 [repealed] «sections 128 to 134 of the 1990 Act ;»
+   UK_ukpga_1996_8 section-25 → UK_ukpga_1994_23 s. 12(1) [amended] «Sections 26 to 29 of and Schedule 3 to this Act are for the purpose of giving effect to requirements of the directive of the Council of the European Communities»
+   UK_ukpga_1996_8 section-25 → UK_ukpga_1994_23 s. 13(1) [amended] «Sections 26 to 29 of and Schedule 3 to this Act are for the purpose of giving effect to requirements of the directive of the Council of the European Communities»
+   UK_ukpga_1996_8 section-25 → UK_ukpga_1994_23 s. 20(1) [amended] «Sections 26 to 29 of and Schedule 3 to this Act are for the purpose of giving effect to requirements of the directive of the Council of the European Communities»
+
+== provision | in the definition of q: 6 changes, round 6
+   UK_uksi_1993_1746 regulation-21-11-a-ii → UK_uksi_1990_304 reg. 2(1) [words substituted] «in the definition of “classification” for the words “regulation 6 of the 1984 Regulations” there shall be substituted the words “regulation 7 of the 1993 Regula»
+   UK_uksi_1993_1746 regulation-21-11-a-iii → UK_uksi_1990_304 reg. 2(1) [words substituted] «in the definition of “dangerous substance” for the words “conveyance within the meaning of the 1984 Regulations” there shall be substituted the words “carriage »
+   UK_ssi_2019_26 regulation-8-2-a-ii → UK_ssi_2000_95 reg. 2(1) [words substituted] «in the definition of “disposal” for “Annex I of Directive 2008/98/EC as amended” substitute “ Part II of schedule 4 of the Waste Management Licensing (Scotland)»
+   UK_ssi_2019_26 regulation-8-2-a-iii → UK_ssi_2000_95 reg. 2(1) [words substituted] «in the definition of “used PCBs” for “Directive 2008/98/EC ” substitute “ section 75(2)(a) of the Environmental Protection Act 1990 as read with section 75A of »
+
+== provision | in subsection ()(), after q: 6 changes, round 0
+   UK_ukpga_2025_18 schedule-11-paragraph-23-2 → UK_ukpga_2018_12 s. 171(3)(a) [word inserted] «In subsection (3)(a), after “preventing” insert “, investigating” .»
+   UK_ukpga_2025_18 schedule-11-paragraph-23-3 → UK_ukpga_2018_12 s. 171(6)(a) [word inserted] «In subsection (6)(a), after “preventing” insert “, investigating” .»
+   UK_ukpga_2026_23 schedule-16-paragraph-9-a → UK_ukpga_1990_8 s. 303(1ZA)(a) [words inserted] «in subsection (1ZA)(a), after “London” insert “or the mayor of a combined authority or combined county authority” ;»
+   UK_ukpga_2009_10 schedule-41-paragraph-5-2 → UK_ukpga_2001_2 s. 163(3)(a) [words inserted] «In subsection (3)(a), after “use” insert “ wholly or partly ” .»
+
+== heading | the title of section n: 6 changes, round 3
+   UK_asp_2006_17 section-20-2 → UK_ukpga_1997_8 s. 58 title [substituted] «The title of section 58 becomes “ Duration of planning permission ”.»
+   UK_asp_2006_17 section-9-4 → UK_ukpga_1997_8 s. 147 title [substituted] «The title of section 147 becomes “ Enforcement etc.: register of notices ”.»
+   UK_asp_2006_17 section-19-6 → UK_ukpga_1997_8 s. 267 title [substituted] «The title of section 267 becomes “ Appeals and applications under this Act: procedure etc. ”.»
+   UK_asp_2013_5 section-27-3 → UK_asp_2002_3 s. 42 title [substituted] «The title of section 42 of the 2002 Act becomes “ Financing and borrowing: Scottish Water ” .»
+
+== provision | in each enactment specified in: 6 changes, round 6
+   UK_uksi_1995_3162 article-2 → UK_ukpga_1961_34 s. 178(1) [amended (1.4.1996)] «In each enactment specified in column (2) in relation to which there is an entry in column (5), for the sum specified in column (5) there is substituted the sum»
+   UK_uksi_1998_3171 article-2 → UK_ukpga_1961_34 s. 178 [amended (1.4.1999)] «In each enactment specified in column (2) in relation to which there is an entry in column (5), for the sum specified in column (5) there is substituted the sum»
+   UK_uksi_1999_3311 article-2 → UK_ukpga_1961_34 s. 178 [amended] «In each enactment specified in column (2) in relation to which there is an entry in column (5), for the sum specified in column (5) there is substituted the sum»
+   UK_uksi_1997_2939 article-2 → UK_ukpga_1961_34 s. 178(1) [amended (1.4.1998)] «In each enactment specified in column (2) in relation to which there is an entry in column (5), for the sum specified in column (5) there is substituted the sum»
+
+== provision | after the definition of q,: 6 changes, round 2
+   UK_uksi_2026_392 schedule-2-paragraph-2-2-b → UK_uksi_2020_1265 art. 4(1) [words inserted] «after the definition of “installation”, insert— “ maritime activity ” has the meaning given in paragraph 7 of Schedule 2A; “ maritime emissions ” means emission»
+   UK_uksi_2026_392 schedule-2-paragraph-2-2-d → UK_uksi_2020_1265 art. 4(1) [words inserted] «after the definition of “surrender condition”, insert— surrender deduction” means any deduction arising in accordance with paragraph 15(1)(a) of Schedule 2A; ;»
+   UK_uksi_2003_2429 regulation-2-2-a → UK_uksi_2001_3998 reg. 2(1) [words inserted] «after the definition of “exempt product”, “extended formulary nurse prescriber” has the same meaning as in the Prescription Only Medicines (Human Use) Order 199»
+   UK_uksi_2003_2429 regulation-2-2-b → UK_uksi_2001_3998 reg. 2(1) [words inserted] «after the definition of “officer of customs and excise”, “patient group direction” has the same meaning as in the Prescription Only Medicines (Human Use) Order »
+
+== provision | at the end of sub-paragraph: 6 changes, round 6
+   UK_uksi_2026_392 schedule-2-paragraph-5-2-a → UK_uksi_2020_1265 art. 16(2)(a) [word omitted] «at the end of sub-paragraph (a) delete “and”;»
+   UK_uksi_2014_1614 regulation-4-2-b-iii → UK_uksi_1972_1698 reg. 2(1)(b) [word inserted] «at the end of sub-paragraph (b), insert “or”;»
+   UK_uksi_2024_637 schedule-paragraph-1-a-ii → UK_uksi_2003_2002 reg. 12(2)(p) [word omitted] «at the end of sub-paragraph (p), “and”;»
+   UK_uksi_2019_808 regulation-3-4-a-i → UK_uksi_2015_410 reg. 9(1)(a)(ii) [word inserted] «at the end of sub-paragraph (a)(ii), insert “or”;»
+
+== provision | q, and: 6 changes, round 1
+   UK_uksi_2024_399 schedule-1-paragraph-4-5-a → UK_ukpga_2016_22 s. 116 [words omitted] «“foreign company”, and»
+   UK_ssi_2020_466 regulation-5-3-a-i → UK_ssi_2019_421 reg. 3(1) [words omitted] «“Commission Implementing Decision (EU) 2017/198”, and»
+   UK_wsi_2020_1134 regulation-2-3-a-i → UK_uksi_2020_206 reg. 3(1) [words omitted] «“Commission Implementing Decision (EU) 2017/198”, and»
+   UK_asp_2014_3 schedule-3-paragraph-16-7-a-iii → UK_ukpga_1974_40 s. 73(1) [words repealed] «“noise reduction notice”, and»
+
+== provision | in section n (meaning of: 6 changes, round 0
+   UK_uksi_2026_881 article-8-2 → UK_ukpga_1992_52 s. 297A [words inserted] «In section 297A (meaning of “ voting ”) , after “ballot papers” insert “(whether by post or otherwise) or submit electronic voting forms” .»
+   UK_ukpga_2013_29 schedule-39-paragraph-7 → UK_ukpga_2003_14 s. 119(2) [words inserted] «In section 119 (meaning of “effective date” of a transaction), in subsection (2), at the appropriate place insert— “ paragraph 5 of Schedule 2A, ” .»
+   UK_ukpga_2013_29 schedule-41-paragraph-5 → UK_ukpga_2003_14 s. 119(2) [words inserted] «In section 119 (meaning of “effective date” of a transaction), in subsection (2), at the appropriate place in the list insert— “ paragraph 3(4) of Schedule 17A »
+   UK_ukpga_2020_26 schedule-2-paragraph-4 → UK_ukpga_1994_23 s. 5(3A) [inserted] «In section 5 (meaning of supply), after subsection (3) insert— An order under subsection (3) may provide that paragraph 30 of Schedule 9ZB does not apply, in su»
+
+== provision | in section n(), for q: 6 changes, round 2
+   UK_wsi_2020_1179 regulation-2-2 → UK_mwa_2010_8 s. 9(3) [words substituted] «In section 9(3), for “Council Directive 2011/97/EU ” substitute “Directive (EU) 2018/850”.»
+   UK_wsi_2020_1179 regulation-2-3 → UK_mwa_2010_8 s. 17(2) [words substituted] «In section 17(2), for “Council Regulation (EU) 2017/997” substitute “Directive (EU) 2018/851”.»
+   UK_ukpga_2010_33 schedule-9-paragraph-5 → UK_ukpga_2009_10 s. 104(1) [words substituted] «In section 104(1), for “103” substitute “ 103A (and Schedules 53 to 54A) ” .»
+   UK_ukpga_2023_30 schedule-23-paragraph-5 → UK_ukpga_2003_14 s. 85(3) [words substituted] «In section 85(3), for “freeport tax sites” substitute “special tax sites” .»
+
+== provision | omit the q at the: 6 changes, round 0
+   UK_ukpga_2010_33 schedule-7-paragraph-5-3-a → UK_ukpga_2001_2 s. 52(5) [word omitted] «omit the “and” at the end of the entry for section 210, and»
+   UK_ukpga_2012_14 schedule-11-paragraph-5-3-a → UK_ukpga_2001_2 s. 52(5) [word omitted] «omit the “and” at the end of the entry for section 212T, and»
+   UK_ukpga_2012_14 schedule-35-paragraph-6-3-b → UK_ukpga_2003_14 s. 109(3)(a) [word omitted] «omit the “or” at the end of paragraph (a), and»
+   UK_ukpga_2021_26 schedule-29-paragraph-2-a → UK_ukpga_2009_10 s. 102(4)(a) [word omitted] «omit the “and” at the end of paragraph (a);»
+
+== provision | in subsection (), in the: 6 changes, round 0
+   UK_ukpga_2011_5 schedule-12-paragraph-180-2 → UK_ukpga_2007_17 s. 25(3) Table [words substituted] «In subsection (3), in the table, for the entry relating to a person holding a licence under Part 2 of the Postal Services Act 2000 substitute— A postal operator»
+   UK_ukpga_2023_30 schedule-13-paragraph-2-2 → UK_ukpga_1979_2 s. 1(1) [words inserted] «In subsection (1), in the definition of “the Customs and Excise Acts 1979”, after “the Tobacco Products Duty Act 1979” insert— and references (however expressed»
+   UK_ukpga_2023_30 section-110-3 → UK_ukpga_1979_2 s. 95(2) [words inserted] «In subsection (2), in the words before paragraph (a), after “subsection (1)” insert “, (1A) or (1B)” .»
+   UK_ukpga_2025_36 schedule-2-paragraph-12-6 → UK_ukpga_1996_18 s. 48(4) [words inserted] «In subsection (4), in the words after paragraph (b), after “hirer” insert “, or a relevant person (within the meaning of section 47I),” .»
+
+== provision | in the finance act n,: 6 changes, round 0
+   UK_ukpga_2018_22 schedule-8-paragraph-132-c → UK_ukpga_2001_9 s. 100(2) [repealed] «in the Finance Act 2001, section 100(2) and paragraph 4(4) and (5) of Schedule 31,»
+   UK_ukpga_2018_22 schedule-8-paragraph-132-e → UK_ukpga_2003_14 s. 23 [repealed] «in the Finance Act 2003, section 23 and Schedule 2,»
+   UK_ukpga_2018_22 schedule-8-paragraph-132-f → UK_ukpga_2006_25 s. 19(3) [repealed] «in the Finance Act 2006, section 19(3) and (4),»
+   UK_ukpga_2018_22 schedule-8-paragraph-132-f → UK_ukpga_2006_25 s. 19(4) [repealed] «in the Finance Act 2006, section 19(3) and (4),»
+
+== provision | after q, in the second: 6 changes, round 0
+   UK_ukpga_2026_23 schedule-16-paragraph-9-b-ii → UK_ukpga_1990_8 s. 303(10A) [words inserted] «after “Mayor of London”, in the second place it occurs, insert “, the mayor,” .»
+   UK_ukpga_2014_15 schedule-paragraph-6-a-ii → UK_ukpga_1981_53 s. 5(1) [words inserted] «after “State”, in the second place, insert “ or the Scottish Ministers ” , and»
+   UK_ukpga_2020_26 schedule-2-paragraph-3-b-ii → UK_ukpga_1994_23 s. 3(3) [words inserted] «after “Schedules”, in the second place it occurs, insert “ or those Parts ” .»
+   UK_uksi_2018_1155 regulation-21-4-c-ii → UK_uksi_2008_1911 reg. 23 [words inserted] «after “accounts”, in the second place in which it appears, insert “or a revised energy and carbon report”;»
+
+== provision | in subsection () for the: 6 changes, round 0
+   UK_ssi_2005_383 schedule-1-paragraph-7-9-b → UK_ukpga_1982_45 s. 93(9) [words substituted] «in subsection (9) for the words from ““fire authority”” where it firstly occurs to “1959” substitute “appropriate relevant authority” means the authority discha»
+   UK_ukpga_2014_15 schedule-paragraph-2-3 → UK_ukpga_1981_53 s. 1(6) [words substituted] «In subsection (6) for the definitions of “deep sea bed” and “hard mineral resources” substitute— “ deep sea bed ” means the area of the sea bed situated beyond »
+   UK_ukpga_2014_15 schedule-paragraph-2-4 → UK_ukpga_1981_53 s. 1(7) [words substituted] «In subsection (7) for the words from “certifying” to “Power” substitute “ or the Scottish Ministers certifying that an area of the sea bed is beyond the limits »
+   UK_ukpga_2017_30 section-88-3 → UK_ukpga_2003_21 s. 198(1) [words substituted] «In subsection (1) for the words after paragraph (b) substitute— to regulate the BBC.»
+
+== provision | regulations n, n to n: 6 changes, round 6
+   UK_nisr_2013_206 regulation-24-b → UK_nisr_2009_238 reg. 4 [revoked] «regulations 4, 6 to 11 and 13, with effect from 1st June 2015;»
+   UK_nisr_2013_206 regulation-24-b → UK_nisr_2009_238 reg. 6-11 [revoked] «regulations 4, 6 to 11 and 13, with effect from 1st June 2015;»
+   UK_nisr_2013_206 regulation-24-b → UK_nisr_2009_238 reg. 13 [revoked] «regulations 4, 6 to 11 and 13, with effect from 1st June 2015;»
+   UK_uksi_2013_1506 regulation-36-b → UK_uksi_2009_716 reg. 4 [revoked] «regulations 4, 6 to 11 and 13, with effect from 1st June 2015;»
+
+== provision | para. ()—amendments without prejudice to: 6 changes, round 0
+   UK_nisi_1996_275 article-71 → UK_ukpga_1986_31 s. 74(2)(a) [amended (NI)] «Para. (1)—Amendments Without prejudice to section 17(2) of the Interpretation Act (Northern Ireland) 1954, the Department may by order make such modifications o»
+   UK_nisi_1996_275 article-71 → UK_ukpga_1986_31 s. 74(3)(mm) [added (NI)] «Para. (1)—Amendments Without prejudice to section 17(2) of the Interpretation Act (Northern Ireland) 1954, the Department may by order make such modifications o»
+   UK_nisi_1996_275 article-71 → UK_ukpga_1986_44 s. 62(2)(b) [amended] «Para. (1)—Amendments Without prejudice to section 17(2) of the Interpretation Act (Northern Ireland) 1954, the Department may by order make such modifications o»
+   UK_nisi_1996_275 article-71 → UK_ukpga_1987_43 s. 38(3)(nn) [added (NI)] «Para. (1)—Amendments Without prejudice to section 17(2) of the Interpretation Act (Northern Ireland) 1954, the Department may by order make such modifications o»
+
+== heading | in the heading, for q: 6 changes, round 1
+   UK_uksi_2026_484 schedule-paragraph-5-3-a → UK_eur_2012_649 Art. 7 heading [words substituted] «in the heading, for “Regulation (EC) No. 850/2004 ” substitute “Regulation (EU) 2019/1021” ;»
+   UK_ukpga_2023_30 schedule-23-paragraph-2-d → UK_ukpga_2003_14 s. 61A heading [words substituted] «in the heading, for “freeport tax sites” substitute “special tax sites” .»
+   UK_ukpga_2026_11 section-72-b → UK_ukpga_2021_26 s. 86 heading [word substituted] «in the heading, for “2029-30” substitute “2030-31” .»
+   UK_ukpga_2018_3 schedule-12-paragraph-22-2 → UK_ukpga_1996_8 s. 50 heading [words substituted] «In the heading, for “assess” substitute “ assess: registered persons ” .»
+
+== provision | for subsection () substitute— in: 6 changes, round 0
+   UK_ukpga_2014_15 schedule-paragraph-3-2 → UK_ukpga_1981_53 s. 2(1) [substituted] «For subsection (1) substitute— In this Act— “ the Authority ” means the International Seabed Authority; “ corresponding contract ” means— in relation to an expl»
+   UK_ukpga_2018_3 section-38-6-c → UK_ukpga_1994_23 s. 77C(9) [substituted] «for subsection (9) substitute— In this section “online marketplace” and “ operator ”, in relation to an online marketplace, have the same meaning as in section »
+   UK_ukpga_2018_3 section-38-7-b → UK_ukpga_1994_23 s. 77D(8) [substituted] «for subsection (8) substitute— In this section “online marketplace” and “ operator ”, in relation to an online marketplace, have the same meaning as in section »
+   UK_ukpga_2018_3 schedule-12-paragraph-17-7 → UK_ukpga_1996_8 s. 47(10) [substituted] «For subsection (10) substitute— In this Part— “ registered person ” means— a person registered under subsection (5) or (5A), and a person who was registered und»
+
+== provision | the definition of q;: 6 changes, round 2
+   UK_uksi_2020_958 regulation-2-2-a-ii → UK_uksi_2012_1976 reg. 2 [words omitted] «the definition of “greenfield facility”;»
+   UK_uksi_2026_867 regulation-2-3-b-i → UK_uksi_2008_1597 reg. 2 [words omitted] «the definition of “the 1978 Order”;»
+   UK_ukpga_2023_56 schedule-3-paragraph-3-3-a → UK_ukpga_2006_46 s. 243(7) [words omitted] «the definition of “public authority”;»
+   UK_ukpga_2012_11 schedule-3-paragraph-22-a → UK_ukpga_2003_14 s. 121 [words omitted] «the definition of “assignment”;»
+
+== provision | schedule n makes certain miscellaneous: 6 changes, round 0
+   UK_ukpga_1994_19 section-66-6 → UK_ukpga_1981_69 s. 36(7) (defn. of "local authority") para. (a) [amended (prosp.)] «Schedule 16 makes certain miscellaneous consequential amendments.»
+   UK_ukpga_1994_19 section-66-6 → UK_ukpga_1981_69 s. 72(10) [amended (prosp.)] «Schedule 16 makes certain miscellaneous consequential amendments.»
+   UK_ukpga_1994_19 section-66-6 → UK_ukpga_1992_14 s. 24(9)(b) [amended (prosp.)] «Schedule 16 makes certain miscellaneous consequential amendments.»
+   UK_ukpga_1994_19 section-66-6 → UK_ukpga_1992_14 s. 28(2)(a) [amended (prosp.)] «Schedule 16 makes certain miscellaneous consequential amendments.»
+
+== provision | in paragraph ()(), for q: 6 changes, round 2
+   UK_uksi_2012_460 schedule-paragraph-18-a → UK_uksi_2011_696 reg. 11(4)(a) [word substituted] «in paragraph (4)(a), for “32” substitute “31A”, and»
+   UK_uksi_2025_1043 regulation-5-3-b → UK_uksi_2020_312 reg. 3(2)(b) [words substituted] «in paragraph (2)(b), for “to be at intervals” to the end substitute “to take place by an earlier date, no later than that date.” ;»
+   UK_uksi_2025_1043 regulation-10-b → UK_uksi_2020_312 reg. 11(2)(b) [sum substituted] «in paragraph (2)(b), for “£30,000” substitute “£40,000” .»
+   UK_uksi_2025_662 regulation-15-a → UK_uksi_2008_594 reg. 17K(1)(a) [word substituted] «in paragraph (1)(a), for “17I” substitute “17IE” , and»
+
+== provision | section n() of fa n,: 6 changes, round 0
+   UK_ukpga_2008_9 schedule-5-paragraph-25-b → UK_ukpga_1996_8 s. 5(5) [omitted] «section 5(5) of FA 1996,»
+   UK_ukpga_2008_9 schedule-39-paragraph-65-c → UK_ukpga_1997_16 s. 47(10) [omitted] «section 47(10) of FA 1997,»
+   UK_ukpga_2008_9 schedule-36-paragraph-92-g → UK_ukpga_1999_16 s. 15(3) [omitted] «section 15(3) of FA 1999,»
+   UK_ukpga_2008_9 schedule-44-paragraph-11-e → UK_ukpga_2001_9 s. 89(3) [omitted] «section 89(3) of FA 2001, and»
+
+== provision | in fa n, section n: 6 changes, round 0
+   UK_ukpga_2008_9 schedule-14-paragraph-17-h → UK_ukpga_1999_16 s. 80 [omitted] «in FA 1999, section 80 and paragraphs 16 and 18(3) of Schedule 4,»
+   UK_ukpga_2008_9 schedule-14-paragraph-17-l → UK_ukpga_2003_14 s. 171 [omitted] «in FA 2003, section 171 and Schedule 34,»
+   UK_ukpga_2012_14 section-26-2-b → UK_ukpga_1996_8 s. 166 [omitted] «in FA 1996, section 166 and Schedule 32,»
+   UK_ukpga_2012_14 schedule-39-paragraph-39-a → UK_ukpga_2001_9 s. 67 [repealed] «in FA 2001, section 67 and Schedule 19,»
+
+== provision | section n,: 6 changes, round 0
+   UK_ukpga_2023_30 schedule-23-paragraph-11-a → UK_ukpga_2001_2 s. 39 [words substituted] «section 39,»
+   UK_ukpga_2023_30 schedule-23-paragraph-13-a → UK_ukpga_2001_2 s. 270AA [words substituted] «section 270AA,»
+   UK_ukpga_2012_14 schedule-16-paragraph-247-b-iii → UK_ukpga_1990_29 s. 48 [omitted] «section 48,»
+   UK_ukpga_2012_14 schedule-16-paragraph-247-g-i → UK_ukpga_1996_8 s. 163 [omitted] «section 163,»
+
+== provision | section n;: 6 changes, round 1
+   UK_uksi_1998_2241 regulation-3-1-a → UK_ukpga_1995_21 s. 89 [repealed] «section 89;»
+   UK_ukpga_2023_56 section-49-2-a → UK_ukpga_2006_46 s. 112A [omitted] «section 112A;»
+   UK_ukpga_2026_11 schedule-13-paragraph-13-a → UK_ukpga_2009_10 s. 20 [omitted] «section 20;»
+   UK_asc_2025_3 schedule-1-paragraph-52-2-a → UK_ukpga_1998_38 s. 134 [omitted] «section 134;»
+
+== provision | in article n() of the: 6 changes, round 1
+   UK_ssi_2015_188 regulation-10 → UK_ssi_2011_204 art. 2(1) [words substituted] «In article 2(1) of the Marine Licensing (Exempted Activities) (Scottish Inshore Region) Order 2011 (interpretation) for the definition of “the Waste Framework D»
+   UK_ssi_2015_438 article-6 → UK_ssi_2011_204 art. 2(2) [words substituted] «In article 2(2) of the Marine Licensing (Exempted Activities) (Scottish Inshore Region) Order 2011 (interpretation), for the definition of “the Waste Framework »
+   UK_ssi_2015_438 article-5 → UK_ssi_2011_57 art. 3(1) [words substituted] «In article 3(1) of the Marine Licensing (Exempted Activities) (Scottish Offshore Region) Order 2011 (interpretation), for the definition of “the Waste Framework»
+   UK_nia_2011_9 section-10 → UK_nisi_1983_764 art. 42(1)(c) and word [inserted] «In Article 42(1) of the Dogs Order (power of entry or preventing a dog attacking any other animal owned by a person other than the owner of the dog or ending an»
+
+== provision | in subsection (), for paragraph: 6 changes, round 0
+   UK_ukpga_2009_10 schedule-11-paragraph-14-2 → UK_ukpga_2001_2 s. 45D(1)(c) [substituted] «In subsection (1), for paragraph (c) substitute— the car— is electrically-propelled, or has low CO 2 emissions, and .»
+   UK_ukpga_2009_10 schedule-32-paragraph-7-2 → UK_ukpga_2001_2 s. 70E(1)(c) [substituted] «In subsection (1), for paragraph (c) substitute— a relevant event occurs.»
+   UK_ukpga_2009_10 schedule-38-paragraph-4-2 → UK_ukpga_2001_2 s. 165(1)(b) [substituted] «In subsection (1), for paragraph (b) substitute— the decommissioning condition is met in relation to a notional accounting period, and .»
+   UK_ukpga_2025_36 schedule-2-paragraph-22-2 → UK_ukpga_1996_18 s. 199(8)(b)-(bzb) [substituted for s. 199(8)(b)] «In subsection (8), for paragraph (b) substitute— Part 2, Part 2A, apart from Chapter 1 of that Part, Parts 2B, 3 and 5, .»
+
+== provision | regulation n()(), ()() and (): 6 changes, round 6
+   UK_uksi_1992_385 regulation-2 → UK_uksi_1989_744 reg. 3(1)(a) [sum substituted] «Regulation 3(1)(a), (2)(a) and (3) of the Removal, Storage and Disposal of Vehicles (Prescribed Sums and Charges, etc.) Regulations 1989 shall be amended by the»
+   UK_uksi_1992_385 regulation-2 → UK_uksi_1989_744 reg. 3(2)(a) [sum substituted] «Regulation 3(1)(a), (2)(a) and (3) of the Removal, Storage and Disposal of Vehicles (Prescribed Sums and Charges, etc.) Regulations 1989 shall be amended by the»
+   UK_uksi_1992_385 regulation-2 → UK_uksi_1989_744 reg. 3(3) [sum substituted] «Regulation 3(1)(a), (2)(a) and (3) of the Removal, Storage and Disposal of Vehicles (Prescribed Sums and Charges, etc.) Regulations 1989 shall be amended by the»
+   UK_uksi_1990_955 regulation-2 → UK_uksi_1989_744 reg. 3(1)(a) [sum substituted] «Regulation 3(1)(a), (2)(a) and (3) of the Removal, Storage and Disposal of Vehicles (Prescribed Sums and Charges etc.) Regulations 1989 shall be amended by the »
+
+== provision | regulations n()(), ()() and (): 6 changes, round 6
+   UK_uksi_1991_336 regulation-2-1 → UK_uksi_1989_744 reg. 3(1)(a) [sum substituted] «Regulations 3(1)(a), (2)(a) and (3) of the 1989 Regulations shall be amended by the substitution of “£85” for “£80” in each place where it occurs.»
+   UK_uksi_1991_336 regulation-2-2 → UK_uksi_1989_744 reg. 3(1)(b) [sum substituted] «Regulations 3(1)(b), (2)(b) and (4) of the 1989 Regulations shall be amended by the substitution of “£12” for “£10” in each place where it occurs.»
+   UK_uksi_1991_336 regulation-2-1 → UK_uksi_1989_744 reg. 3(2)(a) [sum substituted] «Regulations 3(1)(a), (2)(a) and (3) of the 1989 Regulations shall be amended by the substitution of “£85” for “£80” in each place where it occurs.»
+   UK_uksi_1991_336 regulation-2-2 → UK_uksi_1989_744 reg. 3(2)(b) [sum substituted] «Regulations 3(1)(b), (2)(b) and (4) of the 1989 Regulations shall be amended by the substitution of “£12” for “£10” in each place where it occurs.»
+
+== provision | the amendments listed in schedule: 6 changes, round 6
+   UK_nisr_2012_179 regulation-33-2 → UK_nisr_1993_20 reg. 3(3)(c) [words substituted] «The amendments listed in Schedule 4 shall have effect.»
+   UK_nisr_2012_179 regulation-33-2 → UK_nisr_1999_305 reg. 12(5)(b) [words substituted] «The amendments listed in Schedule 4 shall have effect.»
+   UK_nisr_2012_179 regulation-33-2 → UK_nisr_2003_34 reg. 5(1)(a)(ii) [words substituted] «The amendments listed in Schedule 4 shall have effect.»
+   UK_nisr_2012_179 regulation-33-2 → UK_nisr_2010_60 reg. 4(4) [words substituted] «The amendments listed in Schedule 4 shall have effect.»
+
+== provision | in each of the following: 6 changes, round 0
+   UK_ukpga_2013_27 section-25-9 → UK_ukpga_1992_42 s. 12(3)(b) [words inserted] «In each of the following provisions (which refer to orders confirmed by Act under section 6 of the 1945 Act) before “6” insert “ 4 or ” section 44(1) of the Har»
+   UK_uksi_2016_481 schedule-1-paragraph-18 → UK_ukpga_1981_14 s. 57(2)(b) [word substituted] «In each of the following provisions, for “adjudged”, in each place it occurs, substitute “made”. Acts of Parliament References Provisions Fines and Recoveries A»
+   UK_uksi_2016_481 schedule-1-paragraph-18 → UK_ukpga_1995_23 s. 26(1)(g) [word substituted] «In each of the following provisions, for “adjudged”, in each place it occurs, substitute “made”. Acts of Parliament References Provisions Fines and Recoveries A»
+   UK_uksi_2016_481 schedule-1-paragraph-18 → UK_ukpga_1995_23 s. 26(10) [word substituted] «In each of the following provisions, for “adjudged”, in each place it occurs, substitute “made”. Acts of Parliament References Provisions Fines and Recoveries A»
+
+== provision | schedule n (which contains amendments: 6 changes, round 6
+   UK_uksi_2005_2114 article-2-15 → UK_uksi_1997_1508 reg. 2(1) [words substituted] «Schedule 15 (which contains amendments to subordinate legislation relating to merchant shipping) shall have effect.»
+   UK_uksi_2005_2114 article-2-15 → UK_uksi_1997_1509 reg. 2(1) [words substituted] «Schedule 15 (which contains amendments to subordinate legislation relating to merchant shipping) shall have effect.»
+   UK_uksi_2005_2114 article-2-15 → UK_uksi_1997_1510 reg. 2(1) [words substituted] «Schedule 15 (which contains amendments to subordinate legislation relating to merchant shipping) shall have effect.»
+   UK_uksi_2005_2114 article-2-15 → UK_uksi_1998_1011 reg. 1(2) [words substituted] «Schedule 15 (which contains amendments to subordinate legislation relating to merchant shipping) shall have effect.»
+
+== provision | the remaining provisions of part: 6 changes, round 0
+   UK_ukpga_2011_20 section-109-1-b → UK_ukpga_2009_20 s. 70(1)-(4) [repealed] «the remaining provisions of Part 5 of that Act (regional strategy).»
+   UK_ukpga_2011_20 section-109-1-b → UK_ukpga_2009_20 s. 70(6)-(8) [repealed] «the remaining provisions of Part 5 of that Act (regional strategy).»
+   UK_ukpga_2011_20 section-109-1-b → UK_ukpga_2009_20 s. 71-81 [repealed] «the remaining provisions of Part 5 of that Act (regional strategy).»
+   UK_ukpga_2011_20 section-109-1-b → UK_ukpga_2009_20 s. 82(3) [repealed] «the remaining provisions of Part 5 of that Act (regional strategy).»
+
+== heading | before section n insert— q: 5 changes, round 3
+   UK_anaw_2015_4 schedule-4-paragraph-4 → UK_ukpga_1990_8 s. 62A cross-heading [inserted] «Before section 62A insert— “ England: option to make application directly to Secretary of State ” .»
+   UK_ukpga_2017_3 schedule-1-paragraph-2 → UK_ukpga_2004_21 s. 1 cross-heading [inserted] «Before section 1 insert— “ Fire and rescue authorities ” .»
+   UK_ukpga_2017_3 schedule-1-paragraph-4 → UK_ukpga_2004_21 s. 2 cross-heading [inserted] «Before section 2 insert— “ Combined fire and rescue authorities ” .»
+   UK_ukpga_2017_3 schedule-1-paragraph-6 → UK_ukpga_2004_21 s. 5A cross-heading [inserted] «Before section 5A insert— “ Powers of certain fire and rescue authorities ” .»
+
+== provision | in the words before point: 5 changes, round 5
+   UK_uksi_2023_722 regulation-4-2-b-i → UK_eur_2006_1907 Art. 127P(4B)(a) [words substituted] «in the words before point (i), for “two years after the end of the 300 day post-IP completion period” substitute “27 October 2026” ;»
+   UK_uksi_2023_722 regulation-4-2-c-i → UK_eur_2006_1907 Art. 127P(4B)(b) [words substituted] «in the words before point (i), for “four years after the end of the 300 day post-IP completion period” substitute “27 October 2028” ;»
+   UK_uksi_2026_849 regulation-4-2-a-i → UK_eur_2006_1907 Art. 127P(4B)(a) [word substituted] «in the words before point (i), for “2026” substitute “2029” ;»
+   UK_uksi_2026_849 regulation-4-2-b-i → UK_eur_2006_1907 Art. 127P(4B)(b) [word substituted] «in the words before point (i), for “2028” substitute “2030” ;»
+
+== provision | in subparagraph (), for q: 5 changes, round 5
+   UK_uksi_2023_722 regulation-4-2-d → UK_eur_2006_1907 Art. 127P(4B)(c) [words substituted] «in subparagraph (c), for “six years after the end of the 300 day post-IP completion period” substitute “27 October 2030” .»
+   UK_uksi_2026_849 regulation-3-2-a → UK_eur_2006_1907 Art. 41(5)(a) [word substituted] «in subparagraph (a), for “2027” substitute “2030” ;»
+   UK_uksi_2026_849 regulation-3-2-b → UK_eur_2006_1907 Art. 41(5)(b) [word substituted] «in subparagraph (b), for “2030” substitute “2032” ;»
+   UK_uksi_2026_849 regulation-3-2-c → UK_eur_2006_1907 Art. 41(5)(c) [word substituted] «in subparagraph (c), for “2035” substitute “2036” .»
+
+== provision | omit the definition of q: 5 changes, round 4
+   UK_wsi_2012_65 regulation-5-a → UK_uksi_2004_1490 reg. 2(1) [words omitted] «omit the definition of “the Assembly” (“ y Cynulliad ”);»
+   UK_wsi_2012_65 regulation-5-b → UK_uksi_2004_1490 reg. 2(1) [words omitted] «omit the definition of “collected municipal waste” (“ gwastraff trefol a gasglwyd ”);»
+   UK_wsi_2012_65 regulation-5-a → UK_wsi_2004_1490 reg. 2(1) [words omitted] «omit the definition of “the Assembly” (“ y Cynulliad ”);»
+   UK_wsi_2012_65 regulation-5-b → UK_wsi_2004_1490 reg. 2(1) [words omitted] «omit the definition of “collected municipal waste” (“ gwastraff trefol a gasglwyd ”);»
+
+== provision | regulation n();: 5 changes, round 5
+   UK_wsi_2013_755 schedule-5-paragraph-30-c → UK_uksi_2005_1806 reg. 33(1) [word substituted] «regulation 33(1);»
+   UK_wsi_2013_755 schedule-5-paragraph-32-c → UK_uksi_2005_1806 reg. 60(1) [word substituted] «regulation 60(1);»
+   UK_wsi_2013_755 schedule-5-paragraph-30-c → UK_wsi_2005_1806 reg. 33(1) [word substituted] «regulation 33(1);»
+   UK_wsi_2013_755 schedule-5-paragraph-32-c → UK_wsi_2005_1806 reg. 60(1) [word substituted] «regulation 60(1);»
+
+== provision | regulation n()();: 5 changes, round 4
+   UK_wsi_2013_755 schedule-5-paragraph-30-e → UK_uksi_2005_1806 reg. 47(4)(b) [word substituted] «regulation 47(4)(b);»
+   UK_wsi_2013_755 schedule-5-paragraph-30-e → UK_wsi_2005_1806 reg. 47(4)(b) [word substituted] «regulation 47(4)(b);»
+   UK_uksi_2026_867 regulation-2-7-a → UK_uksi_2008_1597 reg. 21(2)(b) [omitted] «regulation 21(2)(b);»
+   UK_wsi_2024_447 regulation-3-i → UK_uksi_2010_2215 reg. 20(5)(a) [word substituted] «regulation 20(5)(a);»
+
+== provision | the existing provision becomes paragraph: 5 changes, round 1
+   UK_wsi_2013_755 schedule-1-paragraph-10-2 → UK_wsi_2012_1903 art. 10(1) [art. 10 renumbered as art. 10(1)] «The existing provision becomes paragraph (1).»
+   UK_uksi_2025_1236 regulation-59-2 → UK_uksi_2024_110 reg. 18(1) [reg. 18 renumbered as reg. 18(1)] «The existing provision becomes paragraph (1).»
+   UK_ukpga_2025_36 section-35-4-a → UK_uksi_1998_1833 reg. 29C(1) [reg. 29C renumbered as reg. 29C(1)] «the existing provision becomes paragraph (1);»
+   UK_wsi_2024_924 regulation-95-a → UK_uksi_2017_544 reg. 1(1) [reg. 1 renumbered as reg. 1(1)] «the existing provision becomes paragraph (1) of regulation 1;»
+
+== provision | in section n (index of: 5 changes, round 0
+   UK_ukpga_2025_18 schedule-11-paragraph-27 → UK_ukpga_2018_12 s. 206 Table [words omitted] «In section 206 (index of defined expressions), in the Table, omit the entry for “representative (in Part 6)”.»
+   UK_uksi_2026_881 article-8-4 → UK_ukpga_1992_52 s. 299 [words inserted] «In section 299 (index of definitions) , at the appropriate places insert— audit logs section 298A ; electronic voting section 298A ; electronic voting form sect»
+   UK_ukpga_2013_29 schedule-39-paragraph-8 → UK_ukpga_2003_14 s. 122 [words substituted] «In section 121 (index of defined expressions), in the entry for “vendor”, in the second column, for “sections 45(5A) and 45A(9)” substitute “ section 45A(9) and»
+   UK_ukpga_2021_26 schedule-16-paragraph-4 → UK_ukpga_2003_14 s. 122 [words inserted] «In section 122 (index of defined expressions), in the table, at the appropriate place insert— non-resident transaction Schedule 9A, paragraph 2 .»
+
+== heading | the title of the section: 5 changes, round 1
+   UK_asp_2006_17 section-15-c → UK_ukpga_1997_8 s. 39 title [substituted] «the title of the section becomes “ Declining to determine an application ”.»
+   UK_asp_2024_13 section-10-7-b → UK_asp_2009_12 s. 88A heading [substituted] «the title of the section becomes “Offences relating to supply of chargeable items: fixed penalty notices” .»
+   UK_ssi_2026_50 schedule-2-paragraph-1-24-e → UK_asp_2016_20 s. 87 heading [substituted] «the title of the section becomes “Burial, cremation or hydrolysis: duty of local authority” .»
+   UK_asp_2024_4 section-6-5-b → UK_ukpga_1981_69 s. 17 heading [substituted] «the title of the section becomes “ False statements made for obtaining registration or licence etc. ” .»
+
+== provision | for the definition of q,: 5 changes, round 4
+   UK_uksi_2026_392 schedule-2-paragraph-2-2-a → UK_uksi_2020_1265 art. 4(1) [words substituted] «for the definition of “emissions monitoring plan”, substitute— “ emissions monitoring plan ” has the meaning given in article 28(1) in relation an aircraft oper»
+   UK_uksi_2026_392 schedule-2-paragraph-2-2-c → UK_uksi_2020_1265 art. 4(1) [words substituted] «for the definition of “regulator”, substitute— “regulator” must be construed in accordance with articles 9 to 13A; ;»
+   UK_uksi_2026_392 schedule-2-paragraph-2-2-e → UK_uksi_2020_1265 art. 4(1) [words substituted] «for the definition of “verification report”, substitute— “verification report” has, in relation to an operator or aircraft operator, the same meaning as in the »
+   UK_uksi_2008_1597 schedule-7-paragraph-4-2 → UK_uksi_2001_1701 reg. 2(2) [words substituted] «For the definition of “equipment for use outdoors”, in regulation 2(2) of the 2001 Regulations there shall be substituted the following— “ equipment for use out»
+
+== provision | in paragraph ()(), after q: 5 changes, round 1
+   UK_uksi_2026_392 schedule-2-paragraph-10-3 → UK_uksi_2020_1265 art. 35(2)(h) [words inserted] «In paragraph (2)(h), after “article 45” insert “, a determination of maritime emissions under article 45A or a determination of the emissions figure for surrend»
+   UK_uksi_1998_1833 regulation-32-6-a → UK_ukpga_1996_18 s. 202(2)(g)(i) [amended] «in paragraph (g)(i), after “100" there shall be inserted “ , 101A(d) ” , and»
+   UK_uksi_1998_1833 regulation-32-6-b → UK_ukpga_1996_18 s. 202(2)(g)(ii) [amended] «in paragraph (g)(ii), after “of that section," there shall be inserted “ or by reason of the application of subsection (4A) in so far as it applies where the re»
+   UK_wsi_2017_567 schedule-9-paragraph-1-11-a → UK_uksi_2012_801 art. 22(6)(a) [words inserted] «in paragraph (6)(a), after “21 days” insert “ or, in the case of an EIA application accompanied by an environmental statement 30 days, in either case ” ; and»
+
+== provision | q.: 5 changes, round 1
+   UK_uksi_2024_399 schedule-1-paragraph-4-5-b → UK_ukpga_2016_22 s. 116 [words omitted] «“UK affairs, business and property”.»
+   UK_ukpga_2014_21 schedule-5-paragraph-50-b → UK_ukpga_1991_56 s. 158(7)(a) [words repealed] «“or laid in pursuance of section 66B(4)(b)(ii)”.»
+   UK_ukpga_2014_6 schedule-7-paragraph-43-b → UK_ukpga_1996_18 s. 236(3) [word repealed] «“80BB,”.»
+   UK_asc_2024_4 section-10-7-g → UK_ukpga_2006_32 s. 159 [words omitted] «“Senedd regional member”.»
+
+== provision | omit subsections () to ().: 5 changes, round 0
+   UK_ukpga_2010_33 schedule-13-paragraph-1-4 → UK_ukpga_1979_2 s. 118A(4)-(6) [omitted] «Omit subsections (4) to (6).»
+   UK_ukpga_2014_15 schedule-paragraph-16-3 → UK_ukpga_1981_53 s. 18(3)-(5) [omitted] «Omit subsections (3) to (5).»
+   UK_ukpga_2009_10 schedule-32-paragraph-1-4 → UK_ukpga_2001_2 s. 61(6)-(9) [omitted] «Omit subsections (6) to (9).»
+   UK_ukpga_2012_14 schedule-38-paragraph-58-2-b → UK_ukpga_2003_14 s. 93(3)-(6) [omitted] «omit subsections (3) to (6).»
+
+== provision | in the opening words, for: 5 changes, round 0
+   UK_ukpga_2011_5 schedule-12-paragraph-177-3-a → UK_ukpga_2007_17 s. 15(1) [words substituted] «in the opening words, for “the Postal Services Commission (“ the Commission ”)” substitute “ the Office of Communications (“OFCOM”) ” , and»
+   UK_ukpga_2026_23 schedule-16-paragraph-12-a-i → UK_ukpga_1990_8 s. 324(1B) [words substituted] «in the opening words, for “Mayor of London” substitute “relevant mayor” ;»
+   UK_uksi_2019_145 schedule-3-paragraph-20-a-i → UK_uksi_2008_1911 reg. 32 [words substituted] «in the opening words, for “Article 4.1.1 of Directive 2014/65/EU” substitute “ Article 2.1A of Regulation (EU) No. 600/2014 ” ;»
+   UK_ukpga_2019_1 schedule-18-paragraph-7-3-a → UK_ukpga_1994_23 s. 43B(2) [word substituted] «in the opening words, for “bodies corporate” substitute “ persons ” ;»
+
+== provision | after subsection () insert— this: 5 changes, round 0
+   UK_ukpga_2011_5 schedule-12-paragraph-184-2 → UK_ukpga_2007_17 s. 45(1A) [inserted] «After subsection (1) insert— This section also applies in relation to standards for the handling of complaints made about postal operators by users of their ser»
+   UK_ukpga_2020_26 schedule-2-paragraph-5-3 → UK_ukpga_1994_23 s. 9A(1A) [inserted] «After subsection (1) insert— This section also applies if relevant goods are supplied by a person (“A”) to another person (“B”) for the purposes of any business»
+   UK_ukpga_2025_36 schedule-2-paragraph-16-a → UK_ukpga_1996_18 s. 105(7BZA) [inserted] «after subsection (7B) insert— This subsection applies if the reason (or, if more than one, the principal reason) for which the employee was selected for dismiss»
+   UK_ukpga_2026_11 schedule-13-paragraph-8-a-ii → UK_ukpga_1997_16 s. 10(3AB) [inserted] «after subsection (3AA) insert— This section does not apply to the playing of bingo. ;»
+
+== provision | after q, insert q;: 5 changes, round 2
+   UK_uksi_2014_1614 regulation-4-2-b-i → UK_uksi_1972_1698 reg. 2(1) [words inserted] «after “a seaman employed”, insert “or engaged”;»
+   UK_uksi_2014_1614 regulation-4-2-b-v → UK_uksi_1972_1698 reg. 2(1) [words inserted] «after “so employed”, insert “or engaged”;»
+   UK_uksi_2018_1155 regulation-21-4-b-i → UK_uksi_2008_1911 reg. 23 [words inserted] «after “annual accounts”, insert “or energy and carbon report”;»
+   UK_uksi_2018_1155 regulation-21-4-b-ii → UK_uksi_2008_1911 reg. 23 [words inserted] «after “the accounts”, insert “or report”;»
+
+== provision | section n() (exception to extinguishment: 5 changes, round 0
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-a → UK_ukpga_1990_8 s. 236(2) [words substituted] «section 236(2) (exception to extinguishment of rights over land compulsorily acquired);»
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-a → UK_ukpga_1990_8 s. 236(2) [words substituted] «section 236(2) (exception to extinguishment of rights over land compulsorily acquired);»
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-a → UK_ukpga_1990_8 s. 236(2) [words substituted] «section 236(2) (exception to extinguishment of rights over land compulsorily acquired);»
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-a → UK_ukpga_1990_8 s. 236(2) [words substituted] «section 236(2) (exception to extinguishment of rights over land compulsorily acquired);»
+
+== provision | section n() (saving from power: 5 changes, round 0
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-b → UK_ukpga_1990_8 s. 237(3) [words substituted] «section 237(3) (saving from power to override certain rights);»
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-b → UK_ukpga_1990_8 s. 237(3) [words substituted] «section 237(3) (saving from power to override certain rights);»
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-b → UK_ukpga_1990_8 s. 237(3) [words substituted] «section 237(3) (saving from power to override certain rights);»
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-b → UK_ukpga_1990_8 s. 237(3) [words substituted] «section 237(3) (saving from power to override certain rights);»
+
+== provision | section n (secretary of state’s: 5 changes, round 0
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-c → UK_ukpga_1990_8 s. 256 [words substituted] «section 256 (Secretary of State’s orders affecting telecommunications apparatus);»
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-c → UK_ukpga_1990_8 s. 256 [words substituted] «section 256 (Secretary of State’s orders affecting telecommunications apparatus);»
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-c → UK_ukpga_1990_8 s. 256 [words substituted] «section 256 (Secretary of State’s orders affecting telecommunications apparatus);»
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-c → UK_ukpga_1990_8 s. 256 [words substituted] «section 256 (Secretary of State’s orders affecting telecommunications apparatus);»
+
+== provision | section n (orders by other: 5 changes, round 0
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-d → UK_ukpga_1990_8 s. 260 [words substituted] «section 260 (orders by other authorities affecting telecommunication apparatus);»
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-d → UK_ukpga_1990_8 s. 260 [words substituted] «section 260 (orders by other authorities affecting telecommunication apparatus);»
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-d → UK_ukpga_1990_8 s. 260 [words substituted] «section 260 (orders by other authorities affecting telecommunication apparatus);»
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-d → UK_ukpga_1990_8 s. 260 [words substituted] «section 260 (orders by other authorities affecting telecommunication apparatus);»
+
+== provision | section n (extinguishment of rights: 5 changes, round 0
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-e → UK_ukpga_1990_8 s. 272 [words substituted] «section 272 (extinguishment of rights of telecommunications code system operators);»
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-e → UK_ukpga_1990_8 s. 272 [words substituted] «section 272 (extinguishment of rights of telecommunications code system operators);»
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-e → UK_ukpga_1990_8 s. 272 [words substituted] «section 272 (extinguishment of rights of telecommunications code system operators);»
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-e → UK_ukpga_1990_8 s. 272 [words substituted] «section 272 (extinguishment of rights of telecommunications code system operators);»
+
+== provision | section n() (making of orders);: 5 changes, round 0
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-g → UK_ukpga_1990_8 s. 274(2) [words substituted] «section 274(2) (making of orders);»
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-g → UK_ukpga_1990_8 s. 274(2) [words substituted] «section 274(2) (making of orders);»
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-g → UK_ukpga_1990_8 s. 274(2) [words substituted] «section 274(2) (making of orders);»
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-g → UK_ukpga_1990_8 s. 274(2) [words substituted] «section 274(2) (making of orders);»
+
+== provision | section n() (right to compensation).: 5 changes, round 0
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-h → UK_ukpga_1990_8 s. 279(3) [words substituted] «section 279(3) (right to compensation).»
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-h → UK_ukpga_1990_8 s. 279(3) [words substituted] «section 279(3) (right to compensation).»
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-h → UK_ukpga_1990_8 s. 279(3) [words substituted] «section 279(3) (right to compensation).»
+   UK_ukpga_2003_21 schedule-17-paragraph-103-1-h → UK_ukpga_1990_8 s. 279(3) [words substituted] «section 279(3) (right to compensation).»
+
+== provision | section n()()(), ()(), ()()(), ()(): 5 changes, round 0
+   UK_ukpga_2005_14 section-49-4-b → UK_ukpga_1993_43 s. 62(2)(a)(i) [words substituted] «section 62(2)(a)(i), (3)(a), (5)(a)(i), (6)(a) and (7)(a) (notice and power to petition for railway administration order in the case of voluntary winding-up and»
+   UK_ukpga_2005_14 section-49-4-b → UK_ukpga_1993_43 s. 62(3)(a) [words substituted] «section 62(2)(a)(i), (3)(a), (5)(a)(i), (6)(a) and (7)(a) (notice and power to petition for railway administration order in the case of voluntary winding-up and»
+   UK_ukpga_2005_14 section-49-4-b → UK_ukpga_1993_43 s. 62(5)(a)(i) [words substituted] «section 62(2)(a)(i), (3)(a), (5)(a)(i), (6)(a) and (7)(a) (notice and power to petition for railway administration order in the case of voluntary winding-up and»
+   UK_ukpga_2005_14 section-49-4-b → UK_ukpga_1993_43 s. 62(6)(a) [words substituted] «section 62(2)(a)(i), (3)(a), (5)(a)(i), (6)(a) and (7)(a) (notice and power to petition for railway administration order in the case of voluntary winding-up and»
+
+== provision | accordingly, the industrial tribunals act: 5 changes, round 1
+   UK_ukpga_1998_8 section-1-2 → UK_ukpga_1968_73 blanket [substituted] «Accordingly, the Industrial Tribunals Act 1996 may be cited as the Employment Tribunals Act 1996; and (wherever they occur in any enactment)— for the words “ind»
+   UK_ukpga_1998_8 section-1-2 → UK_ukpga_1986_45 Blanket Amendment [substituted] «Accordingly, the Industrial Tribunals Act 1996 may be cited as the Employment Tribunals Act 1996; and (wherever they occur in any enactment)— for the words “ind»
+   UK_ukpga_1998_8 section-1-2 → UK_ukpga_1993_43 Blanket amendment [substituted] «Accordingly, the Industrial Tribunals Act 1996 may be cited as the Employment Tribunals Act 1996; and (wherever they occur in any enactment)— for the words “ind»
+   UK_ukpga_1998_8 section-1-2 → UK_ukpga_1996_18 blanket [substituted] «Accordingly, the Industrial Tribunals Act 1996 may be cited as the Employment Tribunals Act 1996; and (wherever they occur in any enactment)— for the words “ind»
+
+== provision | after subsection () insert— subsection: 5 changes, round 1
+   UK_asp_2003_3 schedule-4-paragraph-3-3 → UK_ukpga_1980_45 s. 24(1A) [inserted] «After subsection (1) insert— Subsection (1) does not apply in relation to the laying of any part of a service pipe in respect of which an authorisation under se»
+   UK_ukpga_2008_9 section-164-3 → UK_ukpga_2007_11 s. 16(6A) [inserted] «After subsection (6) insert— Subsection (4)(c) does not permit the creation of a criminal offence with maximum penalties in excess of the maximum penalties whic»
+   UK_ukpga_2023_30 section-110-2 → UK_ukpga_1979_2 s. 95(1A)(1B) [inserted] «After subsection (1) insert— Subsection (1) applies in relation to goods that are alcoholic products as if references, in that subsection and in section 94, to »
+   UK_ukpga_2009_10 schedule-36-paragraph-5-3 → UK_ukpga_1994_23 s. 8(4A) [inserted] «After subsection (4) insert— Subsection (1) does not apply to services of any of the descriptions specified in Schedule 9.»
+
+== provision | subsection () (in the words: 5 changes, round 0
+   UK_ukpga_2026_23 schedule-18-paragraph-28-2-b → UK_ukpga_1990_8 s. 271(5) [words substituted] «subsection (5) (in the words before paragraph (a)).»
+   UK_ukpga_2026_23 schedule-18-paragraph-29-2-b → UK_ukpga_1990_8 s. 272(5) [words substituted] «subsection (5) (in the words before paragraph (a)).»
+   UK_ukpga_2026_23 schedule-18-paragraph-34-2-b → UK_ukpga_1990_8 s. 306(1) [words substituted] «subsection (1) (in the words before paragraph (a) and in paragraph (c));»
+   UK_ukpga_2026_23 schedule-18-paragraph-34-2-b → UK_ukpga_1990_8 s. 306(1)(c) [words substituted] «subsection (1) (in the words before paragraph (a) and in paragraph (c));»
+
+== provision | regulations n, n and n,: 5 changes, round 5
+   UK_nisr_2013_206 regulation-24-e → UK_nisr_2009_238 reg. 2 [revoked] «regulations 2, 3 and 12, with effect from 1st June 2018.»
+   UK_nisr_2013_206 regulation-24-e → UK_nisr_2009_238 reg. 3 [revoked] «regulations 2, 3 and 12, with effect from 1st June 2018.»
+   UK_uksi_2013_1506 regulation-36-e → UK_uksi_2009_716 reg. 2 [revoked] «regulations 2, 3 and 12, with effect from 1st June 2018.»
+   UK_uksi_2013_1506 regulation-36-e → UK_uksi_2009_716 reg. 3 [revoked] «regulations 2, 3 and 12, with effect from 1st June 2018.»
+
+== provision | the words after q become: 5 changes, round 0
+   UK_ukpga_2013_29 section-90-2-a → UK_ukpga_2001_2 s. 163(1)(a) [words in s. 163(1) renumbered as s. 163(1)(a)] «the words after “if” become paragraph (a) of that subsection,»
+   UK_ukpga_2024_13 schedule-28-paragraph-4-3-a → UK_ukpga_2002_40 s. 120(2)(b)(i) [words in s. 120(2)(b) renumbered as s. 120(2)(b)(i)] «the words after “permitted or required by” become sub-paragraph (i);»
+   UK_ukpga_2023_50 section-213-3-a → UK_ukpga_1959_66 s. 2(7)(a) [s. 2(7) renumbered as s. 2(7)(a)] «the words after “In this section” become paragraph (a), and»
+   UK_ukpga_2021_30 schedule-20-paragraph-5-2-a → UK_ukpga_2016_22 s. 203(1)(b)(i) [words in s. 203(1)(b) renumbered as s. 203(1)(b)(i)] «the words after “breaching” become sub-paragraph (i), and»
+
+== provision | in fa n, omit section: 5 changes, round 0
+   UK_ukpga_2013_29 schedule-31-paragraph-12 → UK_ukpga_2008_9 s. 105 [omitted] «In FA 2008, omit section 105.»
+   UK_ukpga_2008_9 schedule-43-paragraph-15 → UK_ukpga_1997_16 s. 52 [omitted] «In FA 1997, omit section 52 (recovery of relevant tax in Scotland).»
+   UK_ukpga_2008_9 section-135-13 → UK_ukpga_2001_9 s. 107 [omitted] «In FA 2001, omit section 107 (interest on unpaid tax etc: foot and mouth disease); but the repeal of that section does not affect any agreement for deferred pay»
+   UK_ukpga_2026_11 schedule-13-paragraph-9 → UK_ukpga_2003_14 s. 9 [omitted] «In FA 2003, omit section 9.»
+
+== provision | section n of fa n,: 5 changes, round 0
+   UK_ukpga_2013_29 section-188-3-a → UK_ukpga_2008_9 s. 147 [omitted] «section 147 of FA 2008, and»
+   UK_ukpga_2008_9 schedule-2-paragraph-21-d → UK_ukpga_1999_16 s. 26 [omitted] «section 26 of FA 1999,»
+   UK_ukpga_2008_9 schedule-2-paragraph-21-e → UK_ukpga_2000_17 s. 37 [omitted] «section 37 of FA 2000,»
+   UK_ukpga_2008_9 schedule-36-paragraph-92-i → UK_ukpga_2006_25 s. 20 [omitted] «section 20 of FA 2006, and»
+
+== provision | after q insert q .: 5 changes, round 0
+   UK_ukpga_2014_15 schedule-paragraph-6-b-iii → UK_ukpga_1981_53 s. 5(2) [words inserted] «after “considers” insert “ (or they consider) ” .»
+   UK_ukpga_2025_36 schedule-2-paragraph-23-b → UK_ukpga_1996_18 s. 200(1) [word inserted] «after “47C,” insert “47H,” .»
+   UK_ukpga_2025_36 schedule-2-paragraph-24-4-b → UK_ukpga_1996_18 s. 202(2)(g)(i) [words inserted] «after “application” insert “in relation to rights conferred by Chapters 2 to 6 of Part 2A (including Schedule A1) or” .»
+   UK_ukpga_2025_36 schedule-2-paragraph-30-b → UK_ukpga_1996_18 s. 236(3) [words inserted] «after “209,” insert “or under paragraph 1(3)(b), (6) or (11), 2(2), (5) or (7)(c), 5(6), 12(1), 13(3), 14(2), 15(3), 16(4), 22(1), (3) or (5), 24(1)(c) or (2), »
+
+== provision | in fa n, section n(): 5 changes, round 0
+   UK_uksi_2009_1890 article-3-4 → UK_ukpga_2000_17 s. 130(4) [word substituted] «In FA 2000, section 130(4) (stamp duty: transfers to registered social landlords etc): substitute “2006” for “1985”, and substitute “1” for “735(1)” .»
+   UK_ukpga_2008_9 schedule-14-paragraph-17-e → UK_ukpga_1996_8 s. 168(4)-(6) [omitted] «in FA 1996, section 168(4) to (6) and paragraph 1A of Schedule 9,»
+   UK_ukpga_2008_9 schedule-14-paragraph-17-j → UK_ukpga_2001_9 s. 83(2) [omitted] «in FA 2001, section 83(2) and Part 1 of Schedule 28,»
+   UK_ukpga_2009_10 schedule-1-paragraph-6-k → UK_ukpga_2000_17 s. 39(8)(9) [omitted] «in FA 2000, section 39(8) and (9),»

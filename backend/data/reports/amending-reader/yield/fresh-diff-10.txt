@@ -1,0 +1,67 @@
+
+== new: a Schedule by Part, or other: 19 provisions, 1 amending laws
+UK_uksi_2012_2301 regulation-20-10 → UK_uksi_2008_1911
+    before: []
+    after:  [('substituted', ('reg.29',))]
+UK_uksi_2012_2301 regulation-20-2 → UK_uksi_2008_1911
+    before: []
+    after:  [('inserted', ('reg.33',))]
+UK_uksi_2012_2301 regulation-20-3-a-i → UK_uksi_2008_1911
+    before: []
+    after:  [('substituted', ('reg.34',))]
+UK_uksi_2012_2301 regulation-20-3-a-ii → UK_uksi_2008_1911
+    before: []
+    after:  [('repealed', ('reg.34',))]
+UK_uksi_2012_2301 regulation-20-3-a-iii → UK_uksi_2008_1911
+    before: []
+    after:  [('repealed', ('reg.34',))]
+UK_uksi_2012_2301 regulation-20-3-b-i → UK_uksi_2008_1911
+    before: []
+    after:  [('substituted', ('reg.34',))]
+UK_uksi_2012_2301 regulation-20-3-b-ii → UK_uksi_2008_1911
+    before: []
+    after:  [('repealed', ('reg.34',))]
+UK_uksi_2012_2301 regulation-20-3-b-iii → UK_uksi_2008_1911
+    before: []
+    after:  [('repealed', ('reg.34',))]
+UK_uksi_2012_2301 regulation-20-4 → UK_uksi_2008_1911
+    before: []
+    after:  [('inserted', ('reg.34A', 'reg.34A(479A)', 'reg.34A(479A)(1)', 'reg.34A(479A)(1)(a)', 'reg.34A(479A)(1)(b)', 'reg.34A(479A)(2)', 'reg.34A(479A)(2)(a)', 'reg.34A(479A)(2)(b)', 'reg.34A(479A)(2)(c)', 'reg.34A(479A)(2)(c)(i)', 'reg.34A(479A)(2)(c)(ii)', 'reg.34A(479A)(2)(d)', 'reg.34A(479A)(2)(e)', 'reg.34A(479A)(2)(e)(i)', 'reg.34A(479A)(2)(e)(ii)', 'reg.34A(479A)(2)(e)(iii)', 'reg.34A(479A)(2)(e)(iv)', 'reg.34A(479A)(2)(e)(v)', 'reg.34A(479A)(3)', 'reg.34A(479B)', 'reg.34A(479B)(a)', 'reg.34A(479B)(a)(i)', 'reg.34A(479B)(a)(ii)', 'reg.34A(479B)(b)', 'reg.34A(479C)', 'reg.34A(479C)(1)', 'reg.34A(479C)(2)', 'reg.34A(479C)(2)(a)', 'reg.34A(479C)(2)(b)', 'reg.34A(479C)(2)(c)', 'reg.34A(479C)(2)(d)', 'reg.34A(479C)(2)(e)', 'reg.34A(479C)(2)(f)', 'reg.34A(479C)(3)', 'reg.34A(479C)(3)(a)', 'reg.34A(479C)(3)(b)'))]
+UK_uksi_2012_2301 regulation-20-5-a → UK_uksi_2008_1911
+    before: []
+    after:  [('inserted', ('reg.9',))]
+UK_uksi_2012_2301 regulation-20-5-b → UK_uksi_2008_1911
+    before: []
+    after:  [('inserted', ('reg.9(394A)', 'reg.9(394A)(1)', 'reg.9(394A)(1)(a)', 'reg.9(394A)(1)(b)', 'reg.9(394A)(1)(c)', 'reg.9(394A)(2)', 'reg.9(394A)(2)(a)', 'reg.9(394A)(2)(b)', 'reg.9(394A)(2)(c)', 'reg.9(394A)(2)(c)(i)', 'reg.9(394A)(2)(c)(ii)', 'reg.9(394A)(2)(d)', 'reg.9(394A)(2)(e)', 'reg.9(394A)(2)(e)(i)', 'reg.9(394A)(2)(e)(ii)', 'reg.9(394A)(2)(e)(iii)', 'reg.9(394A)(2)(e)(iv)', 'reg.9(394A)(2)(e)(v)', 'reg.9(394B)', 'reg.9(394B)(a)', 'reg.9(394B)(a)(i)', 'reg.9(394B)(a)(ii)', 'reg.9(394B)(b)', 'reg.9(394C)', 'reg.9(394C)(1)', 'reg.9(394C)(2)', 'reg.9(394C)(2)(a)', 'reg.9(394C)(2)(b)', 'reg.9(394C)(2)(c)', 'reg.9(394C)(2)(d)', 'reg.9(394C)(2)(e)', 'reg.9(394C)(2)(f)', 'reg.9(394C)(3)', 'reg.9(394C)(3)(a)', 'reg.9(394C)(3)(b)'))]
+UK_uksi_2012_2301 regulation-20-6 → UK_uksi_2008_1911
+    before: []
+    after:  [('inserted', ('reg.17(441)', 'reg.17(441)(1)', 'reg.17(441)(2)')), ('substituted', ('reg.17',))]
+UK_uksi_2012_2301 regulation-20-7 → UK_uksi_2008_1911
+    before: []
+    after:  [('inserted', ('reg.19A', 'reg.19A(448A)', 'reg.19A(448A)(1)', 'reg.19A(448A)(1)(a)', 'reg.19A(448A)(1)(b)', 'reg.19A(448A)(1)(c)', 'reg.19A(448A)(2)', 'reg.19A(448A)(2)(a)', 'reg.19A(448A)(2)(b)', 'reg.19A(448A)(2)(c)', 'reg.19A(448A)(2)(c)(i)', 'reg.19A(448A)(2)(c)(ii)', 'reg.19A(448A)(2)(d)', 'reg.19A(448A)(2)(e)', 'reg.19A(448A)(2)(e)(i)', 'reg.19A(448A)(2)(e)(ii)', 'reg.19A(448A)(2)(e)(iii)', 'reg.19A(448A)(2)(e)(iv)', 'reg.19A(448A)(2)(e)(v)', 'reg.19A(448B)', 'reg.19A(448B)(a)', 'reg.19A(448B)(a)(i)', 'reg.19A(448B)(a)(ii)', 'reg.19A(448B)(b)', 'reg.19A(448C)', 'reg.19A(448C)(1)', 'reg.19A(448C)(2)', 'reg.19A(448C)(2)(a)', 'reg.19A(448C)(2)(b)', 'reg.19A(448C)(2)(c)', 'reg.19A(448C)(2)(d)', 'reg.19A(448C)(2)(e)', 'reg.19A(448C)(2)(f)', 'reg.19A(448C)(3)', 'reg.19A(448C)(3)(a)', 'reg.19A(448C)(3)(b)'))]
+UK_uksi_2012_2301 regulation-20-8-a → UK_uksi_2008_1911
+    before: []
+    after:  [('inserted', ('reg.9',))]
+UK_uksi_2012_2301 regulation-20-8-b → UK_uksi_2008_1911
+    before: []
+    after:  [('inserted', ('reg.9',))]
+UK_uksi_2012_2301 regulation-20-8-c → UK_uksi_2008_1911
+    before: []
+    after:  [('repealed', ('reg.9',))]
+UK_uksi_2012_2301 regulation-20-9-a → UK_uksi_2008_1911
+    before: []
+    after:  [('inserted', ('reg.10',))]
+UK_uksi_2012_2301 regulation-20-9-b → UK_uksi_2008_1911
+    before: []
+    after:  [('inserted', ('reg.10',))]
+UK_uksi_2012_2301 regulation-20-9-c → UK_uksi_2008_1911
+    before: []
+    after:  [('repealed', ('reg.10',))]
+
+== new: unnumbered Schedule: 2 provisions, 1 amending laws
+UK_uksi_2014_1815 schedule-paragraph-22-a → UK_uksi_2008_1911
+    before: []
+    after:  [('repealed', ('reg.24(4)', 'reg.24(g)', 'reg.24(i)', 'reg.24(4)(g)', 'reg.24(4)(i)', 'reg.24(g)(i)', 'reg.24(4)(g)(i)'))]
+UK_uksi_2014_1815 schedule-paragraph-22-b → UK_uksi_2008_1911
+    before: []
+    after:  [('inserted', ('reg.24(4)(ia)', 'reg.24(4)(ia)(aa)', 'reg.24(4)(ia)(ab)'))]

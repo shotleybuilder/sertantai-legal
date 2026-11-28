@@ -1,0 +1,508 @@
+
+== new: a Schedule by Part, or other: 114 provisions, 16 amending laws
+UK_nisr_2019_209 regulation-18-2 → UK_nisi_1999_662
+    before: []
+    after:  [('substituted', ('reg.45(1)', 'reg.45(1A)'))]
+UK_ukpga_1989_15 schedule-25-paragraph-70-3-a → UK_ukpga_1984_55
+    before: []
+    after:  [('substituted', ('s.101(1)',))]
+UK_ukpga_1989_15 schedule-25-paragraph-70-3-b → UK_ukpga_1984_55
+    before: []
+    after:  [('substituted', ('s.101(2)',))]
+UK_ukpga_1989_15 schedule-25-paragraph-70-4 → UK_ukpga_1984_55
+    before: []
+    after:  [('substituted', ('s.126',))]
+UK_ukpga_1991_34 schedule-6-paragraph-27 → UK_ukpga_1990_8
+    before: []
+    after:  [('repealed', ('s.309',))]
+UK_ukpga_1991_34 schedule-6-paragraph-35 → UK_ukpga_1990_8
+    before: []
+    after:  [('repealed', ('s.326',))]
+UK_ukpga_1991_34 schedule-6-paragraph-36 → UK_ukpga_1990_8
+    before: []
+    after:  [('repealed', ('s.327',))]
+UK_ukpga_1994_19 schedule-11-paragraph-4-10 → UK_ukpga_1991_59
+    before: []
+    after:  [('inserted', ('s.62(2)',))]
+UK_ukpga_1994_19 schedule-11-paragraph-4-11 → UK_ukpga_1991_59
+    before: []
+    after:  [('substituted', ('s.66(1)', 's.66(2)'))]
+UK_ukpga_1994_19 schedule-11-paragraph-4-12 → UK_ukpga_1991_59
+    before: []
+    after:  [('inserted', ('s.72(1)',))]
+UK_ukpga_1994_19 schedule-11-paragraph-4-4 → UK_ukpga_1991_59
+    before: []
+    after:  [('inserted', ('s.16(3A)',)), ('substituted', ('s.16(1)', 's.16(2)'))]
+UK_ukpga_1994_19 schedule-11-paragraph-4-5 → UK_ukpga_1991_59
+    before: []
+    after:  [('inserted', ('s.18(1A)',))]
+UK_ukpga_1994_19 schedule-11-paragraph-4-6 → UK_ukpga_1991_59
+    before: []
+    after:  [('inserted', ('s.20(5)',))]
+UK_ukpga_1994_19 schedule-11-paragraph-4-7 → UK_ukpga_1991_59
+    before: []
+    after:  [('inserted', ('s.55(2)',))]
+UK_ukpga_1994_19 schedule-11-paragraph-4-8 → UK_ukpga_1991_59
+    before: []
+    after:  [('inserted', ('s.57(4)', 's.57(b)', 's.57(4)(b)'))]
+UK_ukpga_1994_19 schedule-11-paragraph-4-9 → UK_ukpga_1991_59
+    before: []
+    after:  [('inserted', ('s.58(4)',))]
+UK_ukpga_1995_25 schedule-10-paragraph-32-10 → UK_ukpga_1990_8
+    before: []
+    after:  [('inserted', ('s.306(6)',))]
+UK_ukpga_1995_25 schedule-10-paragraph-32-11 → UK_ukpga_1990_8
+    before: []
+    after:  [('inserted', ('s.330(6)',))]
+UK_ukpga_1995_25 schedule-10-paragraph-32-12 → UK_ukpga_1990_8
+    before: []
+    after:  [('inserted', ('s.333(1)',))]
+UK_ukpga_1995_25 schedule-10-paragraph-32-13 → UK_ukpga_1990_8
+    before: []
+    after:  [('inserted', ('s.336(1)',))]
+UK_ukpga_1995_25 schedule-10-paragraph-32-6 → UK_ukpga_1990_8
+    before: []
+    after:  [('inserted', ('s.209(5)',))]
+UK_ukpga_1995_25 schedule-10-paragraph-32-7-a → UK_ukpga_1990_8
+    before: []
+    after:  [('inserted', ('s.252(2)(aa)',))]
+UK_ukpga_1995_25 schedule-10-paragraph-32-7-b → UK_ukpga_1990_8
+    before: []
+    after:  [('inserted', ('s.252(4)',))]
+UK_ukpga_1995_25 schedule-10-paragraph-32-8-a → UK_ukpga_1990_8
+    before: []
+    after:  [('inserted', ('s.253(2)', 's.253(a)', 's.253(2)(a)', 's.253(3)', 's.253(3)(a)'))]
+UK_ukpga_1995_25 schedule-10-paragraph-32-8-b → UK_ukpga_1990_8
+    before: []
+    after:  [('inserted', ('s.253(4)',))]
+UK_ukpga_1995_25 schedule-10-paragraph-32-9 → UK_ukpga_1990_8
+    before: []
+    after:  [('inserted', ('s.305(1)', 's.305(a)', 's.305(1)(a)'))]
+UK_ukpga_2008_26 section-42-4 → UK_ukpga_2000_38
+    before: []
+    after:  [('inserted', ('s.134(2)', 's.134(a)', 's.134(2)(a)'))]
+UK_ukpga_2008_26 section-42-5 → UK_ukpga_2000_38
+    before: []
+    after:  [('inserted', ('s.134(3)',))]
+UK_ukpga_2008_32 section-93-2 → UK_ukpga_1986_44
+    before: []
+    after:  [('substituted', ('s.17(2)',))]
+UK_ukpga_2008_32 section-93-3 → UK_ukpga_1986_44
+    before: []
+    after:  [('substituted', ('s.17(7)', 's.17(8)', 's.17(10)'))]
+UK_ukpga_2008_32 section-93-4 → UK_ukpga_1986_44
+    before: []
+    after:  [('inserted', ('s.17(7A)', 's.17(7A)(a)', 's.17(7A)(b)'))]
+UK_ukpga_2008_32 section-93-5 → UK_ukpga_1986_44
+    before: []
+    after:  [('repealed', ('s.17(9)',))]
+UK_ukpga_2008_9 section-155-3 → UK_uksi_2001_838
+    before: []
+    after:  [('inserted', ('reg.73AB', 'reg.73AB(1)', 'reg.73AB(2)', 'reg.73AB(3)', 'reg.73AB(4)'))]
+UK_ukpga_2014_26 section-116-2 → UK_ukpga_1994_23
+    before: []
+    after:  [('inserted', ('s.50(2)(ca)',)), ('substituted', ('s.50(2)', 's.50(c)', 's.50(2)(c)')), ('substituted', ('s.50(2)(c)',))]
+UK_ukpga_2014_26 section-116-3 → UK_ukpga_1994_23
+    before: []
+    after:  [('substituted', ('s.50(2)', 's.50(d)', 's.50(2)(d)'))]
+UK_ukpga_2014_26 section-116-4 → UK_ukpga_1994_23
+    before: []
+    after:  [('inserted', ('s.50(2A)', 's.50(2A)(a)', 's.50(2A)(b)', 's.50(2A)(c)', 's.50(2B)', 's.50(2C)', 's.50(2D)'))]
+UK_ukpga_2020_12 schedule-3-paragraph-22-2 → UK_ukpga_1986_45
+    before: []
+    after:  [('substituted', ('s.411(1)',))]
+UK_ukpga_2020_12 schedule-3-paragraph-22-3 → UK_ukpga_1986_45
+    before: []
+    after:  [('substituted', ('s.411(3)',))]
+UK_ukpga_2024_13 schedule-30-paragraph-18-2-a → UK_ukpga_1993_43
+    before: []
+    after:  [('inserted', ('s.13B(1)',))]
+UK_ukpga_2024_13 schedule-30-paragraph-18-2-b → UK_ukpga_1993_43
+    before: []
+    after:  [('substituted', ('s.13B(1)',))]
+UK_ukpga_2024_13 schedule-30-paragraph-18-3-a → UK_ukpga_1993_43
+    before: []
+    after:  [('inserted', ('s.13B(4)',))]
+UK_ukpga_2024_13 schedule-30-paragraph-18-3-b → UK_ukpga_1993_43
+    before: []
+    after:  [('substituted', ('s.13B(4)',))]
+UK_ukpga_2024_13 schedule-30-paragraph-18-4-a → UK_ukpga_1993_43
+    before: []
+    after:  [('substituted', ('s.13B(5)',))]
+UK_ukpga_2024_13 schedule-30-paragraph-18-4-b → UK_ukpga_1993_43
+    before: []
+    after:  [('inserted', ('s.13B(5)',))]
+UK_ukpga_2024_13 schedule-30-paragraph-18-5 → UK_ukpga_1993_43
+    before: []
+    after:  [('inserted', ('s.13B(7)',))]
+UK_ukpga_2024_13 schedule-30-paragraph-19-2-a → UK_ukpga_1993_43
+    before: []
+    after:  [('inserted', ('s.15C(2D)',))]
+UK_ukpga_2024_13 schedule-30-paragraph-19-2-b → UK_ukpga_1993_43
+    before: []
+    after:  [('substituted', ('s.15C(2D)',))]
+UK_ukpga_2024_13 schedule-30-paragraph-19-3-a → UK_ukpga_1993_43
+    before: []
+    after:  [('inserted', ('s.15C(2G)',))]
+UK_ukpga_2024_13 schedule-30-paragraph-19-3-b → UK_ukpga_1993_43
+    before: []
+    after:  [('substituted', ('s.15C(2G)',))]
+UK_ukpga_2024_13 schedule-30-paragraph-19-4-a → UK_ukpga_1993_43
+    before: []
+    after:  [('substituted', ('s.15C(2H)',))]
+UK_ukpga_2024_13 schedule-30-paragraph-19-4-b → UK_ukpga_1993_43
+    before: []
+    after:  [('inserted', ('s.15C(2H)',))]
+UK_ukpga_2024_13 schedule-30-paragraph-19-5 → UK_ukpga_1993_43
+    before: []
+    after:  [('inserted', ('s.15C(5)',))]
+UK_ukpga_2024_13 schedule-30-paragraph-20-a → UK_ukpga_1993_43
+    before: []
+    after:  [('repealed', ('s.145(3)', 's.145(qu)', 's.145(3)(qu)'))]
+UK_ukpga_2024_13 schedule-30-paragraph-20-b → UK_ukpga_1993_43
+    before: []
+    after:  [('inserted', ('s.145(3)(w)', 's.145(3)(w)(i)', 's.145(3)(w)(ii)', 's.145(3)(w)(iii)'))]
+UK_ukpga_2024_13 schedule-12-paragraph-14-2 → UK_ukpga_2003_21
+    before: []
+    after:  [('inserted', ('s.370(2)',))]
+UK_ukpga_2024_13 schedule-12-paragraph-14-3 → UK_ukpga_2003_21
+    before: []
+    after:  [('inserted', ('s.370(3)', 's.370(a)', 's.370(3)(a)'))]
+UK_ukpga_2024_13 schedule-12-paragraph-14-4 → UK_ukpga_2003_21
+    before: []
+    after:  [('repealed', ('s.370(10)',))]
+UK_ukpga_2024_13 schedule-12-paragraph-15-2 → UK_ukpga_2003_21
+    before: []
+    after:  [('inserted', ('s.371(2)',))]
+UK_ukpga_2024_13 schedule-12-paragraph-15-3 → UK_ukpga_2003_21
+    before: []
+    after:  [('inserted', ('s.371(3)', 's.371(a)', 's.371(3)(a)'))]
+UK_ukpga_2024_13 schedule-12-paragraph-16-2 → UK_ukpga_2003_21
+    before: []
+    after:  [('inserted', ('s.392(1)',))]
+UK_ukpga_2024_13 schedule-12-paragraph-16-3 → UK_ukpga_2003_21
+    before: []
+    after:  [('inserted', ('s.392(6)',))]
+UK_ukpga_2024_13 schedule-12-paragraph-2-2 → UK_ukpga_2012_19
+    before: []
+    after:  [('inserted', ('s.60(2)',))]
+UK_ukpga_2024_13 schedule-12-paragraph-2-3 → UK_ukpga_2012_19
+    before: []
+    after:  [('inserted', ('s.60(3)', 's.60(a)', 's.60(3)(a)'))]
+UK_ukpga_2024_13 schedule-12-paragraph-3 → UK_ukpga_2012_19
+    before: []
+    after:  [('substituted', ('s.61(8)',))]
+UK_ukpga_2024_13 schedule-12-paragraph-4-2 → UK_ukpga_2012_19
+    before: []
+    after:  [('inserted', ('s.62(2)',))]
+UK_ukpga_2024_13 schedule-12-paragraph-4-3 → UK_ukpga_2012_19
+    before: []
+    after:  [('inserted', ('s.62(4)',))]
+UK_ukpga_2024_13 schedule-12-paragraph-5 → UK_ukpga_2012_19
+    before: []
+    after:  [('inserted', ('s.63(1)',))]
+UK_ukpga_2026_18 schedule-5-paragraph-10 → UK_anaw_2017_2
+    before: []
+    after:  [('inserted', ('s.54A', 's.54A(a)', 's.54A(b)'))]
+UK_ukpga_2026_18 schedule-5-paragraph-11 → UK_anaw_2017_2
+    before: []
+    after:  [('inserted', ('s.54A', 's.54A(1)', 's.54A(1)(a)', 's.54A(1)(b)', 's.54A(2)'))]
+UK_ukpga_2026_18 schedule-5-paragraph-12 → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.55(55)',))]
+UK_ukpga_2026_18 schedule-5-paragraph-13 → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.55(55)',))]
+UK_ukpga_2026_18 schedule-5-paragraph-14 → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.123(2)',))]
+UK_ukpga_2026_18 schedule-5-paragraph-15 → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.123(2)', 's.123(a)', 's.123(2)(a)'))]
+UK_ukpga_2026_18 schedule-5-paragraph-4 → UK_anaw_2017_2
+    before: []
+    after:  [('inserted', ('s.51A', 's.51A(1)', 's.51A(1)(a)', 's.51A(1)(b)', 's.51A(1)(b)(i)', 's.51A(1)(b)(ii)', 's.51A(1)(c)', 's.51A(1)(d)', 's.51A(1)(d)(i)', 's.51A(1)(d)(ii)', 's.51A(2)', 's.51A(3)', 's.51A(4)', 's.51A(4)(a)', 's.51A(4)(b)', 's.51A(4)(b)(i)', 's.51A(4)(b)(ii)', 's.51A(5)', 's.51A(5)(a)', 's.51A(5)(b)', 's.51A(6)'))]
+UK_ukpga_2026_18 schedule-5-paragraph-6-2 → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.52',))]
+UK_ukpga_2026_18 schedule-5-paragraph-6-3-a → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.52(1)', 's.52(a)', 's.52(1)(a)'))]
+UK_ukpga_2026_18 schedule-5-paragraph-6-3-b → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.52(1)', 's.52(c)', 's.52(1)(c)'))]
+UK_ukpga_2026_18 schedule-5-paragraph-6-3-c → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.52(1)', 's.52(d)', 's.52(1)(d)'))]
+UK_ukpga_2026_18 schedule-5-paragraph-6-4 → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.52(2)',))]
+UK_ukpga_2026_18 schedule-5-paragraph-6-5 → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.52(4)', 's.52(a)', 's.52(4)(a)'))]
+UK_ukpga_2026_18 schedule-5-paragraph-6-6 → UK_anaw_2017_2
+    before: []
+    after:  [('repealed', ('s.52(7)',))]
+UK_ukpga_2026_18 schedule-5-paragraph-7-2 → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.52',))]
+UK_ukpga_2026_18 schedule-5-paragraph-7-3-a → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.52(1)', 's.52(a)', 's.52(1)(a)'))]
+UK_ukpga_2026_18 schedule-5-paragraph-7-3-b → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.52(1)', 's.52(c)', 's.52(1)(c)'))]
+UK_ukpga_2026_18 schedule-5-paragraph-7-3-c → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.52(1)', 's.52(d)', 's.52(1)(d)'))]
+UK_ukpga_2026_18 schedule-5-paragraph-7-4 → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.52(2)',))]
+UK_ukpga_2026_18 schedule-5-paragraph-7-5 → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.52(4)', 's.52(a)', 's.52(4)(a)'))]
+UK_ukpga_2026_18 schedule-5-paragraph-7-6 → UK_anaw_2017_2
+    before: []
+    after:  [('repealed', ('s.52(7)',))]
+UK_ukpga_2026_18 schedule-5-paragraph-8-2-a → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.53(1)',))]
+UK_ukpga_2026_18 schedule-5-paragraph-8-2-b → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.53(1)', 's.53(a)', 's.53(1)(a)'))]
+UK_ukpga_2026_18 schedule-5-paragraph-8-2-c → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.53(1)', 's.53(b)', 's.53(1)(b)'))]
+UK_ukpga_2026_18 schedule-5-paragraph-8-3-a → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.53(2)',))]
+UK_ukpga_2026_18 schedule-5-paragraph-8-3-b → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.53(2)', 's.53(a)', 's.53(2)(a)'))]
+UK_ukpga_2026_18 schedule-5-paragraph-8-3-c → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.53(2)', 's.53(b)', 's.53(2)(b)'))]
+UK_ukpga_2026_18 schedule-5-paragraph-8-4 → UK_anaw_2017_2
+    before: []
+    after:  [('inserted', ('s.53(4)', 's.53(4)(a)', 's.53(4)(b)', 's.53(4)(c)', 's.53(4)(d)', 's.53(4)(e)'))]
+UK_ukpga_2026_18 schedule-5-paragraph-9-2-a → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.53(1)',))]
+UK_ukpga_2026_18 schedule-5-paragraph-9-2-b → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.53(1)', 's.53(a)', 's.53(1)(a)'))]
+UK_ukpga_2026_18 schedule-5-paragraph-9-2-c → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.53(1)', 's.53(b)', 's.53(1)(b)'))]
+UK_ukpga_2026_18 schedule-5-paragraph-9-3-a → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.53(2)',))]
+UK_ukpga_2026_18 schedule-5-paragraph-9-3-b → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.53(2)', 's.53(a)', 's.53(2)(a)'))]
+UK_ukpga_2026_18 schedule-5-paragraph-9-3-c → UK_anaw_2017_2
+    before: []
+    after:  [('substituted', ('s.53(2)', 's.53(b)', 's.53(2)(b)'))]
+UK_ukpga_2026_18 schedule-5-paragraph-9-4 → UK_anaw_2017_2
+    before: []
+    after:  [('inserted', ('s.53(4)', 's.53(4)(a)', 's.53(4)(b)', 's.53(4)(c)', 's.53(4)(d)', 's.53(4)(e)'))]
+UK_uksi_2011_2937 article-5-1 → UK_uksi_2007_3072
+    before: []
+    after:  [('substituted', ('reg.4(3)', 'reg.4(b)', 'reg.4(3)(b)')), ('substituted', ('reg.4(3)(b)',))]
+UK_uksi_2011_2937 article-5-2 → UK_uksi_2007_3072
+    before: []
+    after:  [('substituted', ('reg.4(4)',))]
+UK_uksi_2011_2937 article-5-3 → UK_uksi_2007_3072
+    before: []
+    after:  [('inserted', ('reg.4(5)', 'reg.4(5)(a)', 'reg.4(5)(b)', 'reg.4(5)(c)', 'reg.4(5)(d)', 'reg.4(6)', 'reg.4(6)(a)', 'reg.4(6)(b)', 'reg.4(6)(c)', 'reg.4(6)(c)(i)', 'reg.4(6)(c)(ii)', 'reg.4(7)', 'reg.4(8)', 'reg.4(8)(a)', 'reg.4(8)(a)(i)', 'reg.4(8)(a)(ii)', 'reg.4(8)(a)(iii)', 'reg.4(8)(a)(iv)', 'reg.4(8)(b)', 'reg.4(8)(c)', 'reg.4(8)(d)', 'reg.4(9)'))]
+UK_uksi_2011_2937 article-6 → UK_uksi_2007_3072
+    before: []
+    after:  [('inserted', ('reg.4A', 'reg.4A(1)', 'reg.4A(2)', 'reg.4A(2)(a)', 'reg.4A(2)(b)', 'reg.4A(3)'))]
+UK_uksi_2016_248 regulation-4-10 → UK_ukpga_1968_73
+    before: []
+    after:  [('substituted', ('s.97(7)',))]
+UK_uksi_2016_248 regulation-4-6-a → UK_ukpga_1968_73
+    before: []
+    after:  [('substituted', ('s.97(4A)', 's.97(b)', 's.97(4A)(b)'))]
+UK_uksi_2016_248 regulation-4-6-b → UK_ukpga_1968_73
+    before: []
+    after:  [('substituted', ('s.97(4A)', 's.97(c)', 's.97(4A)(c)'))]
+UK_uksi_2016_248 regulation-4-7 → UK_ukpga_1968_73
+    before: []
+    after:  [('inserted', ('s.97(4B)', 's.97(4C)', 's.97(4C)(a)', 's.97(4C)(b)', 's.97(4D)'))]
+UK_uksi_2016_248 regulation-4-8 → UK_ukpga_1968_73
+    before: []
+    after:  [('substituted', ('s.97(5)',))]
+UK_uksi_2016_248 regulation-4-9 → UK_ukpga_1968_73
+    before: []
+    after:  [('substituted', ('s.97(6)',))]
+UK_uksi_2017_1289 article-8 → UK_uksi_2015_1947
+    before: []
+    after:  [('inserted', ('reg.13A', 'reg.13A(1)', 'reg.13A(2)', 'reg.13A(3)', 'reg.13A(4)', 'reg.13A(5)', 'reg.13A(5)(a)', 'reg.13A(5)(b)', 'reg.13A(5)(c)', 'reg.13A(6)', 'reg.13B', 'reg.13B(1)', 'reg.13B(1)(a)', 'reg.13B(1)(b)', 'reg.13B(2)', 'reg.13B(3)', 'reg.13B(3)(a)', 'reg.13B(3)(b)', 'reg.13B(4)', 'reg.13B(5)', 'reg.13B(5)(a)', 'reg.13B(5)(b)', 'reg.13B(6)', 'reg.13B(7)', 'reg.13B(7)(a)', 'reg.13B(7)(a)(i)', 'reg.13B(7)(a)(ii)', 'reg.13B(7)(b)', 'reg.13B(7)(b)(i)', 'reg.13B(7)(b)(ii)', 'reg.13B(8)', 'reg.13B(8)(a)', 'reg.13B(8)(b)', 'reg.13B(8)(b)(i)', 'reg.13B(8)(b)(ii)', 'reg.13B(9)'))]
+UK_uksi_2022_8 regulation-5 → UK_uksi_1992_2966
+    before: []
+    after:  [('inserted', ('reg.3A', 'reg.3A(1)', 'reg.3A(2)', 'reg.3A(2)(a)', 'reg.3A(2)(b)'))]
+
+== other: 54 provisions, 6 amending laws
+UK_ukpga_1989_15 schedule-25-paragraph-70-3-a → UK_ukpga_1945_42
+    before: [('substituted', ('s.101(1)',))]
+    after:  []
+UK_ukpga_1989_15 schedule-25-paragraph-70-3-b → UK_ukpga_1945_42
+    before: [('substituted', ('s.101(2)',))]
+    after:  []
+UK_ukpga_1989_15 schedule-25-paragraph-70-4 → UK_ukpga_1945_42
+    before: [('substituted', ('s.126',))]
+    after:  []
+UK_ukpga_2005_14 schedule-1-paragraph-37-2 → UK_ukpga_2000_38
+    before: [('inserted', ('s.83(1)',))]
+    after:  []
+UK_ukpga_2005_14 schedule-1-paragraph-37-3 → UK_ukpga_2000_38
+    before: [('inserted', ('s.83(1)',)), ('inserted', ('s.83(1)(a)', 's.83(1)(b)'))]
+    after:  []
+UK_ukpga_2013_29 schedule-31-paragraph-12 → UK_ukpga_2008_9
+    before: [('repealed', ('s.105',))]
+    after:  []
+UK_ukpga_2023_55 section-124-5-a → UK_ukpga_1990_8
+    before: [('inserted', ('s.89(1)',))]
+    after:  []
+UK_ukpga_2023_55 section-124-5-b → UK_ukpga_1990_8
+    before: [('inserted', ('s.323A(1ZC)',))]
+    after:  []
+UK_ukpga_2023_55 section-124-7-a → UK_ukpga_1990_8
+    before: [('inserted', ('s.37(2)',))]
+    after:  []
+UK_ukpga_2023_55 section-124-7-b → UK_ukpga_1990_8
+    before: [('inserted', ('s.323A(5)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-12-paragraph-14-2 → UK_ukpga_2002_40
+    before: [('inserted', ('s.370(2)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-12-paragraph-14-3 → UK_ukpga_2002_40
+    before: [('inserted', ('s.370(3)', 's.370(a)', 's.370(3)(a)'))]
+    after:  []
+UK_ukpga_2024_13 schedule-12-paragraph-14-4 → UK_ukpga_2002_40
+    before: [('repealed', ('s.370(10)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-12-paragraph-2-2 → UK_ukpga_2002_40
+    before: [('inserted', ('s.60(2)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-12-paragraph-2-3 → UK_ukpga_2002_40
+    before: [('inserted', ('s.60(3)', 's.60(a)', 's.60(3)(a)'))]
+    after:  []
+UK_ukpga_2024_13 schedule-12-paragraph-3 → UK_ukpga_2002_40
+    before: [('substituted', ('s.61(8)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-10-2-a → UK_ukpga_2002_40
+    before: [('inserted', ('s.56CB(1)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-10-2-b → UK_ukpga_2002_40
+    before: [('substituted', ('s.56CB(1)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-10-3-a → UK_ukpga_2002_40
+    before: [('inserted', ('s.56CB(4)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-10-3-b → UK_ukpga_2002_40
+    before: [('substituted', ('s.56CB(4)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-10-4-a → UK_ukpga_2002_40
+    before: [('substituted', ('s.56CB(5)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-10-4-b → UK_ukpga_2002_40
+    before: [('inserted', ('s.56CB(5)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-10-5 → UK_ukpga_2002_40
+    before: [('inserted', ('s.56CB(7)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-18-2-a → UK_ukpga_2002_40
+    before: [('inserted', ('s.13B(1)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-18-2-b → UK_ukpga_2002_40
+    before: [('substituted', ('s.13B(1)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-18-3-a → UK_ukpga_2002_40
+    before: [('inserted', ('s.13B(4)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-18-3-b → UK_ukpga_2002_40
+    before: [('substituted', ('s.13B(4)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-18-4-a → UK_ukpga_2002_40
+    before: [('substituted', ('s.13B(5)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-18-4-b → UK_ukpga_2002_40
+    before: [('inserted', ('s.13B(5)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-18-5 → UK_ukpga_2002_40
+    before: [('inserted', ('s.13B(7)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-19-2-a → UK_ukpga_2002_40
+    before: [('inserted', ('s.15C(2D)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-19-2-b → UK_ukpga_2002_40
+    before: [('substituted', ('s.15C(2D)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-19-3-a → UK_ukpga_2002_40
+    before: [('inserted', ('s.15C(2G)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-19-3-b → UK_ukpga_2002_40
+    before: [('substituted', ('s.15C(2G)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-19-4-a → UK_ukpga_2002_40
+    before: [('substituted', ('s.15C(2H)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-19-4-b → UK_ukpga_2002_40
+    before: [('inserted', ('s.15C(2H)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-19-5 → UK_ukpga_2002_40
+    before: [('inserted', ('s.15C(5)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-20-a → UK_ukpga_2002_40
+    before: [('repealed', ('s.145(3)', 's.145(qu)', 's.145(3)(qu)'))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-20-b → UK_ukpga_2002_40
+    before: [('inserted', ('s.145(3)(w)', 's.145(3)(w)(i)', 's.145(3)(w)(ii)', 's.145(3)(w)(iii)'))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-8-2-a → UK_ukpga_2002_40
+    before: [('inserted', ('s.41EB(1)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-8-2-b → UK_ukpga_2002_40
+    before: [('substituted', ('s.41EB(1)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-8-3-a → UK_ukpga_2002_40
+    before: [('inserted', ('s.41EB(4)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-8-3-b → UK_ukpga_2002_40
+    before: [('substituted', ('s.41EB(4)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-8-4-a → UK_ukpga_2002_40
+    before: [('substituted', ('s.41EB(5)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-8-4-b → UK_ukpga_2002_40
+    before: [('inserted', ('s.41EB(5)',))]
+    after:  []
+UK_ukpga_2024_13 schedule-30-paragraph-8-5 → UK_ukpga_2002_40
+    before: [('inserted', ('s.41EB(7)',))]
+    after:  []
+UK_ukpga_2025_18 section-70-8-a → UK_ssi_2004_520
+    before: [('substituted', ('reg.13(8)', 'reg.13(5A)', 'reg.13(6)', 'reg.13(7)', 'reg.13(1E)', 'reg.13(9)', 'reg.11(8)', 'reg.11(5A)', 'reg.11(6)', 'reg.11(7)', 'reg.11(1E)', 'reg.11(9)', 'reg.45(8)', 'reg.45(5A)', 'reg.45(6)', 'reg.45(7)', 'reg.45(1E)', 'reg.45(9)', 'reg.39(8)', 'reg.39(5A)', 'reg.39(6)', 'reg.39(7)', 'reg.39(1E)', 'reg.39(9)', 'reg.9(8)', 'reg.9(5A)', 'reg.9(6)', 'reg.9(7)', 'reg.9(1E)', 'reg.9(9)', 'reg.10(8)', 'reg.10(5A)', 'reg.10(6)', 'reg.10(7)', 'reg.10(1E)', 'reg.10(9)'))]
+    after:  [('substituted', ('reg.11(7)',))]
+UK_ukpga_2025_18 section-70-8-b → UK_ssi_2004_520
+    before: [('repealed', ('reg.13(8)', 'reg.13(5A)', 'reg.13(6)', 'reg.13(7)', 'reg.13(1E)', 'reg.13(9)', 'reg.11(8)', 'reg.11(5A)', 'reg.11(6)', 'reg.11(7)', 'reg.11(1E)', 'reg.11(9)', 'reg.45(8)', 'reg.45(5A)', 'reg.45(6)', 'reg.45(7)', 'reg.45(1E)', 'reg.45(9)', 'reg.39(8)', 'reg.39(5A)', 'reg.39(6)', 'reg.39(7)', 'reg.39(1E)', 'reg.39(9)', 'reg.9(8)', 'reg.9(5A)', 'reg.9(6)', 'reg.9(7)', 'reg.9(1E)', 'reg.9(9)', 'reg.10(8)', 'reg.10(5A)', 'reg.10(6)', 'reg.10(7)', 'reg.10(1E)', 'reg.10(9)'))]
+    after:  [('repealed', ('reg.11(7)',))]
+UK_ukpga_2025_18 section-70-8-a → UK_ssi_2009_440
+    before: [('substituted', ('reg.13(8)', 'reg.13(5A)', 'reg.13(6)', 'reg.13(7)', 'reg.13(1E)', 'reg.13(9)', 'reg.11(8)', 'reg.11(5A)', 'reg.11(6)', 'reg.11(7)', 'reg.11(1E)', 'reg.11(9)', 'reg.45(8)', 'reg.45(5A)', 'reg.45(6)', 'reg.45(7)', 'reg.45(1E)', 'reg.45(9)', 'reg.39(8)', 'reg.39(5A)', 'reg.39(6)', 'reg.39(7)', 'reg.39(1E)', 'reg.39(9)', 'reg.9(8)', 'reg.9(5A)', 'reg.9(6)', 'reg.9(7)', 'reg.9(1E)', 'reg.9(9)', 'reg.10(8)', 'reg.10(5A)', 'reg.10(6)', 'reg.10(7)', 'reg.10(1E)', 'reg.10(9)'))]
+    after:  [('substituted', ('reg.10(8)',))]
+UK_ukpga_2025_18 section-70-8-b → UK_ssi_2009_440
+    before: [('repealed', ('reg.13(8)', 'reg.13(5A)', 'reg.13(6)', 'reg.13(7)', 'reg.13(1E)', 'reg.13(9)', 'reg.11(8)', 'reg.11(5A)', 'reg.11(6)', 'reg.11(7)', 'reg.11(1E)', 'reg.11(9)', 'reg.45(8)', 'reg.45(5A)', 'reg.45(6)', 'reg.45(7)', 'reg.45(1E)', 'reg.45(9)', 'reg.39(8)', 'reg.39(5A)', 'reg.39(6)', 'reg.39(7)', 'reg.39(1E)', 'reg.39(9)', 'reg.9(8)', 'reg.9(5A)', 'reg.9(6)', 'reg.9(7)', 'reg.9(1E)', 'reg.9(9)', 'reg.10(8)', 'reg.10(5A)', 'reg.10(6)', 'reg.10(7)', 'reg.10(1E)', 'reg.10(9)'))]
+    after:  [('repealed', ('reg.10(8)',))]
+UK_ukpga_2025_18 section-70-8-a → UK_uksi_2004_3391
+    before: [('substituted', ('reg.13(8)', 'reg.13(5A)', 'reg.13(6)', 'reg.13(7)', 'reg.13(1E)', 'reg.13(9)', 'reg.11(8)', 'reg.11(5A)', 'reg.11(6)', 'reg.11(7)', 'reg.11(1E)', 'reg.11(9)', 'reg.45(8)', 'reg.45(5A)', 'reg.45(6)', 'reg.45(7)', 'reg.45(1E)', 'reg.45(9)', 'reg.39(8)', 'reg.39(5A)', 'reg.39(6)', 'reg.39(7)', 'reg.39(1E)', 'reg.39(9)', 'reg.9(8)', 'reg.9(5A)', 'reg.9(6)', 'reg.9(7)', 'reg.9(1E)', 'reg.9(9)', 'reg.10(8)', 'reg.10(5A)', 'reg.10(6)', 'reg.10(7)', 'reg.10(1E)', 'reg.10(9)'))]
+    after:  [('substituted', ('reg.13(6)',))]
+UK_ukpga_2025_18 section-70-8-b → UK_uksi_2004_3391
+    before: [('repealed', ('reg.13(8)', 'reg.13(5A)', 'reg.13(6)', 'reg.13(7)', 'reg.13(1E)', 'reg.13(9)', 'reg.11(8)', 'reg.11(5A)', 'reg.11(6)', 'reg.11(7)', 'reg.11(1E)', 'reg.11(9)', 'reg.45(8)', 'reg.45(5A)', 'reg.45(6)', 'reg.45(7)', 'reg.45(1E)', 'reg.45(9)', 'reg.39(8)', 'reg.39(5A)', 'reg.39(6)', 'reg.39(7)', 'reg.39(1E)', 'reg.39(9)', 'reg.9(8)', 'reg.9(5A)', 'reg.9(6)', 'reg.9(7)', 'reg.9(1E)', 'reg.9(9)', 'reg.10(8)', 'reg.10(5A)', 'reg.10(6)', 'reg.10(7)', 'reg.10(1E)', 'reg.10(9)'))]
+    after:  [('repealed', ('reg.13(6)',))]
+UK_ukpga_2025_18 section-70-8-a → UK_uksi_2009_3157
+    before: [('substituted', ('reg.13(8)', 'reg.13(5A)', 'reg.13(6)', 'reg.13(7)', 'reg.13(1E)', 'reg.13(9)', 'reg.11(8)', 'reg.11(5A)', 'reg.11(6)', 'reg.11(7)', 'reg.11(1E)', 'reg.11(9)', 'reg.45(8)', 'reg.45(5A)', 'reg.45(6)', 'reg.45(7)', 'reg.45(1E)', 'reg.45(9)', 'reg.39(8)', 'reg.39(5A)', 'reg.39(6)', 'reg.39(7)', 'reg.39(1E)', 'reg.39(9)', 'reg.9(8)', 'reg.9(5A)', 'reg.9(6)', 'reg.9(7)', 'reg.9(1E)', 'reg.9(9)', 'reg.10(8)', 'reg.10(5A)', 'reg.10(6)', 'reg.10(7)', 'reg.10(1E)', 'reg.10(9)'))]
+    after:  [('substituted', ('reg.9(9)',))]
+UK_ukpga_2025_18 section-70-8-b → UK_uksi_2009_3157
+    before: [('repealed', ('reg.13(8)', 'reg.13(5A)', 'reg.13(6)', 'reg.13(7)', 'reg.13(1E)', 'reg.13(9)', 'reg.11(8)', 'reg.11(5A)', 'reg.11(6)', 'reg.11(7)', 'reg.11(1E)', 'reg.11(9)', 'reg.45(8)', 'reg.45(5A)', 'reg.45(6)', 'reg.45(7)', 'reg.45(1E)', 'reg.45(9)', 'reg.39(8)', 'reg.39(5A)', 'reg.39(6)', 'reg.39(7)', 'reg.39(1E)', 'reg.39(9)', 'reg.9(8)', 'reg.9(5A)', 'reg.9(6)', 'reg.9(7)', 'reg.9(1E)', 'reg.9(9)', 'reg.10(8)', 'reg.10(5A)', 'reg.10(6)', 'reg.10(7)', 'reg.10(1E)', 'reg.10(9)'))]
+    after:  [('repealed', ('reg.9(9)',))]

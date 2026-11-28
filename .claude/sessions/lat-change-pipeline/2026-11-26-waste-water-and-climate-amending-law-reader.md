@@ -2,7 +2,7 @@
 session: 'Waste, Water and Climate: Amending-law reader'
 status: suspended
 suspended: '2026-11-27'
-suspended_reason: 'For the three named sessions: EU article naming CLOSED 2026-11-27 (764fd74e); amending Schedules CLOSED 2026-11-27 (15f092d2); yield next, on Jason''s go; the catalogue cold dry run and the Settle write (todo 7) follow them'
+suspended_reason: 'The three named sessions are closed: EU article naming (764fd74e), amending Schedules (15f092d2), yield (2026-11-28, partial: round yield 81.1% → 84.8%; remaining round groups parked by size). Next: the catalogue cold dry run (24 drifted examples) and the Settle write (todo 7), on Jason''s go'
 opened: '2026-11-26'
 family: 'Waste, Water and Climate (round)'
 bugs:
@@ -496,3 +496,6 @@ Tests are in `test/sertantai_legal/scraper/amendment/reader/waste_water_climate_
 - **For the Settle:** every amending law re-reads (the reader stamp changed; the 396 fetched laws' index fingerprints changed too). Eight catalogue examples now read rules where they read none, for the cold dry run: 1975 c.71 Sch.15 para.2 and para.12; asp 2019/15 Sch. para.2 and para.5; asp 2007/6 Sch. para.8(a); SI 1996/973 Sch. para.19(2); NISR 2010/160 Sch.5; SI 2008/960 Sch.3.
 - **For the yield session:** "In each of the provisions listed in sub-paragraph (3)—" (SI 2026/386, about 330 changes); short names and abbreviations under a naming heading (2009 c.10 "ICTA"); the read-with-no-rule (3,688) and not-read (3,435) Schedule groups are not Schedule-specific.
 - **With Sources (open):** an amending law's Schedules are needed only on the feed's backlog (`amending-schedules-not-needed`).
+
+**Yield session closed (2026-11-28, `2026-11-27-amending-law-reader-yield.md`).** Round and switched families: 20,968 of 24,726 feed text changes met (84.8%, from 81.1%); every family 74.6%. Ten fix batches, test first; the stamps of this reader and the Commencement, Order, Feed and Markup catalogues are stale (`listed_places.ex`, `eu_dated_title.ex` added). **Catalogue drifts for the cold dry run: 24**, each read right (the 8 from amending Schedules, 10 from yield batches 1–4, 6 asp 2014/3 Sch.3 para.29 on the Environment Act 1995). Parked for this step: NISR 2016/146's "Title | Reference | Extent of amendment" table (44 round changes), about 200 round changes in ten unprobed groups. Next: the cold dry run, then Settle.
+
