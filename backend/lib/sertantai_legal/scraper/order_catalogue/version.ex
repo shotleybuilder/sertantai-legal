@@ -16,6 +16,7 @@ defmodule SertantaiLegal.Scraper.OrderCatalogue.Version do
       lib/sertantai_legal/scraper/amending_law/doc.ex
       lib/sertantai_legal/scraper/amending_law/doc/*.ex
       lib/sertantai_legal/scraper/amending_law/text.ex
+      lib/sertantai_legal/scraper/amending_law/listed_places.ex
       lib/sertantai_legal/scraper/commencement/clml_ref.ex
       lib/sertantai_legal/scraper/commencement/doc_rows.ex
       lib/sertantai_legal/scraper/commencement/leftover_gate.ex

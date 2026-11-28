@@ -10,7 +10,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTable do
 
   import SweetXml
 
-  alias SertantaiLegal.Scraper.AmendingLaw.{Doc, ScheduleRefs}
+  alias SertantaiLegal.Scraper.AmendingLaw.{Doc, ListedPlaces, ScheduleRefs}
   alias SertantaiLegal.Scraper.Amendment.{Reader, Rule}
 
   alias SertantaiLegal.Scraper.Amendment.Reader.{
@@ -42,7 +42,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTable do
             do:
               Rule.new(
                 amends: law_of.law_name,
-                targets: targets,
+                targets: Enum.map(targets, &spelled(&1, law_of.kind)),
                 operation: :repealed,
                 level: level,
                 source: %{law: doc.law_name, ref: id, text: line},
@@ -53,6 +53,84 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTable do
               )
     end
   end
+
+  @table_kinds [:section, :regulation, :order, :rule]
+
+  # an instrument's line read in the Acts' words, its targets spelled with
+  # its own prefix ("Regulations 5 to 9." as "Sections 5 to 9.", s.5..s.9
+  # as reg.5..reg.9): the table's grammar is the same (Amending-law reader:
+  # yield, 2026-11-27)
+  # (its case kept, and lower after "In": "In Article 30—" over its items
+  # is the Acts' lead-in "In section 30—", NIA 2011/23 Sch.4)
+  @instrument_word ~r/\b(In\s+)?(?:([Rr])egulation|([Aa])rticle|([Rr])ule)(s?)(?=\s+\d)/u
+  # a provisions line ending in the law's Schedules ("Regulations 2(1)(a),
+  # (2) and (3), 3, 4 and 7, Schedule 1 and paragraphs 1, 2, 4 to 11, 12(b)
+  # … of Schedule 2": SI 2014/3248 Sch.4 Pt.1) keeps its provisions: the
+  # Schedules are no targets, and their brackets had been crossed with the
+  # provisions' ("reg.2(2)(b)"; yield, 2026-11-27)
+  # (an entry in a Schedule too: "Regulations 9(7)(b), 13 and 14 and the
+  # entry relating to the … Regulations 1971 in Schedule 3", NISR 2015/223)
+  @schedule_tail ~r/(?:\s*,|\s+and)\s+(?:Schedules?\s+\d|(?:sub-?)?paragraphs?\b[^;]*?\bof\s+Schedule\b|the\s+entr(?:y|ies)\b[^;]*?\bSchedule\b).*$/u
+
+  # a line listing several provisions, by ";" or "," and "and"
+  # ("Regulations 9(7)(b), 13 and 14", "Regulation 12(3); regulation 18(5),
+  # (6) and (8); and regulation 24": NISR 2015/223, NISR 2016/406) is one
+  # entry each — the first had taken the others' brackets; never a line of
+  # words, a bracket range ("146(2) to (5)") or a qualified one
+  @not_a_list ~r/\b(?:words?|insofar|so\s+far|except|as\s+respects|relat\w*)\b|\)\s*to\s*\(|[“"]/u
+
+  @provision_start ~r/^(?:[Ss]ections?|[Rr]egulations?)\s+\d/u
+
+  defp listed(line) do
+    masked = Regex.replace(~r/[“"][^”"]*[”"]/u, line, &String.duplicate("x", byte_size(&1)))
+
+    cuts =
+      for [{pos, len}] <- Regex.scan(~r/;\s*(?:and\s+)?/u, masked, return: :index),
+          do: {pos, pos + len}
+
+    pieces =
+      [{0, 0} | cuts]
+      |> Enum.zip(cuts ++ [{byte_size(line), byte_size(line)}])
+      |> Enum.map(fn {{_, a}, {b, _}} -> line |> binary_part(a, b - a) |> String.trim() end)
+
+    # (each piece a provision of its own, never one leaning on the first:
+    # "In section 109, in subsection (1) the definitions …; and subsection
+    # (2).", 1991 c.34 Sch.19)
+    if Enum.all?(pieces, &(&1 =~ @provision_start)),
+      do: Enum.flat_map(pieces, &listed_piece/1),
+      else: [line]
+  end
+
+  defp listed_piece(piece) do
+    list = String.trim_trailing(piece, ".")
+
+    if list =~ ~r/,|\band\b/u and
+         not (list =~ @not_a_list) do
+      for place <- ListedPlaces.each_place(String.replace(list, ~r/^[Rr]egulation/u, "section")),
+          place =~ ~r/^sections?\s+\d/u,
+          do: "S" <> String.slice(place, 1..-1//1) <> "."
+    else
+      [piece]
+    end
+  end
+
+  defp no_schedule_tail(line) do
+    if line =~ ~r/^[Ss]ections?\s+\d/u, do: String.replace(line, @schedule_tail, ""), else: line
+  end
+
+  defp as_sections(line, :section), do: line
+
+  defp as_sections(line, _kind) do
+    Regex.replace(@instrument_word, line, fn _, lead, r, a, u, plural ->
+      word = if lead == "" and r <> a <> u =~ ~r/^[A-Z]/, do: "Section", else: "section"
+      lead <> word <> plural
+    end)
+  end
+
+  defp spelled(target, :section), do: target
+
+  defp spelled(target, kind),
+    do: Regex.replace(~r/(?<!\w)s\.(?=\d)/u, target, Reader.prefix(kind) <> ".")
 
   @doc "True when the element is a repeals table."
   @spec repeal_table?(Doc.t(), String.t()) :: boolean()
@@ -137,7 +215,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTable do
   # a law not held takes its rows with it, never to the only law given
   # (OH&S: Amending-law reader repair, 2026-11-07)
   defp rows({heading, _header, rows}, laws) do
-    sections = Enum.filter(laws, &(&1.kind == :section))
+    # (an instrument's too: "Legislation | Reference | Extent of
+    # Revocation", SSI 2025/165 Sch.21; never an EU law's)
+    sections = Enum.filter(laws, &(&1.kind in @table_kinds))
 
     cond do
       Enum.any?(rows, &(row_kind(&1) == :law_line)) -> named_rows(heading, rows, sections)
@@ -148,8 +228,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTable do
 
   defp one_law_rows(heading, rows, sections) do
     case Enum.filter(sections, &table_law?(heading, &1)) do
-      [law] -> [{law, provision_lines(rows)}]
-      [] when length(sections) == 1 -> [{hd(sections), provision_lines(rows)}]
+      [law] -> [{law, instrument_lines(rows, law)}]
+      [] when length(sections) == 1 -> [{hd(sections), instrument_lines(rows, hd(sections))}]
       _ -> []
     end
   end
@@ -161,7 +241,14 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTable do
         cells = Enum.map_join(law_cells, " ", &Doc.text/1),
         law <- sections,
         table_law?(cells, law),
-        do: {law, extent |> Doc.lines() |> Enum.flat_map(&entries/1) |> lead_in_items()}
+        do:
+          {law,
+           extent
+           |> Doc.lines()
+           |> Enum.map(&(&1 |> as_sections(law.kind) |> no_schedule_tail()))
+           |> Enum.flat_map(&entries/1)
+           |> Enum.flat_map(&listed/1)
+           |> lead_in_items()}
   end
 
   # "In section 48—" over its list items ("in subsection (4), the words
@@ -235,7 +322,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTable do
     do: {[], Enum.find(sections, &table_law?(row_text(row), &1))}
 
   defp named_row(:provision, _row, nil, _sections), do: {[], nil}
-  defp named_row(:provision, row, law, _sections), do: {[{law, provision_lines([row])}], law}
+
+  defp named_row(:provision, row, law, _sections),
+    do: {[{law, Enum.map(provision_lines([row]), &as_sections(&1, law.kind))}], law}
 
   # a row naming its law in its first cell sets the current law too
   defp named_row(:law_row, row, _law, sections) do
@@ -269,6 +358,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.RepealTable do
     firsts = for [first | _] <- rows, text = Doc.text(first), text != "", do: text
     firsts != [] and Enum.count(firsts, &ProvisionTable.provision?/1) * 2 > length(firsts)
   end
+
+  defp instrument_lines(rows, law),
+    do: Enum.map(provision_lines(rows), &as_sections(&1, law.kind))
 
   defp provision_lines(rows) do
     for [provision, extent] <- rows,

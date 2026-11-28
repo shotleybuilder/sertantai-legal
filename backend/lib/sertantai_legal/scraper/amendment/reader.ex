@@ -86,6 +86,10 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
   # (WSI 2013/755 on the Natural Resources Body for Wales Order 2012)
   @prefix %{section: "s", regulation: "reg", article: "art", order: "reg", rule: "rule"}
 
+  @doc "The LAT prefix of a law kind's provisions (`:order` → \"reg\")."
+  @spec prefix(atom()) :: String.t()
+  def prefix(kind), do: Map.fetch!(@prefix, kind)
+
   @doc """
   The law ref of a law name and its title (`kind` from its LAT prefix: "s",
   "reg", …); `articles: true` for a `reg.` law whose provisions are articles
@@ -226,7 +230,18 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
             &(&1 |> Clauses.unquote_words() |> Clauses.no_effect_asides())
           ) ++ heading_place(title)
 
-        before = Stream.map(text.before, &Clauses.unquote_words/1)
+        # (captions aside there too: "In Schedule 6 (fees payable in
+        # connection with the Ionising Radiations Regulations 2017 etc.)"
+        # names no law amended, SI 2023/247; yield, 2026-11-28)
+        before =
+          Stream.map(
+            text.before,
+            &(&1
+              |> Clauses.unquote_words()
+              |> Clauses.uncaptioned()
+              |> Clauses.no_entry_names()
+              |> Clauses.uncapped())
+          )
 
         # the laws named, found once for every law offered (run time,
         # 2026-10-25: found per law, 24× over for ukpga 1995/25); a caption
@@ -234,7 +249,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader do
         # (application of Part I of Health and Safety at Work etc. Act 1974
         # …)" under "The Offshore Safety Act 1992 shall be amended":
         # Petroleum Act 1998 Sch. 4 para 33)
-        uncaptioned = Enum.map(texts, &Clauses.uncaptioned/1)
+        uncaptioned = Enum.map(texts, &(&1 |> Clauses.uncaptioned() |> Clauses.no_entry_names()))
         # a heading in capitals names its law too ("SCHEDULE 2 MODIFICATIONS—THE
         # FACTORIES ACT 1961": SI 1974/1941, CV-06 S7)
         titles = Enum.map(List.wrap(title), &Clauses.uncapped/1)

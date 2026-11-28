@@ -18,6 +18,7 @@ defmodule SertantaiLegal.Scraper.Amendment.CatalogueVersion do
     lib/sertantai_legal/scraper/amending_law/operation.ex
     lib/sertantai_legal/scraper/amending_law/schedule_refs.ex
     lib/sertantai_legal/scraper/amending_law/text.ex
+    lib/sertantai_legal/scraper/amending_law/listed_places.ex
     lib/sertantai_legal/scraper/amendment/catalogue_read.ex
     lib/sertantai_legal/scraper/amendment/law_doc.ex
     lib/sertantai_legal/scraper/amendment/patterns.ex
@@ -30,6 +31,7 @@ defmodule SertantaiLegal.Scraper.Amendment.CatalogueVersion do
     lib/sertantai_legal/scraper/amendment/reader/eu_citation.ex
     lib/sertantai_legal/scraper/amendment/reader/eu_spelling.ex
     lib/sertantai_legal/scraper/amendment/reader/law_named.ex
+    lib/sertantai_legal/scraper/amendment/reader/eu_dated_title.ex
     lib/sertantai_legal/scraper/amendment/reader/new_numbers.ex
     lib/sertantai_legal/scraper/amendment/reader/provision_table.ex
     lib/sertantai_legal/scraper/amendment/reader/repeal_table.ex

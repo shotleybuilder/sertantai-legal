@@ -18,7 +18,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
   own id are left out. Pure.
   """
 
-  alias SertantaiLegal.Scraper.AmendingLaw.Doc
+  alias SertantaiLegal.Scraper.AmendingLaw.{Doc, ListedPlaces}
 
   @enforce_keys [:id, :instruction]
   defstruct [
@@ -60,6 +60,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
 
       el ->
         {words, quoted} = words(el)
+        words = ListedPlaces.expand(doc, id, words)
         top = top(id)
 
         held =
@@ -67,7 +68,7 @@ defmodule SertantaiLegal.Scraper.AmendingLaw.Text do
               other == top or String.starts_with?(other, top <> "-"),
               {w, _} = words(Doc.element(doc, other)),
               w != "",
-              do: {other, w}
+              do: {other, ListedPlaces.expand(doc, other, w)}
 
         context = Enum.map(held, &elem(&1, 1))
 

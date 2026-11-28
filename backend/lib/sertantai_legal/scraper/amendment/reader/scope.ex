@@ -139,9 +139,35 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Scope do
 
   # the distinct laws an instruction names outside its quotes, by year (a
   # title and its chapter, "Factories Act 1961 (c. 34)", are one law)
+  # each part its own law's instruction, verb and place (`ListedPlaces`'s
+  # "omit …, in regulation 2(1) of the … Regulations 1997; omit …, in
+  # regulation 1(2) of …": SI 2018/1221 reg.3; yield, 2026-11-27)
+  # (an item's places may name another law: "section 40(4) until its
+  # repeal by the Courts and Legal Services Act 1990 is fully in force of
+  # the Housing Act 1988", 2013 c.22 Sch.9 para.52(2))
+  # (an instruction's verb, old-style too: "there shall be substituted",
+  # 2001 c.16 Sch.2 para.13; never a noun or participle — "until its
+  # repeal by", "the inserted references", 2013 c.22 Sch.9 para.52(2), the
+  # list itself: yield, 2026-11-27)
+  @verb ~r/\b(?:omit|substitute|insert|add|repeal|revoke|delete)\b(?<!\bits\s(?:repeal|revoke))|\b(?:shall\s+be|is|are|be)\s+(?:omitted|substituted|inserted|added|repealed|revoked|deleted)\b/iu
+  # (two parts at least: one sentence naming many laws is no list told
+  # apart — 1979 c.2 Sch.4 para.12's table, "there shall be substituted")
+  defp told_apart?(instruction, terms) do
+    parts = instruction |> Clauses.unquote_words() |> String.split(~r/;\s+/u)
+    length(parts) > 1 and Enum.all?(parts, &(&1 =~ @verb and laws_listed(&1, terms) >= 1))
+  end
+
+  # ("the Companies Act 2006 (which make amendments of … the Companies Act
+  # 1985 …)": a title's own aside, 2015 c.20 Sch.23 para.1)
+  @which_aside ~r/\(\s*which\b(?:[^()]|\([^()]*\))*\)/u
+  # (outside captions: a caption's laws describe the provision — "section
+  # 105(2) of the … Act 2005 (c. 16) (which postpones … the Pollution
+  # Prevention and Control Act 1999 …)", 2008 c.27 s.88(1); yield, 2026-11-28)
   defp laws_listed(instruction, terms) do
     instruction
     |> Clauses.unquote_words()
+    |> Clauses.uncaptioned()
+    |> String.replace(@which_aside, "")
     |> LawNamed.law_spans(terms)
     |> Enum.map(fn {_, _, ref} ->
       case ref do
@@ -164,7 +190,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Scope do
     # Schedule 3A to the 1974 Act; …": Sentencing Act 2020 Sch. 24; "The
     # enactments are— …, section 60; …": 2022/31 Sch. 1) is no law's
     # instruction alone: its items were read as each law's targets (CV-S06 B2)
-    if laws_listed(text.instruction, terms) >= 3,
+    if laws_listed(text.instruction, terms) >= 3 and not told_apart?(text.instruction, terms),
       do: [],
       else: laws |> articles_only(doc, id) |> in_schedule(text)
   end

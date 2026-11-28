@@ -61,6 +61,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
     cuts =
       for [{pos, len}] <- Regex.scan(~r/;\s*|,?\s+and\s+/, masked, return: :index),
           not deleted_for?(masked, pos, len),
+          not in_title?(masked, pos, len),
           do: pos + len
 
     pieces =
@@ -88,6 +89,19 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   end
 
   defp verb?(masked), do: Operation.of(%Text{id: nil, instruction: masked}) != nil
+
+  # an "and" joining a title's capitalised words, the title running on to
+  # its year ("Mines and Quarries (Tips) Act 1969", "Leasehold Reform,
+  # Housing and Urban Development Act 1993"): no cut, or the place before
+  # loses its law (2013 c.22 Sch.9 para.52; yield, 2026-11-27)
+  @title_word_before ~r/(?:^|\s)[A-Z][\w’'),\-]*$/u
+  # (a bracket masked as "xxx": "(Tips)")
+  @title_rest ~r/^(?:(?:[A-Z(][\w’'(),\-]*|x+|and|of|the|for|in|on|to|at|by|etc\.)\s+)*?(?:Act|Regulations|Order|Rules|Measure)(?:\s+\(Northern\s+Ireland\))?\s+\d{4}\b/u
+
+  defp in_title?(masked, pos, len) do
+    binary_part(masked, 0, pos) =~ @title_word_before and
+      binary_part(masked, pos + len, byte_size(masked) - pos - len) =~ @title_rest
+  end
 
   # "delete “X” and substitute “Y”", "delete the full stop and substitute
   # …": one substitution, never cut (SSI 2000/432 reg.3(3); Waste, Water
@@ -218,7 +232,12 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   # by the Scottish Ministers)," had been kept to an item whose caption held
   # a verb — asp 2015/13 s.1(2)(a); Waste, Water and Climate 2026-11-26)
   defp listed_verb(%Text{instruction: i} = text, parent),
-    do: %{text | instruction: parent_verb(parent, i) || i}
+    do: %{
+      text
+      | instruction:
+          parent_verb(parent, i) || places_lead(parent, i) || quote_item(parent, i) ||
+            definition_item(parent, i) || i
+    }
 
   @numbered ~r/^\s*(?:sections?|regulations?|articles?|rules?)\s+\d/iu
   defp parent_verb(parent, i) do
@@ -226,6 +245,65 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
       [verb] -> Regex.replace(~r/[\s,;.]*(?:\band\s*)?$/u, i, "", global: false) <> " " <> verb
       _ -> nil
     end
+  end
+
+  # an item that is only its places under a lead holding the verb: "In the
+  # following places for “municipal waste” substitute “…”— (a) regulation
+  # 6(1)(b) and (c);" reads "In regulation 6(1)(b) and (c), for …
+  # substitute …" (WSI 2012/65 reg.7; Amending-law reader: yield, 2026-11-27)
+  # (and brackets alone under "In each of the following subsections, for …
+  # substitute …— (aa) (2)(b);": SI 2024/365 reg.2(b)(iv))
+  @places_lead ~r/^\s*In\s+(?:each\s+of\s+)?the\s+following\s+(places|provisions|subsections|paragraphs|sub-paragraphs)\s*,?\s*((?:for|after|before|omit|at)\b.*?)\s*[—–:]\s*$/iu
+  @brackets_only ~r/^\s*(?:\([0-9A-Za-z]+\))+/u
+  defp places_lead(parent, i) do
+    with [noun, rest] <- Regex.run(@places_lead, parent, capture: :all_but_first),
+         place when is_binary(place) <- item_place(i, String.downcase(noun)) do
+      "In " <> place <> ", " <> rest
+    else
+      _ -> nil
+    end
+  end
+
+  defp item_place(i, noun) do
+    place = Regex.replace(~r/[\s,;.]*(?:\band\s*)?$/u, i, "", global: false)
+
+    cond do
+      i =~ @numbered ->
+        place
+
+      noun in ~w(subsections paragraphs sub-paragraphs) and i =~ @brackets_only ->
+        String.trim_trailing(noun, "s") <> " " <> place
+
+      true ->
+        nil
+    end
+  end
+
+  # an item that is only the words a lead's verb acts on: "in subsection
+  # (2), omit— (aa) “33ZA,”;" reads "in subsection (2), omit “33ZA,”" (SI
+  # 2024/365 reg.2(b)(iii); Amending-law reader: yield, 2026-11-27)
+  @quote_only ~r/^\s*[“"‘][^”"’]*[”"’]\s*[;,.]?\s*(?:and|or)?\s*$/u
+  @verb_lead ~r/\b(?:omit|repeal|revoke|insert)\s*[—–:]\s*$/iu
+  # a quoted term under "in the following definitions, for “EU”
+  # substitute “relevant”—" reads "in the definition of “…”, for “EU”
+  # substitute": words in the provision the definitions are in (SI
+  # 2023/861 reg.3(1)(d), SI 2020/1112 Sch.4 para.2(1)(b)(i); yield,
+  # 2026-11-27)
+  @definitions_lead ~r/^\s*in\s+(?:each\s+of\s+)?the\s+following\s+definitions\s*,?\s*((?:for|after|before|omit|at)\b.*?)\s*[—–:]?\s*$/iu
+  defp definition_item(parent, i) do
+    with true <- i =~ @quote_only,
+         [rest] <- Regex.run(@definitions_lead, parent, capture: :all_but_first) do
+      term = String.replace(String.trim(i), ~r/[;,.]?\s*(?:and|or)?$/u, "")
+      "in the definition of " <> term <> ", " <> rest
+    else
+      _ -> nil
+    end
+  end
+
+  defp quote_item(parent, i) do
+    if i =~ @quote_only and parent =~ @verb_lead,
+      do: Regex.replace(~r/\s*[—–:]\s*$/u, parent, " ") <> String.trim(i),
+      else: nil
   end
 
   @doc """
@@ -278,9 +356,14 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
 
   @entry_ref "\\d+[A-Z]*(?:\\s*\\([0-9A-Za-z]+\\))*"
   @entry_named Regex.compile!(
+                 # (and the entry's law: "the entry relating to regulation
+                 # 16 of the Explosives Regulations 2014", SI 2023/247; yield)
                  "\\b(the\\s+entr(?:y|ies)\\s+)(?:relating\\s+to|for)\\s+(?:sections?|regulations?|articles?|rules?|paragraphs?)\\s+" <>
                    @entry_ref <>
-                   "(?:\\s*(?:,|and|or|to)\\s*(?:" <> @entry_ref <> "|\\([0-9A-Za-z]+\\)))*",
+                   "(?:\\s*(?:,|and|or|to)\\s*(?:" <>
+                   @entry_ref <>
+                   "|\\([0-9A-Za-z]+\\)))*" <>
+                   "(?:\\s+of\\s+the\\s+[A-Z](?:[^,;:—–()]|\\([^()]*\\))*?\\s\\d{4}\\b)?",
                  "iu"
                )
 
@@ -435,7 +518,10 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   # enables Orders in Council under section 11 of the Petroleum Act 1998
   # …)", 2004 c.20 s.87(5)): every caption after it, brackets inside a
   # caption at any depth (Fire and OH&S 2026-11-15)
-  @provision_ref ~S"\b(?:sections?|subsections?|regulations?|articles?|rules?|paragraphs?|sub-paragraphs?|Schedules?|Parts?|Chapters?)\s+[0-9]+[A-Z]*(?:\s*\([0-9A-Za-z]+\))*(?:\s*(?:,|and|or|to)\s*\([0-9A-Za-z]+\)(?:\s*\([0-9A-Za-z]+\))*)*"
+  # (any case: "Regulation 9 (fees payable in relation to the Explosives
+  # Regulations 2014 …) is amended as follows." opens a sentence, SI
+  # 2023/247; yield, 2026-11-28)
+  @provision_ref ~S"\b(?i:sections?|subsections?|regulations?|articles?|rules?|paragraphs?|sub-paragraphs?|Schedules?|Parts?|Chapters?)\s+[0-9]+[A-Z]*(?:\s*\([0-9A-Za-z]+\))*(?:\s*(?:,|and|or|to)\s*\([0-9A-Za-z]+\)(?:\s*\([0-9A-Za-z]+\))*)*"
   @of_law ~S'(?:\s+(?:of|to)\s+the\s+(?:[^()“”";—–]|\([A-Z][^()]*\))*?\s\d{4})?'
   @captioned Regex.compile!(
                "(" <> @provision_ref <> @of_law <> ")(?:\\s*" <> @group <> ")+",
@@ -490,7 +576,16 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Clauses do
   as one; any other text as it is.
   """
   @spec uncapped(String.t()) :: String.t()
-  def uncapped(t) do
+  def uncapped(t), do: t |> capitals_uncapped() |> no_subject()
+
+  # a heading's subject names no law amended: "Fees payable in relation to
+  # the Explosives Regulations 2014 …: proposed variation" heads a provision
+  # amending the 2022 Fees Regulations its reg.2 names (SI 2023/247, SI
+  # 2024/322; yield, 2026-11-28)
+  @subject ~r/\b(?:in\s+relation\s+to|in\s+connection\s+with)\b[^:—–]*/iu
+  defp no_subject(t), do: Regex.replace(@subject, t, "")
+
+  defp capitals_uncapped(t) do
     if t =~ ~r/\p{Lu}{2}/u and not (t =~ ~r/\p{Ll}/u),
       do: Regex.replace(~r/\p{L}+/u, t, &String.capitalize/1),
       else: t

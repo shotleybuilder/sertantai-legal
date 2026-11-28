@@ -10,7 +10,14 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
 
   alias SertantaiLegal.Scraper.AmendingLaw.Text
   alias SertantaiLegal.Scraper.Amendment.Reader
-  alias SertantaiLegal.Scraper.Amendment.Reader.{Brackets, Clauses, EuCitation, Targets}
+
+  alias SertantaiLegal.Scraper.Amendment.Reader.{
+    Brackets,
+    Clauses,
+    EuCitation,
+    EuDatedTitle,
+    Targets
+  }
 
   # a law's title in running text; "etc." inside it ("Health and Safety at
   # Work etc. Act 1974", "The Maternity and Parental Leave etc. Regulations
@@ -24,8 +31,13 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
   # 2007/247 Sch.10 para.3's changes had gone to the previous paragraph's
   # law; Waste, Water and Climate 2026-11-26); "Etc." in a heading's
   # capitals too ("Amendments of the Health and Safety at Work Etc. Act
-  # 1974": 1975 c.71 Sch.15; amending Schedules, 2026-11-27)
-  @title_words ~S"[A-Z](?:[\w,'’()\- ]|\b[Ee]tc\.)*? (?:Act|Regulations|Order|Rules)(?: \(Northern Ireland\) ?| )\d{4}(?:(?:\)(?: \([^()]*\))*|(?: \([^()]*\))+) (?:Regulations|Order|Rules)(?: \(Northern Ireland\) ?| )\d{4})?"
+  # 1974": 1975 c.71 Sch.15; amending Schedules, 2026-11-27); a colon
+  # inside it ("Merchant Shipping (Working Time: Inland Waterways)
+  # Regulations 2003": SI 2017/1149; yield, 2026-11-27)
+  # (never from inside a provision's number: "regulation 45(1E) of the
+  # Civil Contingencies Act 2004 (Contingency Planning) Regulations 2005"
+  # had named "E) of the …", resolved as the Act; yield, 2026-11-27)
+  @title_words ~S"(?<![\w’'])[A-Z](?:[\w,'’()\- ]|\b[Ee]tc\.|:(?= [A-Z]))*? (?:Act|Regulations|Order|Rules)(?: \(Northern Ireland\) ?| )\d{4}(?:(?:\)(?: \([^()]*\))*|(?: \([^()]*\))+) (?:Regulations|Order|Rules)(?: \(Northern Ireland\) ?| )\d{4})?"
   @title Regex.compile!(@title_words, "u")
   @title_group Regex.compile!("(" <> @title_words <> ")", "u")
 
@@ -40,7 +52,12 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
         ]
   def scoped(clauses, texts, law, terms) do
     [first | _] = clauses
-    place = Clauses.located_brackets(first.instruction)
+
+    place =
+      if others_only?(first, law, terms),
+        do: [],
+        else: Clauses.located_brackets(first.instruction)
+
     context = tl(texts)
 
     {scoped, _} =
@@ -93,8 +110,14 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
 
   # (never from a caption: "In section 11 (interpretation of sections 3A
   # to 10), in subsection (2)—", 2013/22 s.56(2))
+  # (nor from a table entry's provision: "In the entry for section 10 of
+  # the Road Traffic Act 1988, in the third column—" in s.83's table, 2015
+  # c.20 Sch.11 para.14; yield, 2026-11-28)
   defp clause_numbers(:none, nil, nil, context, law) do
-    case Targets.numbers(Enum.map(context, &Clauses.no_captions/1), law.kind) do
+    case Targets.numbers(
+           Enum.map(context, &(&1 |> Clauses.no_entry_names() |> Clauses.no_captions())),
+           law.kind
+         ) do
       {:ok, ns} -> ns
       _ -> []
     end
@@ -177,6 +200,16 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
     from_parents ++ that_subsection
   end
 
+  # a first clause naming only other laws places nothing for this one ("omit
+  # …, in regulation 2(1) of the … Regulations 1997 and …; …, in regulation 2
+  # of the … Regulations 1998": SI 2018/1221 reg.3; yield, 2026-11-27)
+  defp others_only?(clause, law, terms) do
+    case clause.instruction |> Clauses.asides() |> Clauses.unquote_words() |> laws(terms) do
+      [] -> false
+      refs -> not Enum.any?(refs, &law_named?(&1, law))
+    end
+  end
+
   # a parent's lead-in, where it changes something first ("In subsection
   # (3), omit the words … and in subsection (5)—": "in subsection (5)";
   # 1994/19 s.18(6)); else its words
@@ -246,7 +279,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
   @spec law_spans(String.t(), map()) :: [{non_neg_integer(), non_neg_integer(), map()}]
   def law_spans(t, terms) do
     t = EuCitation.untitled(t)
-    lower = String.downcase(t)
+    dated = EuDatedTitle.spans(t)
+    t = EuDatedTitle.blank(t)
+    lower = t |> uncaptioned() |> String.downcase()
 
     defined =
       for {term, law} <- terms,
@@ -276,7 +311,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
 
     # a name inside another ("land" in "Land Compensation Act 1973") is
     # part of it
-    (defined ++ titled ++ chapters ++ eu)
+    (defined ++ titled ++ chapters ++ eu ++ dated)
     |> Enum.sort()
     |> Enum.reduce([], fn
       {_, b, _}, [{_, pb, _} | _] = acc when b <= pb -> acc
@@ -295,6 +330,17 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
         [] -> nil
         refs -> refs
       end
+    end)
+  end
+
+  # a defined term is matched outside captions, blanked to keep places: a
+  # caption's words are the section's, never a law ("Section 411 (company
+  # insolvency rules) is amended": 2020 c.12 Sch.3 para.22 had read as the
+  # term "Insolvency Rules", the Insolvency (England and Wales) Rules 2016;
+  # yield, 2026-11-27)
+  defp uncaptioned(t) do
+    Regex.replace(~r/(?<g>\((?:[^()]|(?&g))*\))/u, t, fn m, _ ->
+      if m =~ ~r/\s/u, do: String.duplicate(" ", byte_size(m)), else: m
     end)
   end
 
@@ -318,7 +364,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
 
   defp laws(t, terms) do
     t = EuCitation.untitled(t)
-    lower = String.downcase(t)
+    dated = for {_, _, ref} <- EuDatedTitle.spans(t), do: ref
+    t = EuDatedTitle.blank(t)
+    lower = t |> uncaptioned() |> String.downcase()
 
     defined =
       for {term, law} <- terms,
@@ -344,7 +392,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
           ref = EuCitation.ref(m),
           do: ref
 
-    defined ++ titled ++ chapters ++ eu
+    defined ++ titled ++ chapters ++ eu ++ dated
   end
 
   defp part(_t, {-1, 0}), do: ""
@@ -361,6 +409,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
   def law_named?(%{eu: {type, y, n}}, law),
     do: String.starts_with?(law.law_name, "UK_#{type}_") and y == law.year and n == law.number
 
+  def law_named?(%{eu_dated: words}, law), do: EuDatedTitle.named?(words, law)
+
   def law_named?(%{title: t}, law) when is_binary(t) and is_binary(law.title),
     do: String.ends_with?(norm(t), norm("#{law.title} #{law.year}"))
 
@@ -374,7 +424,11 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.LawNamed do
     do:
       t
       |> String.downcase()
-      |> String.replace(~r/^the /, "")
       |> String.replace(~r/[^a-z0-9]+/, " ")
+      # (every "the": "(Application of the Companies Act 2006)" in the law's
+      # own words, "(Application of Companies Act 2006)" in the register:
+      # SI 2012/2301 on SI 2008/1911; yield, 2026-11-28)
+      |> String.replace(~r/\bthe\b/, " ")
+      |> String.replace(~r/\s+/, " ")
       |> String.trim()
 end

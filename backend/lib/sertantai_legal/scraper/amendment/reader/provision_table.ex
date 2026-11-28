@@ -28,7 +28,9 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.ProvisionTable do
   def provision?(cell), do: Regex.match?(@provision, String.trim(cell))
 
   # one item of a list of sections: "32", "125(2)(a)", "12 to 16"
-  @item ~S"\d+[A-Z]*(?:\([^)]*\))*(?:\s+to\s+\d+[A-Z]*(?:\([^)]*\))*)?"
+  # (or a bracket alone, the item before's sibling: "15(6) and (6A), 17",
+  # SSI 2025/165 Sch.21; yield, 2026-11-27)
+  @item ~S"(?:\d+[A-Z]*(?:\([^)]*\))*(?:\s+to\s+\d+[A-Z]*(?:\([^)]*\))*)?|\([0-9A-Za-z]+\))"
   @list Regex.compile!(
           "^Sections\\s+(#{@item}(?:(?:\\s*,\\s*|\\s*,?\\s+and\\s+)#{@item})+)\\s*\\.?\\s*$"
         )
@@ -75,6 +77,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.ProvisionTable do
       [_, items] ->
         items
         |> String.split(~r/\s*,\s*(?:and\s+)?|\s+and\s+/)
+        |> Enum.map_reduce(nil, &sibling/2)
+        |> elem(0)
         |> Enum.map(fn item ->
           if item =~ ~r/\bto\b/, do: "Sections #{item}.", else: "Section #{item}."
         end)
@@ -82,6 +86,15 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.ProvisionTable do
       nil ->
         [line]
     end
+  end
+
+  # a bracket alone takes the number of the item before ("(6A)" after
+  # "15(6)": 15(6A)); a numbered item is its own
+  defp sibling("(" <> _ = item, parent) when is_binary(parent), do: {parent <> item, parent}
+
+  defp sibling(item, _parent) do
+    parent = item |> String.replace(~r/\([^)]*\)$/, "")
+    {item, if(parent =~ ~r/^\d/ and parent != item, do: parent, else: nil)}
   end
 
   @doc "A line's qualification cut off (\"Section 23 except insofar as …\"): its brackets name no target."

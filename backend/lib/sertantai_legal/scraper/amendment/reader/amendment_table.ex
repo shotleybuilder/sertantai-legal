@@ -20,10 +20,26 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.AmendmentTable do
   @spec rules(Doc.t(), String.t(), map(), [Reader.law_ref()]) :: [Rule.t()]
   def rules(doc, id, terms, laws) do
     case Doc.element(doc, id) do
-      nil -> []
-      el -> el |> tables() |> Enum.flat_map(&table_rules(&1, doc, id, terms, laws))
+      nil ->
+        []
+
+      el ->
+        # a table with no title of its own is in the law its container's
+        # titles name ("Amendments to the Climate Change Levy (General)
+        # Regulations 2001": SI 2007/2903 Sch.1; yield, 2026-11-27)
+        heading = doc |> Doc.headings(id) |> Enum.join(" ")
+
+        el
+        |> tables()
+        |> Enum.map(&untitled(&1, heading))
+        |> Enum.flat_map(&table_rules(&1, doc, id, terms, laws))
     end
   end
+
+  defp untitled({"", columns, rows, kind, item?}, heading),
+    do: {heading, columns, rows, kind, item?}
+
+  defp untitled(table, _heading), do: table
 
   @doc "True when the element holds an amendments table."
   @spec table?(Doc.t(), String.t()) :: boolean()
@@ -50,6 +66,8 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.AmendmentTable do
     found
   end
 
+  @item_column ~r/^\s*(?:Item|No\.?|Number)\s*$/i
+
   defp table({tabular, table}, previous) do
     # the header's last row ("Column 1 | Column 2" may come first: SI 2008/960)
     case table
@@ -57,16 +75,22 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.AmendmentTable do
          |> List.last()
          |> header() do
       [] when previous != nil ->
-        t = put_elem(previous, 2, rows(table))
+        t = put_elem(previous, 2, rows(table, elem(previous, 4)))
         {[t], previous}
 
       header ->
-        case kind(header) do
+        # an item number column first is no place ("Item | Regulation, etc |
+        # Extent of amendment": SI 2007/2903 Sch.1; yield, 2026-11-27)
+        item? = header != [] and header |> hd() |> Doc.text() =~ @item_column
+        header = if item?, do: tl(header), else: header
+        rows = rows(table, item?)
+
+        case kind(header, rows) do
           nil ->
             {[], nil}
 
           kind ->
-            t = {title(tabular), length(header), rows(table), kind}
+            t = {title(tabular), length(header), rows, kind, item?}
             {[t], t}
         end
     end
@@ -76,30 +100,71 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.AmendmentTable do
   defp header(tr), do: xpath(tr, ~x"./*[local-name()='th']"l)
 
   # :provisions, the last column each provision's amendment ("Provision |
-  # Amendment"); :laws, two columns, each law's ("Title | Extent of
-  # amendment": SI 2008/960 Sch.3)
-  defp kind([_, _ | _] = header) do
+  # Amendment"; "Regulation, etc | Extent of amendment", the provision's word
+  # from the header: SI 2007/2903 Sch.1); :laws, two columns, each law's
+  # ("Title | Extent of amendment": SI 2008/960 Sch.3; "Column 1 | Column 2"
+  # whose first column names laws: SI 2026/260 Sch.1)
+  @provision_head ~r/^\s*(?:Provisions?|(sections?|regulations?|articles?|rules?))\b/i
+
+  defp kind([_, _ | _] = header, rows) do
+    first = header |> hd() |> Doc.text()
     last = header |> List.last() |> Doc.text()
 
     cond do
-      last =~ ~r/\bExtent\s+of\s+amendment/i and length(header) == 2 -> :laws
+      first =~ @provision_head and last =~ ~r/\b(?:Extent|Amendments?)\b/i ->
+        {:provisions, provision_word(first)}
+
+      last =~ ~r/\bExtent\s+of\s+amendment/i and length(header) == 2 ->
+        :laws
+
+      true ->
+        last_kind(last, header, rows)
+    end
+  end
+
+  defp kind(_header, _rows), do: nil
+
+  defp last_kind(last, header, rows) do
+    cond do
       last =~ ~r/\bExtent\b/i -> nil
-      last =~ ~r/\bAmendments?\b/i -> :provisions
+      last =~ ~r/\bAmendments?\b/i -> {:provisions, nil}
+      columns_of_laws?(header, rows) -> :laws
       true -> nil
     end
   end
 
-  defp kind(_header), do: nil
+  defp columns_of_laws?(header, rows),
+    do:
+      length(header) == 2 and Enum.all?(header, &(Doc.text(&1) =~ ~r/^\s*Column\s+\d+\s*$/i)) and
+        laws_column?(rows)
+
+  defp provision_word(first) do
+    case Regex.run(@provision_head, first, capture: :all_but_first) do
+      [word] -> word |> String.downcase() |> String.trim_trailing("s")
+      _ -> nil
+    end
+  end
+
+  @law_title ~r/\b(?:Act|Regulations|Order|Rules)(?: \(Northern Ireland\))? \d{4}\s*$/u
+  defp laws_column?([_ | _] = rows),
+    do:
+      Enum.all?(rows, fn
+        [law | _] -> law |> Doc.text() |> String.trim() |> then(&(&1 == "" or &1 =~ @law_title))
+        _ -> false
+      end)
+
+  defp laws_column?(_rows), do: false
 
   defp title(tabular),
     do: tabular |> xpath(~x"./*[local-name()='Title']"l) |> Enum.map_join(" ", &Doc.text/1)
 
-  defp rows(table) do
+  defp rows(table, item?) do
     for tr <- xpath(table, ~x".//*[local-name()='tbody']/*[local-name()='tr']"l),
-        do: xpath(tr, ~x"./*[local-name()='td']"l)
+        cells = xpath(tr, ~x"./*[local-name()='td']"l),
+        do: if(item? and length(cells) > 1, do: tl(cells), else: cells)
   end
 
-  defp table_rules({_title, _columns, rows, :laws}, doc, id, terms, laws) do
+  defp table_rules({_title, _columns, rows, :laws, _item?}, doc, id, terms, laws) do
     for [law, amendment] <- rows,
         name = law |> Doc.text() |> String.trim(),
         name != "",
@@ -108,11 +173,11 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.AmendmentTable do
         do: rule
   end
 
-  defp table_rules({title, columns, rows, :provisions}, doc, id, terms, laws) do
+  defp table_rules({title, columns, rows, {:provisions, word}, _item?}, doc, id, terms, laws) do
     {rules, _above} =
       Enum.flat_map_reduce(rows, List.duplicate("", columns - 1), fn cells, above ->
         row = row(cells, above)
-        {read(row, title, {doc, id, terms, laws}), Enum.drop(row, -1)}
+        {read(with_word(row, word), title, {doc, id, terms, laws}), Enum.drop(row, -1)}
       end)
 
     rules
@@ -131,6 +196,21 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.AmendmentTable do
     |> Enum.zip(above)
     |> Enum.map(fn {cell, up} -> if cell == "", do: up, else: cell end)
     |> Kernel.++([List.last(cells)])
+  end
+
+  # a bare number in the provision cell takes the header's word ("2(1)"
+  # under "Regulation, etc": regulation 2(1))
+  defp with_word(row, nil), do: row
+
+  defp with_word(row, word) do
+    case Enum.split(row, -2) do
+      {law, [place, amendment]} ->
+        place = if place =~ ~r/^\s*\d/, do: "#{word} #{place}", else: place
+        law ++ [place, amendment]
+
+      _ ->
+        row
+    end
   end
 
   # [law, provision, amendment cell], else [provision, amendment cell] in

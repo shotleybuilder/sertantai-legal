@@ -7,7 +7,7 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
   only.
   """
 
-  alias SertantaiLegal.Scraper.AmendingLaw.Text
+  alias SertantaiLegal.Scraper.AmendingLaw.{ListedPlaces, Text}
   alias SertantaiLegal.Scraper.Amendment.Rule
   alias SertantaiLegal.Scraper.Amendment.Reader.{Brackets, Clauses}
 
@@ -292,12 +292,13 @@ defmodule SertantaiLegal.Scraper.Amendment.Reader.Targets do
   defp list_source(c, p) do
     case listed_places(c.text.instruction, p, c.numbers) do
       [] ->
-        if c.text.instruction =~ ~r/\bfollowing provisions\b/i,
-          do:
-            c.text.parents
-            |> Enum.map(&{&1, listed_places(&1, p, c.numbers)})
-            |> Enum.find(&match?({_, [_ | _]}, &1)),
-          else: nil
+        if c.text.instruction =~ ~r/\bfollowing provisions\b/i or
+             Enum.any?(c.text.parents, &ListedPlaces.listed?/1),
+           do:
+             c.text.parents
+             |> Enum.map(&{&1, listed_places(&1, p, c.numbers)})
+             |> Enum.find(&match?({_, [_ | _]}, &1)),
+           else: nil
 
       items ->
         {c.text.instruction, items}

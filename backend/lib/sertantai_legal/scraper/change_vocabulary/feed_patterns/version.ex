@@ -22,6 +22,7 @@ defmodule SertantaiLegal.Scraper.ChangeVocabulary.FeedPatterns.Version do
       lib/sertantai_legal/scraper/amending_law/schedule_refs.ex
       lib/sertantai_legal/scraper/amending_law/sub_path.ex
       lib/sertantai_legal/scraper/amending_law/text.ex
+      lib/sertantai_legal/scraper/amending_law/listed_places.ex
       lib/sertantai_legal/scraper/application_clause.ex
       lib/sertantai_legal/scraper/change_vocabulary/claim.ex
       lib/sertantai_legal/scraper/change_vocabulary/effect_verb.ex

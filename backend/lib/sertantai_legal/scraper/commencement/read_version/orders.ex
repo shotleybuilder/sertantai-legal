@@ -13,6 +13,7 @@ defmodule SertantaiLegal.Scraper.Commencement.ReadVersion.Orders do
       lib/sertantai_legal/scraper/amending_law/doc.ex
       lib/sertantai_legal/scraper/amending_law/doc/list_items.ex
       lib/sertantai_legal/scraper/amending_law/text.ex
+      lib/sertantai_legal/scraper/amending_law/listed_places.ex
       lib/sertantai_legal/scraper/commencement/authority.ex
       lib/sertantai_legal/scraper/commencement/clml_ref.ex
       lib/sertantai_legal/scraper/commencement/order.ex
