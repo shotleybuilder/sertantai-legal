@@ -1,6 +1,6 @@
 # The Amending-law reader: what it does (DRAFT, 2026-11-26)
 
-The step's spec: its aim, its scope, its boundary with the other readers, its substeps, and what makes them loop. The step's procedure is in WORKFLOW §6 and the `amending-reader-check` skill; the traps met in its code are in `backend/lib/sertantai_legal/scraper/amendment/CLAUDE.md`; the rules it follows are in `RULES.md`; background on the forms it reads is in `AMENDMENT-GUIDE.md`. It comes from the Amending-law reader readiness review (`.claude/sessions/lat-change-pipeline/2026-11-26-amending-law-reader-readiness-review.md`), which asks the Commencement and Extent reader retrospectives' questions of this reader (`COMMENCEMENT-READER.md`, `EXTENT-READER.md`). It describes the reader as it stood on 2026-11-26, revised after "Amending-law reader: stamps that follow what changed" and "Amending-law reader: step procedures" the same day.
+The step's spec: its aim, its scope, its boundary with the other readers, its substeps, and what makes them loop. The step's procedure is in WORKFLOW §6 and the `amending-reader-check` skill; the traps met in its code are in `backend/lib/sertantai_legal/scraper/amendment/CLAUDE.md`; the rules it follows are in `RULES.md`; background on the forms it reads is in `AMENDMENT-GUIDE.md`. It comes from the Amending-law reader readiness review (`.claude/sessions/lat-change-pipeline/2026-11-26-amending-law-reader-readiness-review.md`), which asks the Commencement and Extent reader retrospectives' questions of this reader (`COMMENCEMENT-READER.md`, `EXTENT-READER.md`). It describes the reader as it stood on 2026-11-26, revised after "Amending-law reader: stamps that follow what changed" and "Amending-law reader: step procedures" the same day, and after the three named sessions of Waste, Water and Climate (EU article naming, amending Schedules, yield; 2026-11-27/28).
 
 ## 1. Aim
 
@@ -22,7 +22,7 @@ The law's text is primary (RULES §7, `primary-first-derived-fills`), so a misre
 - **legislation.gov.uk's own record of the change:** the Feed and Markup readers (derived claims).
 - **Joining the sources' records of one change:** Merge; **which wins:** Evidence.
 - **Fetching documents:** Sources. A missing amending law found here goes on Find's fetch list.
-- **The yield** (provisions read with no rule) is not chased (CV-07) unless a group reaches the gate.
+- **The yield** (provisions read with no rule) was not chased (CV-07) unless a group reached the gate, until the yield session (2026-11-27/28) measured it against the feed (§6) and fixed its groups of 10+ changes; those left are carried to a later version (RULES).
 
 ## 3. The boundary with the other readers
 
@@ -81,10 +81,25 @@ Every stored text change, all families (2026-11-26; `backend/data/reports/amendi
 
 **The rule (Jason 2026-11-26, RULES `amending-legislation-gov-uk-first-where-it-speaks`):** where legislation.gov.uk gives a change's operation or level, it is used unless the amending law's words prove it wrong. So the step fixes a misread the changes only this reader states hold (L); one found only where legislation.gov.uk speaks (D) is a known limit, and D stays the yardstick. The build still takes the law's text first until Evidence builds the rule. The gate's split by coverage was built in "Amending-law reader: step procedures": a D group is `known: legislation-gov-uk-speaks` unless reviewed, and the yardstick is recorded per family (`Measures.AmendingYardstick`).
 
+### The feed's text changes met (yield, 2026-11-28)
+
+A second yardstick, by coverage: of the feed's text changes on held laws' bodies, how many get a rule from the amending provision the feed names, for that law. Measured by `backend/data/reports/amending-reader/yield/feed_yield.py` over a fresh read of every amending law (`schedules/dump_fresh.exs`, about 25 min, run alone; nothing written), with each effect's own pointers (`yield/dump_pointers.exs`). The "target" check (`schedules/check_targets.py`) then asks whether the rule's provision is the feed's affected provision.
+
+| | Round and switched families | Every family |
+|---|---|---|
+| Feed text changes | 24,726 | 89,226 |
+| Met by a rule (before the named sessions) | 81.1% | 72.1% |
+| **Met by a rule (2026-11-28)** | **20,968 (84.8%)** | **66,562 (74.6%)** |
+| Read, no rule | 1,460 | 5,672 |
+| Amending words gone / amends an earlier amending law | 1,616 / 240 | |
+
+Where a Schedule-made change has a rule, its provision agrees with the feed's for 31,609 and differs for 639 (80 more lose a parent's brackets). The 84.8% is the publishable figure (Jason 2026-11-28); the groups left are carried to a later version (RULES, yield block). Until `Measures` holds it, the figure is the report script's, not `lat.measures`'s.
+
 ## 7. Open questions
 
 - **Stamps:** settled by the stamps session (§5.1, §5.2): exact by reach, held by `AmendmentReadStampsTest`; the build's fallback dropped (`:amending_reader`).
 - **Procedures as tasks:** settled by the step procedures session (§4, §5.3): `--read --stale [--family F]`, the `:amendments` substep first in `lat.reread`, `lat.stale` naming the laws, the gate by coverage and the yardstick.
 - **Mixed modules:** `TextEffect` is out of `ReadLaw`, and `Index` no longer reaches the reader (its entries come from `ReadPass.index_entries/1`). `ReadLaw`'s notes query stays in the stamp: it decides which provisions are read. `ReadPass` stays the orchestrator, outside every stamp.
 - **Decided 2026-11-26** (readiness review, Decision 1): the stamps, the fallback and the module splits go to "Amending-law reader: stamps that follow what changed"; the procedures to "Amending-law reader: step procedures". This spec is revised after each.
+- **The yield into `Measures`:** `feed_yield.py` is a report script; a later version moves it into code (`lat.measures`) beside `AmendingYardstick`.
 - **legislation.gov.uk first where it speaks:** decided (§6); the gate's split by coverage is built (§4); the build's part is Evidence's (#203).

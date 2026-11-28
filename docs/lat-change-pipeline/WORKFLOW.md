@@ -400,6 +400,8 @@ So a catalogue or tool edit stales nothing stored, and a reader fix stales build
    - **Review.** Each L group is read in the amending law's text and rows. Its status goes in `test/fixtures/amendment_patterns/disagreements.json`: `fix:`, `known:` or `check:`, keyed `"<cause> @ <amending law>"`, else by cause.
    - **The review's tasks** (Amending-law reader: review tooling, 2026-11-12): `--gate --dump FILE` writes each group's changes with their provisions' words, rules and legislation.gov.uk's claims; `mix lat.amending --amending A --provision ID` probes one provision; `--gate --name-standard --review REPORT` proposes the standard wordings beside each group's words (a dry run; `--write` once Jason decides). The write sequence is in the `amending-reader-check` skill, step 6.
 
+7. **Yield against the feed** (Waste, Water and Climate: Amending-law reader, 2026-11-28; AMENDING-LAW-READER §6): `yield/feed_yield.py` over a fresh read of every amending law, run alone, gives the feed's text changes met by a rule and the unmet groups; each fix's reach is found by code, re-read and spliced, and every fresh diff is read in full and arbitrated by the feed's own pairs before the next fix batch. Recorded at each step; not yet a pass rule item (a later version's).
+
 **Pass rule** (Decision 1, Jason 2026-11-06, Maritime Safety: Amending-law reader):
 - the read pass is current (`mix lat.stale --family F` shows no `:amending_reader`);
 - the gate prints PASS: every L group named `known:`, the D groups `known:` by coverage unless reviewed otherwise;

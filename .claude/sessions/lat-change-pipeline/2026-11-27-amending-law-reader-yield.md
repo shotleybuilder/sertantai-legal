@@ -101,14 +101,14 @@ bugs:
     category: title-reference-extent-amendments-table
     module: amendment/reader/amendment_table
     affected: 44 round changes
-    fix: "Read it as the revocations table's law column (Title, Reference) with the amendment column's instructions"
+    fix: "Read it as the revocations table's law column (Title, Reference) with the amendment column's instructions; carried to a later version (Jason 2026-11-28, January deadline)"
     step: "Amending-law reader"
     status: open
   - pattern: "Round groups of 10–33 unmet changes not yet probed at the yield close: \"q;\" (33), \"for q substitute q ;\" (26), Schedule modifications to regulations (17), \"for the purpose of enabling\" (15), \"in these regulations, unless the\" (14), a Schedule of statutory instruments amended (14), \"in regulation n();\" (14), Schedule article/table forms (11, 10, 10), \"article n(), articles n, n,\" (10) (yield/fresh-10-examples.txt)"
     category: yield-remaining-round-groups
     module: amendment/reader
     affected: about 200 round changes
-    fix: "Probe two provisions a group; fix those over the triage size, test first; the rest named"
+    fix: "Probe two provisions a group; fix those over the triage size, test first; the rest named; carried to a later version (Jason 2026-11-28, January deadline)"
     step: "Amending-law reader"
     status: open
   - pattern: "2010 c.4's Schedules are not in the CLML store (only its body), so its Sch.1 gives no rule (186 changes)"
