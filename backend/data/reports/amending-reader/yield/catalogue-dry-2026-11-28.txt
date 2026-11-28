@@ -1,0 +1,104 @@
+[warning] [ActorDictionary] Zenoh unavailable ({:exit, "{:noproc, {GenServer, :call, [SertantaiLegal.Zenoh.Session, :session_id, 5000]}}"}), loading snapshot
+[info] [ActorDictionary] Loaded 228 actors from snapshot
+[debug] [ActorDictionary] Zenoh not running, subscription deferred
+1092 laws, 2322 amending laws
+laws read 4 at once: 23.8 GB available (6.0 kept), ~1.8 GB a law; 0.7 of 6 cores busy; max 4
+  50/2322
+  100/2322
+  150/2322
+  200/2322
+  250/2322
+  300/2322
+  350/2322
+  400/2322
+  450/2322
+  500/2322
+  550/2322
+  600/2322
+  650/2322
+  700/2322
+  750/2322
+  800/2322
+  850/2322
+  900/2322
+  950/2322
+  1000/2322
+  1050/2322
+  1100/2322
+  1150/2322
+  1200/2322
+  1250/2322
+  1300/2322
+  1350/2322
+  1400/2322
+  1450/2322
+  1500/2322
+  1550/2322
+  1600/2322
+  1650/2322
+  1700/2322
+  1750/2322
+  1800/2322
+  1850/2322
+  1900/2322
+  1950/2322
+  2000/2322
+  2050/2322
+  2100/2322
+  2150/2322
+  2200/2322
+  2250/2322
+  2300/2322
+
+34552 provisions read in 2322 amending laws (40 not held)
+unclassified: 0
+236 patterns, 477 examples; a pattern's first in a law not reading the same alone: 52
+
+provisions by outcome:
+  12319  none
+  8234  rules:substituted:words
+  3887  rules:inserted:words
+  3469  rules:inserted:provision
+  2378  rules:repealed:words
+  1822  rules:repealed:provision
+  1129  rules:substituted:provision
+  767  rules:inserted+substituted:provision
+  120  rules:inserted+substituted:provision+words
+  112  rules:inserted+substituted:words
+  88  rules:repealed:provision+words
+  57  rules:inserted:provision+words
+  46  rules:inserted+repealed:provision+words
+  35  rules:repealed+substituted:words
+  27  rules:inserted+repealed:words
+  19  rules:repealed+substituted:provision+words
+  16  rules:inserted+repealed+substituted:provision+words
+  9  rules:inserted+repealed+substituted:words
+  9  rules:inserted+repealed:provision
+  6  rules:substituted:provision+words
+  3  rules:repealed+substituted:provision
+
+new patterns (no status): 31
+patterns no longer seen: 9
+  instruction|inserted+repealed|block|body|unnamed|none
+  instruction|repealed+inserted|block|body|unnamed|none
+  instruction|repealed+inserted|words|body|named|none
+  instruction|repealed+substituted|block|body|unnamed|none
+  instruction|repealed+substituted|none|body|unnamed|none
+  instruction|repealed+substituted|words|body|unnamed|none
+  instruction|repealed|words|body|unnamed|none
+  instruction|substituted+inserted|words|body|unnamed|none
+  set_out|substituted|none|schedule|unnamed|none
+examples reading differently from expected: 11
+  UK_asc_2026_5/UK_uksi_2005_1541/section-121-4-a
+  UK_nia_2011_23/UK_nisi_1978_1049/schedule-4
+  UK_nia_2011_5/UK_nisi_1997_2778/section-5-2-b
+  UK_nisr_2010_160/UK_nisr_1991_509/schedule-5
+  UK_nisr_2019_209/UK_nisi_1999_662/regulation-18-3
+  UK_ukpga_1975_71/UK_ukpga_1974_37/schedule-15-paragraph-12
+  UK_ukpga_1975_71/UK_ukpga_1974_37/schedule-15-paragraph-2
+  UK_uksi_1996_973/UK_uksi_1994_2842/schedule-paragraph-19-2
+  UK_uksi_2008_960/UK_asp_2005_5/schedule-3
+  UK_uksi_2017_1149/UK_uksi_2003_3049/regulation-18
+  UK_uksi_2018_1221/UK_uksi_1997_1509/regulation-3-1
+dry run: generated files in data/reports/catalogues/dry-run/amendment_patterns; the fixtures are untouched (--accept writes them)
+run: cold, amending: 0 hits 2322 read, 626.6 s (serial 0.1 s), 2834 MB, 4 workers

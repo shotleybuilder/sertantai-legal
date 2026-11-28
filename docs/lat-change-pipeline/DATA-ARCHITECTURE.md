@@ -201,7 +201,7 @@ There are three ways, none registered in one place:
 | Way | Where it goes | Made by | Count | Size |
 |---|---|---|---|---|
 | NAS restore point | `/mnt/nas/sertantai-data/data/snapshots/restore-points/<YYYY-MM-DD>-<tag>/` (`pg_dump --data-only --format=custom` per table, `manifest.json` with rows and sha256) | `./scripts/nas/nas-backup.sh --tables t1,t2 --tag NAME` (before each apply; memory "backup finesse") | 92 (`ls … \| wc -l`) | 1.6 GB (`du -sh`) |
-| In-DB snapshot tables (public schema) | `lat_reparse_<tag>` + `<tag>_cm`, `*_snapshot_<date>` | Code: `LatReparse` (`mix lat.reparse`, `live.application`), `live.recompute`, `live.apply_effects`, `live.unapplied_effects`, `EffectsBackfill`, `making.resolve`, `extent.resolve`, `drrp.remap` | 208 (+ orphan `law_change_snapshots` = 209) | 5.2 GB |
+| In-DB snapshot tables (public schema) | `lat_reparse_<tag>` + `<tag>_cm`, `*_snapshot_<date>` | Code: `LatReparse` (`mix lat.reparse`, `live.application`), `live.recompute`, `live.apply_effects`, `live.unapplied_effects`, `EffectsBackfill`, `making.resolve`, `extent.resolve`, `drrp.remap` | 208 (+ `law_change_snapshots` = 209, which is compliance's, not an orphan: see the note below) | 5.2 GB |
 | Ad hoc schemas | `r6b.*` (claims1…18, rules10…15, `s06_*`, `ar_before`, `comm13`), `rp9.amendment_rules` | By hand in sessions (CV-S05, CV-S06) to diff a run against the last | 31 | 182 MB |
 
 The `r6b` schema (30 tables, 169 MB) was not in the earlier audit. Both `r6b` and `rp9` hold copies of pipeline tables with no code reference.
@@ -211,6 +211,8 @@ The `r6b` schema (30 tables, 169 MB) was not in the earlier audit. Both `r6b` an
 All 240 snapshot tables were archived to the NAS, then dropped with Jason's go. That was 209 in `public` (including `law_change_snapshots`) plus schemas `r6b` (30) and `rp9` (1). The database went from 7.9 GB to 2.6 GB.
 - **Archive:** `snapshots/archive/2026-11-03-snapshot-tables.dump` (pg_dump custom format, 844 MB), with the table list beside it.
 - **Restore one table:** `pg_restore -d sertantai_legal_dev -t <table> <dump>`.
+
+- **Correction (2026-11-28): `law_change_snapshots` was not an orphan.** It is sertantai-compliance's change-feed baseline (`sertantai_compliance/sync/law_change_snapshot.ex`, `change_detector.ex`) in the shared dev database; legal's grep of its own repo found no owner. It was dropped here with the rest on 2026-11-03 and is in the archive above. Restoring it (`pg_restore -d sertantai_legal_dev -t law_change_snapshots <dump>`) is compliance's call, with Jason's go. A table in the shared database with no reference in legal's code may be compliance's: grep `~/Desktop/sertantai-compliance` too before calling anything an orphan.
 
 The tables below are as they stood before the drop.
 
@@ -242,7 +244,7 @@ For scale: the whole public schema is 7,743 MB; the snapshots are two thirds of 
 1. **One schema.** Every in-DB copy goes into a schema named `restore` (`restore.<tag>__<table>`), never into `public`. Code that makes copies (`LatReparse` and the live tasks) takes the schema from one helper.
 2. **A registry.** A table `restore.points`, with one row per copy: `tag`, `copy`, `source`, `rows`, `taken_at`, `session`, `nas_path`, `dropped_at` (migration 20261111150000). The helper writes it. `nas-backup.sh --tables --tag` does not yet write a row.
 3. **NAS first, then drop.** At session close, each in-DB copy the session made is dumped to the NAS restore point folder (if not already) and dropped. The `session-close` skill lists the session's open points.
-4. **One-off clean-up**, with Jason's go: dump the 208 tables, `r6b`, `rp9` and `law_change_snapshots` to the NAS, verify checksums, drop them. Frees about 5.4 GB.
+4. **One-off clean-up**, with Jason's go: dump the 208 tables, `r6b`, `rp9` and `law_change_snapshots` (compliance's, wrongly included: see the correction above) to the NAS, verify checksums, drop them. Frees about 5.4 GB.
 5. **NAS retention.** Restore points older than 90 days and not named in an open session are moved to `archive/`.
 
 ---
@@ -253,7 +255,7 @@ For scale: the whole public schema is 7,743 MB; the snapshots are two thirds of 
 |---|---|---|---|
 | "The change register" | Means `lat_change_log` in old docs and `scraper/CLAUDE.md`, and `provision_changes` in new ones | `ProvisionChange` moduledoc: "The change register of the change vocabulary"; `ChangeCollector`: "Fills the change register `lat_change_log`" | Call `lat_change_log` "the change log (old)"; reserve "change register" for `provision_changes` |
 | `lat_changes` | Name suggests legal changes; it is the parse audit of our copy | `Zenoh.LatChanges` moduledoc; `LatChangeLog` moduledoc warns "Not `lat_changes`" | Rename `lat_parse_changes` (needs fractalaw's queryable path kept) |
-| `law_change_snapshots` | Orphan: no reference in `backend/lib` or migrations; 3,774 rows all written 2026-09-25 11:15 | `grep -rn law_change_snapshots backend/lib backend/priv` → nothing | Dump to NAS, drop |
+| `law_change_snapshots` | **Not an orphan** (corrected 2026-11-28): sertantai-compliance's change-feed baseline; no reference in legal's `backend/lib` or migrations; 3,774 rows all written 2026-09-25 11:15 | `grep -rn law_change_snapshots backend/lib backend/priv` → nothing | Dump to NAS, drop |
 | `rp9.amendment_rules` | Ad hoc copy (43,778 rows, CV-S05 diff) | session `cv-s05-extent-reader.md:1064` | Dump, drop |
 | `r6b.*` (30 tables) | Ad hoc diff copies, CV-S05/S06 | sessions cite `r6b.claims6` … `r6b.claims18` | Dump, drop |
 | Two version stamps | `LabelVersion` and `ChangeVocabulary.Version` for one label | (d) | One after retirement |

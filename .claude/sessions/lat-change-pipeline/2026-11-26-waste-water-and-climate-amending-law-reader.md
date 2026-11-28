@@ -2,7 +2,7 @@
 session: 'Waste, Water and Climate: Amending-law reader'
 status: suspended
 suspended: '2026-11-27'
-suspended_reason: 'The three named sessions are closed: EU article naming (764fd74e), amending Schedules (15f092d2), yield (2026-11-28, partial: round yield 81.1% → 84.8%; remaining round groups parked by size). Next: the catalogue cold dry run (24 drifted examples) and the Settle write (todo 7), on Jason''s go'
+suspended_reason: 'The three named sessions are closed: EU article naming (764fd74e), amending Schedules (15f092d2), yield (2026-11-28, partial: round yield 81.1% → 84.8%; remaining round groups parked by size). The catalogue accepted 2026-11-28 (bce30c8a). Next: the Settle write (todo 7), on Jason''s go'
 opened: '2026-11-26'
 family: 'Waste, Water and Climate (round)'
 bugs:
@@ -500,3 +500,11 @@ Tests are in `test/sertantai_legal/scraper/amendment/reader/waste_water_climate_
 **Yield session closed (2026-11-28, `2026-11-27-amending-law-reader-yield.md`).** Round and switched families: 20,968 of 24,726 feed text changes met (84.8%, from 81.1%); every family 74.6%. Ten fix batches, test first; the stamps of this reader and the Commencement, Order, Feed and Markup catalogues are stale (`listed_places.ex`, `eu_dated_title.ex` added). **Catalogue drifts for the cold dry run: 24**, each read right (the 8 from amending Schedules, 10 from yield batches 1–4, 6 asp 2014/3 Sch.3 para.29 on the Environment Act 1995). Parked for this step: NISR 2016/146's "Title | Reference | Extent of amendment" table (44 round changes), about 200 round changes in ten unprobed groups. Next: the cold dry run, then Settle.
 
 **Jason 2026-11-28:** the yield's 84.8% is the publishable figure; the 22 groups left go to a later version (January deadline), recorded in RULES' yield block, AMENDING-LAW-READER §6, WORKFLOW §6 check 7 and the measures register.
+
+**Decision: the catalogue's held moves after the named sessions (2026-11-28).**
+- **Question:** the cold dry run (`yield/catalogue-dry-2026-11-28.txt`; 1,092 laws, 2,322 amending laws, 34,552 provisions, 0 unclassified, 627 s) reads 11 examples differently from expected (24 in `AmendmentPatternsTest`, which reads the pruned examples), plus 31 new patterns and 9 no longer seen (compound operations now listed in another order). Should `--accept` write them?
+- **Aim:** `binds-on-date`.
+- **What moved:** every one of the 24 goes from no rule to rules, or from unnamed to named: Schedule leads with their law (asp 2014/3 Sch.3 para.29, 7; SSI 2015/347's amenders, 3), Part-less and unnumbered Schedules (1975 c.71 Sch.15, asp 2019/15, asp 2007/6), tables (NISR 2010/160 Sch.5, SI 2008/960 Sch.3, NIA 2011/23 Sch.4, SI 2010/680), per-law lists (SI 2018/1221), listed places (asc 2026/5), "omit … and insert" (SI 2017/1149). Each was read in the text: right. One carries a named limit: 2025 c.18 s.70(8)(b) is now placed right (SSI 2004/520 reg.11(7)) but "for “were omitted” substitute" still reads as a repeal (RULES known limit).
+- **Options:** (a) accept all, the limit named; (b) hold s.70(8)(b) as `pending` and accept the rest.
+- **Recommendation: (a).** The class's operation was already "repealed" before the move; the move only adds the right place.
+- **Decided (a), Jason 2026-11-28:** `--accept` (`yield/catalogue-accept-2026-11-28.txt`) wrote the 31 new patterns and dropped the 9; the 11 held moves were written into `expected.json` as the dry run read them (NIA 2011/5 s.5(2)(b) drifted only after the regenerated examples; right: words substituted and inserted). `AmendmentPatternsTest` 481/481; full suite 13,031/13,032 (one flaky, passed on rerun). Code `bce30c8a`. Next: the Settle write (todo 7), on Jason's go.
